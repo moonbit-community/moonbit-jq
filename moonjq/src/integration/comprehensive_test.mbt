@@ -1,7 +1,7 @@
 ///|
 /// Comprehensive high-quality tests for all jq features
 /// This file thoroughly tests edge cases, error handling, and complex scenarios
-fn test_query(query : String, input : String) -> String {
+pub fn test_query(query : String, input : String) -> String {
   let expr = @parser.parse(query) catch { e => return "ParseError: \{e}" }
   let json = @json.parse(input) catch { e => return "JsonParseError: \{e}" }
   let results = @interpreter.eval(expr, json) catch {
