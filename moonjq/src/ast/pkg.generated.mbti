@@ -50,12 +50,17 @@ pub(all) enum Expr {
   Reverse
   Flatten(Int?)
   Unique
+  UniqueBy(Expr)
   GroupBy(Expr)
+  Combinations
+  Transpose
   Add
   Floor
   Sqrt
   Min
+  MinBy(Expr)
   Max
+  MaxBy(Expr)
   Round
   Ceil
   Abs
@@ -70,18 +75,27 @@ pub(all) enum Expr {
   ToEntries
   FromEntries
   WithEntries(Expr)
+  MapValues(Expr)
   Range(Int)
+  RangeFromTo(Expr, Expr)
+  RangeWithStep(Expr, Expr, Expr)
   First
+  FirstGen(Expr)
   Last
+  LastGen(Expr)
+  Repeat(Expr)
   IndicesOf(Expr)
   IndexOf(Expr)
   Any
+  AnyGen(Expr, Expr)
   All
+  AllGen(Expr, Expr)
   IfThenElse(Expr, Expr, Expr)
   TryCatch(Expr, Expr?)
   Variable(String)
   As(Expr, String, Expr)
   Reduce(Expr, String, Expr, Expr)
+  Foreach(Expr, String, Expr, Expr, Expr?)
   Recurse
   RecurseWith(Expr, Expr)
   Walk(Expr)
@@ -89,13 +103,28 @@ pub(all) enum Expr {
   Update(Expr, Expr)
   Assign(Expr, Expr)
   Alternative(Expr, Expr)
+  AddAssign(Expr, Expr)
+  SubAssign(Expr, Expr)
+  MulAssign(Expr, Expr)
+  DivAssign(Expr, Expr)
+  ModAssign(Expr, Expr)
+  AltAssign(Expr, Expr)
+  Format(String)
+  StringInterpolation(Array[(String, Expr?)])
+  FunctionDef(String, Array[String], Expr)
+  FunctionCall(String, Array[Expr])
   LTrimStr(String)
   RTrimStr(String)
   AsciiUpcase
   AsciiDowncase
+  Explode
+  Implode
+  ToJsonString
+  FromJsonString
   Nth(Int)
   RIndex(Expr)
   Paths
+  PathsWithFilter(Expr)
   LeafPaths
   GetPath(Expr)
   SetPath(Expr, Expr)
@@ -115,6 +144,7 @@ pub(all) enum Expr {
   Test(String)
   Match(String)
   Capture(String)
+  Scan(String)
   Splits(String)
   Sub(String, String)
   GSub(String, String)

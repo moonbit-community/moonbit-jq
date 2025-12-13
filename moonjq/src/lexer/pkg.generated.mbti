@@ -18,11 +18,13 @@ pub impl Show for LexError
 pub(all) enum Token {
   TNumber(Double)
   TString(String)
+  TStringInterpolation(Array[(String, String?)])
   TTrue
   TFalse
   TNull
   TIdentifier(String)
   TVariable(String)
+  TFormat(String)
   TDot
   TDotDot
   TPipe
@@ -50,6 +52,12 @@ pub(all) enum Token {
   TAssign
   TUpdate
   TAlternative
+  TAddAssign
+  TSubAssign
+  TMulAssign
+  TDivAssign
+  TModAssign
+  TAltAssign
   TAnd
   TOr
   TNot

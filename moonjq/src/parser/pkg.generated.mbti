@@ -13,6 +13,7 @@ pub(all) suberror ParseError {
   UnexpectedToken(String, String)
   UnexpectedEnd(String)
   InvalidSyntax(String)
+  InvalidExpression(String)
 }
 pub impl Eq for ParseError
 pub impl Show for ParseError

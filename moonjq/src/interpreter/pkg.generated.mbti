@@ -6,7 +6,7 @@ import(
 )
 
 // Values
-pub fn eval(@ast.Expr, Json) -> Iter[Json] raise
+pub fn eval(@ast.Expr, Json) -> Iterator[Json] raise
 
 // Errors
 pub(all) suberror InterpreterError {
@@ -15,6 +15,8 @@ pub(all) suberror InterpreterError {
   IndexOutOfBounds(Int)
   InvalidOperation(String)
   DivisionByZero
+  TypeError(String)
+  EvalError(String)
 }
 pub impl Eq for InterpreterError
 pub impl Show for InterpreterError

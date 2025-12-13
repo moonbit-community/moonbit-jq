@@ -18,7 +18,7 @@ A complete implementation of the jq JSON query language in MoonBit, featuring a 
   - Object: `keys`, `values`
   - General: `length`, `type`, `empty`, `not`
   - Numeric: `floor`, `sqrt`
-- ✅ **Streaming semantics**: Multiple results via `Iter[Json]`
+- ✅ **Streaming semantics**: Multiple results via `Iterator[Json]`
 
 ## Project Structure
 
@@ -94,7 +94,7 @@ let results = @interpreter.eval(expr, json).collect()
 - **Error recovery**: Detailed error messages with context
 
 ### Interpreter (`src/interpreter/`)
-- **Streaming semantics**: Returns `Iter[Json]` for multiple results
+- **Streaming semantics**: Returns `Iterator[Json]` for multiple results
 - **Environment-based**: Variable bindings via immutable environment
 - **Type coercion**: Arithmetic operations work across JSON types (e.g., string + string, array + array)
 - **Lazy evaluation**: Efficient iteration without materializing intermediate results
@@ -105,7 +105,7 @@ let results = @interpreter.eval(expr, json).collect()
 - **Pattern matching**: Comprehensive pattern matching on `Json` variants with `..` for `repr` field
 - **Error propagation**: Checked errors via `raise` annotations
 - **Functional style**: Immutable data structures, no side effects
-- **Iterator-based**: `Iter[T]` for jq's streaming semantics
+- **Iterator-based**: `Iterator[T]` for jq's streaming semantics
 
 ## Building
 

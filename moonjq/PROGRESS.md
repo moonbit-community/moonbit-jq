@@ -163,7 +163,7 @@ All existing functionality preserved while adding 20 new features!
 
 ### Performance Notes
 
-- Current implementation uses `Iter[Json]` for lazy evaluation
+- Current implementation uses `Iterator[Json]` for lazy evaluation
 - Collections are materialized when needed (e.g., for sorting)
 - String operations may be less efficient due to MoonBit's limited string API
 - Consider optimization for large datasets in future iterations
