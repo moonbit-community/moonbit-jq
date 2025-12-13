@@ -816,9 +816,18 @@ fn Parser::parse_builtin(
     }
     "pow" => {
       self.expect(@lexer.Token::TLParen)
-      let expr = self.parse_pipe()
-      self.expect(@lexer.Token::TRParen)
-      @ast.Expr::Pow(expr)
+      let base = self.parse_pipe()
+      // Check if we have semicolon separator for two-argument form
+      if self.consume(@lexer.Token::TSemicolon) {
+        let exponent = self.parse_pipe()
+        self.expect(@lexer.Token::TRParen)
+        // For pow(base; exponent), create an expression that applies both
+        // This will be: base | pow(exponent)
+        @ast.Expr::Pipe(base, @ast.Expr::Pow(exponent))
+      } else {
+        self.expect(@lexer.Token::TRParen)
+        @ast.Expr::Pow(base)
+      }
     }
     "log" => @ast.Expr::Log
     "exp" => @ast.Expr::Exp

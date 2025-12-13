@@ -167,7 +167,7 @@ test "missing: pow function" {
   inspect(
     test_feature("pow(2; 3)", "null"),
     content=(
-      #|ParseError: UnexpectedToken("TSemicolon", "TRParen")
+      "Number(8)"
     ),
   )
 }
