@@ -59,6 +59,18 @@ fn Parser::consume(self : Parser, expected : @lexer.Token) -> Bool {
 }
 
 ///|
+/// Check if current token is an identifier with given name and consume it
+fn Parser::match_identifier(self : Parser, name : String) -> Bool {
+  match self.current() {
+    Some(@lexer.Token::TIdentifier(id)) if id == name => {
+      self.advance()
+      true
+    }
+    _ => false
+  }
+}
+
+///|
 /// Expect and consume a token, raise error if not found
 fn Parser::expect(
   self : Parser,
@@ -103,6 +115,23 @@ fn Parser::parse_definitions(self : Parser) -> @ast.Expr raise ParseError {
 /// Parse pipe expression (lowest precedence)
 fn Parser::parse_pipe(self : Parser) -> @ast.Expr raise ParseError {
   let mut expr = self.parse_comma()
+
+  // Check for 'as $var' binding
+  if self.match_identifier("as") {
+    let var_name = match self.current() {
+      Some(@lexer.Token::TVariable(name)) => {
+        self.advance()
+        name
+      }
+      _ => raise ParseError::InvalidSyntax("Expected variable after 'as'")
+    }
+    // Expect pipe, then parse rest as body
+    self.expect(@lexer.Token::TPipe)
+    let body = self.parse_pipe() // Recursively parse rest of pipe with variable in scope
+    return @ast.Expr::As(expr, var_name, body)
+  }
+
+  // Normal pipe processing
   while self.consume(@lexer.Token::TPipe) {
     let right = self.parse_comma()
     expr = @ast.Expr::Pipe(expr, right)
@@ -498,6 +527,8 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
     }
     Some(@lexer.Token::TIf) => self.parse_if()
     Some(@lexer.Token::TTry) => self.parse_try()
+    Some(@lexer.Token::TReduce) => self.parse_reduce()
+    Some(@lexer.Token::TForeach) => self.parse_foreach()
     Some(@lexer.Token::TIdentifier(name)) => {
       self.advance()
       self.parse_builtin(name)
@@ -573,6 +604,64 @@ fn Parser::parse_try(self : Parser) -> @ast.Expr raise ParseError {
     None
   }
   @ast.Expr::TryCatch(expr, handler)
+}
+
+///|
+/// Parse reduce: reduce EXPR as $VAR (INIT; UPDATE)
+fn Parser::parse_reduce(self : Parser) -> @ast.Expr raise ParseError {
+  self.advance() // consume 'reduce'
+  let gen_expr = self.parse_postfix() // generator expression
+  // Expect 'as'
+  if not(self.match_identifier("as")) {
+    raise ParseError::InvalidSyntax("reduce expects 'as' after expression")
+  }
+  // Expect variable
+  let var_name = match self.current() {
+    Some(@lexer.Token::TVariable(name)) => {
+      self.advance()
+      name
+    }
+    _ => raise ParseError::InvalidSyntax("reduce expects variable after as")
+  }
+  // Expect (INIT; UPDATE)
+  self.expect(@lexer.Token::TLParen)
+  let init_expr = self.parse_pipe()
+  self.expect(@lexer.Token::TSemicolon)
+  let update_expr = self.parse_pipe()
+  self.expect(@lexer.Token::TRParen)
+  @ast.Expr::Reduce(gen_expr, var_name, init_expr, update_expr)
+}
+
+///|
+/// Parse foreach: foreach EXPR as $VAR (INIT; UPDATE) or (INIT; UPDATE; EXTRACT)
+fn Parser::parse_foreach(self : Parser) -> @ast.Expr raise ParseError {
+  self.advance() // consume 'foreach'
+  let gen_expr = self.parse_postfix() // generator expression
+  // Expect 'as'
+  if not(self.match_identifier("as")) {
+    raise ParseError::InvalidSyntax("foreach expects 'as' after expression")
+  }
+  // Expect variable
+  let var_name = match self.current() {
+    Some(@lexer.Token::TVariable(name)) => {
+      self.advance()
+      name
+    }
+    _ => raise ParseError::InvalidSyntax("foreach expects variable after as")
+  }
+  // Expect (INIT; UPDATE) or (INIT; UPDATE; EXTRACT)
+  self.expect(@lexer.Token::TLParen)
+  let init_expr = self.parse_pipe()
+  self.expect(@lexer.Token::TSemicolon)
+  let update_expr = self.parse_pipe()
+  // Check for optional extract expression
+  let extract_expr = if self.consume(@lexer.Token::TSemicolon) {
+    Some(self.parse_pipe())
+  } else {
+    None
+  }
+  self.expect(@lexer.Token::TRParen)
+  @ast.Expr::Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr)
 }
 
 ///|

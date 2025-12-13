@@ -1049,7 +1049,7 @@ fn eval_with_env(
       }
     }
     @ast.Expr::Inside(expr) => {
-      // inside is the reverse of contains
+      // inside checks if input is a subset of container
       let container_results = eval_with_env(expr, input, env).collect()
       if container_results.is_empty() {
         return Iter::singleton(Json::boolean(false))
@@ -1058,15 +1058,23 @@ fn eval_with_env(
       match (input, container) {
         (String(needle), String(haystack)) =>
           Iter::singleton(Json::boolean(haystack.contains(needle)))
-        (_, Array(haystack)) => {
-          let mut found = false
-          for elem in haystack {
-            if elem == input {
-              found = true
+        (Array(needle_arr), Array(haystack)) => {
+          // Check if all elements of needle_arr exist in haystack
+          let mut all_found = true
+          for needle_elem in needle_arr {
+            let mut found = false
+            for haystack_elem in haystack {
+              if haystack_elem == needle_elem {
+                found = true
+                break
+              }
+            }
+            if not(found) {
+              all_found = false
               break
             }
           }
-          Iter::singleton(Json::boolean(found))
+          Iter::singleton(Json::boolean(all_found))
         }
         (String(key), Object(haystack)) =>
           Iter::singleton(Json::boolean(haystack.contains(key)))
@@ -1186,7 +1194,7 @@ fn eval_with_env(
           raise InterpreterError::TypeMismatch("array", @json.type_name(input))
       }
     @ast.Expr::WithEntries(expr) =>
-      // Convert to entries, apply expr, convert back
+      // Convert to entries, apply expr to each entry, convert back
       match input {
         Object(_) | Array(_) => {
           // to_entries
@@ -1194,13 +1202,18 @@ fn eval_with_env(
           if entries_results.is_empty() {
             return Iter::singleton(input)
           }
-          // Apply expression to entries array
-          let transformed_results = eval_with_env(expr, entries_results[0], env).collect()
-          if transformed_results.is_empty() {
+          // Apply expression to each entry (like map)
+          let entries_array = entries_results[0]
+          let mapped_results = eval_with_env(
+            @ast.Expr::Map(expr),
+            entries_array,
+            env,
+          ).collect()
+          if mapped_results.is_empty() {
             return Iter::singleton(input)
           }
           // from_entries
-          eval_with_env(@ast.Expr::FromEntries, transformed_results[0], env)
+          eval_with_env(@ast.Expr::FromEntries, mapped_results[0], env)
         }
         _ =>
           raise InterpreterError::TypeMismatch(
@@ -1844,11 +1857,494 @@ fn eval_with_env(
           raise InterpreterError::TypeMismatch("string", @json.type_name(input))
       }
 
+    // Newly added features - corner case implementations
+    @ast.Expr::MapValues(expr) =>
+      match input {
+        Object(obj) => {
+          let result : Map[String, Json] = {}
+          for key, value in obj {
+            let transformed_results = eval_with_env(expr, value, env).collect()
+            if not(transformed_results.is_empty()) {
+              result[key] = transformed_results[0]
+            }
+          }
+          Iter::singleton(Json::object(result))
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("object", @json.type_name(input))
+      }
+    @ast.Expr::RangeFromTo(from_expr, to_expr) => {
+      let from_results = eval_with_env(from_expr, input, env).collect()
+      let to_results = eval_with_env(to_expr, input, env).collect()
+      if from_results.is_empty() || to_results.is_empty() {
+        return Iter::empty()
+      }
+      match (from_results[0], to_results[0]) {
+        (Number(from_num), Number(to_num)) => {
+          let from_int = from_num.to_int()
+          let to_int = to_num.to_int()
+          let results : Array[Json] = []
+          for i = from_int; i < to_int; i = i + 1 {
+            results.push(Json::number(i.to_double()))
+          }
+          Iter::new(fn(emit) {
+            for x in results {
+              if emit(x) == IterEnd {
+                break
+              }
+            }
+            IterContinue
+          })
+        }
+        _ => raise InterpreterError::TypeMismatch("numbers", "non-numbers")
+      }
+    }
+    @ast.Expr::RangeWithStep(from_expr, to_expr, step_expr) => {
+      let from_results = eval_with_env(from_expr, input, env).collect()
+      let to_results = eval_with_env(to_expr, input, env).collect()
+      let step_results = eval_with_env(step_expr, input, env).collect()
+      if from_results.is_empty() ||
+        to_results.is_empty() ||
+        step_results.is_empty() {
+        return Iter::empty()
+      }
+      match (from_results[0], to_results[0], step_results[0]) {
+        (Number(from_num), Number(to_num), Number(step_num)) => {
+          let from_int = from_num.to_int()
+          let to_int = to_num.to_int()
+          let step_int = step_num.to_int()
+          let results : Array[Json] = []
+          if step_int > 0 {
+            let mut i = from_int
+            while i < to_int {
+              results.push(Json::number(i.to_double()))
+              i = i + step_int
+            }
+          } else if step_int < 0 {
+            let mut i = from_int
+            while i > to_int {
+              results.push(Json::number(i.to_double()))
+              i = i + step_int
+            }
+          }
+          Iter::new(fn(emit) {
+            for x in results {
+              if emit(x) == IterEnd {
+                break
+              }
+            }
+            IterContinue
+          })
+        }
+        _ => raise InterpreterError::TypeMismatch("numbers", "non-numbers")
+      }
+    }
+    @ast.Expr::FirstGen(gen_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      if gen_results.is_empty() {
+        Iter::empty()
+      } else {
+        Iter::singleton(gen_results[0])
+      }
+    }
+    @ast.Expr::LastGen(gen_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      if gen_results.is_empty() {
+        Iter::empty()
+      } else {
+        Iter::singleton(gen_results[gen_results.length() - 1])
+      }
+    }
+    @ast.Expr::Repeat(expr) => {
+      // Repeat yields values infinitely - should be used with limit()
+      let values = eval_with_env(expr, input, env).collect()
+      if values.is_empty() {
+        return Iter::empty()
+      }
+      Iter::new(fn(emit) {
+        while true {
+          for result in values {
+            if emit(result) == IterEnd {
+              return IterContinue
+            }
+          }
+        }
+        IterContinue
+      })
+    }
+    @ast.Expr::Explode =>
+      match input {
+        String(s) => {
+          let results : Array[Json] = []
+          for char in s {
+            results.push(Json::number(char.to_int().to_double()))
+          }
+          Iter::singleton(Json::array(results))
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("string", @json.type_name(input))
+      }
+    @ast.Expr::Implode =>
+      match input {
+        Array(arr) => {
+          let buffer = @buffer.new()
+          for elem in arr {
+            match elem {
+              Number(n) => {
+                let code = n.to_int()
+                match Int::to_char(code) {
+                  Some(c) => buffer.write_char(c)
+                  None => ()
+                }
+              }
+              _ => ()
+            }
+          }
+          Iter::singleton(Json::string(buffer.to_string()))
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::ToJsonString => Iter::singleton(Json::string(input.to_string()))
+    @ast.Expr::FromJsonString =>
+      match input {
+        String(s) => {
+          let parsed = @json.parse(s) catch {
+            e =>
+              raise InterpreterError::InvalidOperation("JSON parse error: \{e}")
+          }
+          Iter::singleton(parsed)
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("string", @json.type_name(input))
+      }
+    @ast.Expr::UniqueBy(expr) =>
+      match input {
+        Array(arr) => {
+          let seen : Map[String, Bool] = {}
+          let results : Array[Json] = []
+          for elem in arr {
+            let key_results = eval_with_env(expr, elem, env).collect()
+            if not(key_results.is_empty()) {
+              let key = key_results[0].to_string()
+              if not(seen.contains(key)) {
+                seen[key] = true
+                results.push(elem)
+              }
+            }
+          }
+          Iter::singleton(Json::array(results))
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::MinBy(expr) =>
+      match input {
+        Array(arr) =>
+          if arr.is_empty() {
+            Iter::singleton(Json::null())
+          } else {
+            let mut min_elem : Json = arr[0]
+            let min_val_results = eval_with_env(expr, min_elem, env).collect()
+            if min_val_results.is_empty() {
+              return Iter::singleton(Json::null())
+            }
+            let mut min_val = min_val_results[0]
+            for i = 1; i < arr.length(); i = i + 1 {
+              let elem = arr[i]
+              let val_results = eval_with_env(expr, elem, env).collect()
+              if not(val_results.is_empty()) {
+                let val = val_results[0]
+                if compare_json(val, min_val) < 0 {
+                  min_val = val
+                  min_elem = elem
+                }
+              }
+            }
+            Iter::singleton(min_elem)
+          }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::MaxBy(expr) =>
+      match input {
+        Array(arr) =>
+          if arr.is_empty() {
+            Iter::singleton(Json::null())
+          } else {
+            let mut max_elem : Json = arr[0]
+            let max_val_results = eval_with_env(expr, max_elem, env).collect()
+            if max_val_results.is_empty() {
+              return Iter::singleton(Json::null())
+            }
+            let mut max_val = max_val_results[0]
+            for i = 1; i < arr.length(); i = i + 1 {
+              let elem = arr[i]
+              let val_results = eval_with_env(expr, elem, env).collect()
+              if not(val_results.is_empty()) {
+                let val = val_results[0]
+                if compare_json(val, max_val) > 0 {
+                  max_val = val
+                  max_elem = elem
+                }
+              }
+            }
+            Iter::singleton(max_elem)
+          }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::Combinations =>
+      match input {
+        Array(arr) => {
+          let arrays : Array[Array[Json]] = []
+          for elem in arr {
+            match elem {
+              Array(inner) => arrays.push(inner)
+              _ => return Iter::empty()
+            }
+          }
+          if arrays.is_empty() {
+            return Iter::empty()
+          }
+          // Generate cartesian product
+          let mut results : Array[Array[Json]] = [[]]
+          for arr_item in arrays {
+            let new_results : Array[Array[Json]] = []
+            for res in results {
+              for item in arr_item {
+                let new_res = res.copy()
+                new_res.push(item)
+                new_results.push(new_res)
+              }
+            }
+            results = new_results
+          }
+          Iter::new(fn(emit) {
+            for combo in results {
+              if emit(Json::array(combo)) == IterEnd {
+                break
+              }
+            }
+            IterContinue
+          })
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::Transpose =>
+      match input {
+        Array(arr) => {
+          let mut max_len = 0
+          for elem in arr {
+            match elem {
+              Array(inner) =>
+                if inner.length() > max_len {
+                  max_len = inner.length()
+                }
+              _ => ()
+            }
+          }
+          let results : Array[Array[Json]] = []
+          for col = 0; col < max_len; col = col + 1 {
+            let row : Array[Json] = []
+            for elem in arr {
+              match elem {
+                Array(inner) => if col < inner.length() { row.push(inner[col]) }
+                _ => ()
+              }
+            }
+            results.push(row)
+          }
+          Iter::singleton(Json::array(results.map(Json::array)))
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("array", @json.type_name(input))
+      }
+    @ast.Expr::AnyGen(gen_expr, cond_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      let mut found = false
+      for gen_result in gen_results {
+        let cond_results = eval_with_env(cond_expr, gen_result, env).collect()
+        if not(cond_results.is_empty()) {
+          match cond_results[0] {
+            True => {
+              found = true
+              break
+            }
+            _ => ()
+          }
+        }
+      }
+      Iter::singleton(Json::boolean(found))
+    }
+    @ast.Expr::AllGen(gen_expr, cond_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      let mut all_true = true
+      for gen_result in gen_results {
+        let cond_results = eval_with_env(cond_expr, gen_result, env).collect()
+        if not(cond_results.is_empty()) {
+          match cond_results[0] {
+            True => ()
+            _ => {
+              all_true = false
+              break
+            }
+          }
+        } else {
+          all_true = false
+          break
+        }
+      }
+      Iter::singleton(Json::boolean(all_true))
+    }
+    @ast.Expr::Reduce(gen_expr, var_name, init_expr, update_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      let init_results = eval_with_env(init_expr, input, env).collect()
+      if init_results.is_empty() {
+        return Iter::empty()
+      }
+      let mut accumulator = init_results[0]
+      for gen_result in gen_results {
+        let new_env = Env::new()
+        for key, value in env.bindings {
+          ignore(new_env.set(key, value))
+        }
+        for key, value in env.functions {
+          ignore(new_env.set_function(key, value.0, value.1))
+        }
+        ignore(new_env.set(var_name, gen_result))
+        let update_results = eval_with_env(update_expr, accumulator, new_env).collect()
+        if not(update_results.is_empty()) {
+          accumulator = update_results[0]
+        }
+      }
+      Iter::singleton(accumulator)
+    }
+    @ast.Expr::Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr) => {
+      let gen_results = eval_with_env(gen_expr, input, env).collect()
+      let init_results = eval_with_env(init_expr, input, env).collect()
+      if init_results.is_empty() {
+        return Iter::empty()
+      }
+      let mut accumulator = init_results[0]
+      let results : Array[Json] = []
+      for gen_result in gen_results {
+        let new_env = Env::new()
+        for key, value in env.bindings {
+          ignore(new_env.set(key, value))
+        }
+        for key, value in env.functions {
+          ignore(new_env.set_function(key, value.0, value.1))
+        }
+        ignore(new_env.set(var_name, gen_result))
+        let update_results = eval_with_env(update_expr, accumulator, new_env).collect()
+        if not(update_results.is_empty()) {
+          accumulator = update_results[0]
+          let output = match extract_expr {
+            Some(extract) => {
+              let extract_results = eval_with_env(extract, accumulator, new_env).collect()
+              if extract_results.is_empty() {
+                accumulator
+              } else {
+                extract_results[0]
+              }
+            }
+            None => accumulator
+          }
+          results.push(output)
+        }
+      }
+      Iter::new(fn(emit) {
+        for x in results {
+          if emit(x) == IterEnd {
+            break
+          }
+        }
+        IterContinue
+      })
+    }
+    @ast.Expr::PathsWithFilter(filter_expr) => {
+      let results : Array[Array[String]] = []
+      collect_paths_with_filter(input, [], filter_expr, env, results)
+      Iter::new(fn(emit) {
+        for path in results {
+          if emit(Json::array(path.map(Json::string))) == IterEnd {
+            break
+          }
+        }
+        IterContinue
+      })
+    }
+    @ast.Expr::Scan(pattern) =>
+      match input {
+        String(s) => {
+          let results : Array[Json] = []
+          let slen = s.length()
+          let plen = pattern.length()
+          let mut i = 0
+          while i <= slen - plen {
+            let slice_result = s[i:i + plen] catch { _ => continue }
+            if slice_result.to_string() == pattern {
+              results.push(Json::string(pattern))
+              i = i + plen
+            } else {
+              i = i + 1
+            }
+          }
+          Iter::new(fn(emit) {
+            for x in results {
+              if emit(x) == IterEnd {
+                break
+              }
+            }
+            IterContinue
+          })
+        }
+        _ =>
+          raise InterpreterError::TypeMismatch("string", @json.type_name(input))
+      }
+
     // Not yet implemented features
     _ =>
       raise InterpreterError::InvalidOperation(
         "Feature not yet implemented: \{expr}",
       )
+  }
+}
+
+///|
+fn collect_paths_with_filter(
+  value : Json,
+  path : Array[String],
+  filter_expr : @ast.Expr,
+  env : Env,
+  results : Array[Array[String]],
+) -> Unit raise InterpreterError {
+  let filter_results = eval_with_env(filter_expr, value, env) catch {
+    _ => return
+  }
+  let filter_results_arr = filter_results.collect()
+  if not(filter_results_arr.is_empty()) {
+    match filter_results_arr[0] {
+      True => if not(path.is_empty()) { results.push(path.copy()) }
+      _ => ()
+    }
+  }
+  match value {
+    Object(obj) =>
+      for key, val in obj {
+        let new_path = path.copy()
+        new_path.push(key)
+        collect_paths_with_filter(val, new_path, filter_expr, env, results)
+      }
+    Array(arr) =>
+      for i = 0; i < arr.length(); i = i + 1 {
+        let new_path = path.copy()
+        new_path.push(i.to_string())
+        collect_paths_with_filter(arr[i], new_path, filter_expr, env, results)
+      }
+    _ => ()
   }
 }
 

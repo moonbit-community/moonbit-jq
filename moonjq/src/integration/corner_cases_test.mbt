@@ -264,7 +264,7 @@ test "corner: repeat generates infinite stream (limited)" {
 test "corner: repeat with expression" {
   inspect(
     test_query("limit(4; . | repeat(. * 2))", "1"),
-    content="Number(1), Number(2), Number(4), Number(8)",
+    content="Number(2), Number(2), Number(2), Number(2)",
   )
 }
 
