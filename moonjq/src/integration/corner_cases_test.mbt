@@ -261,11 +261,6 @@ test "corner: repeat generates infinite stream (limited)" {
 }
 
 ///|
-// TODO: Fix repeat with expression - causes "array too large" runtime error
-// The issue is that repeat creates an infinite iterator, but somewhere in the
-// evaluation chain it's being collected before the limit is applied.
-// Expected: limit(4; . | repeat(. * 2)) on input "1" should produce: 2, 2, 2, 2
-#skip
 test "corner: repeat with expression" {
   inspect(
     test_query("limit(4; . | repeat(. * 2))", "1"),

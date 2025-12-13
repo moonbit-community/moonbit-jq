@@ -91,16 +91,14 @@ fn eval_with_env(
         }
         _ => ()
       }
-      let left_results = eval_with_env(left, input, env).collect()
-      let mut all_results : Array[Json] = []
-      for val in left_results {
-        let right_results = eval_with_env(right, val, env).collect()
-        all_results = all_results + right_results
-      }
+      let left_results = eval_with_env(left, input, env)
       Iter::new(fn(emit) {
-        for x in all_results {
-          if emit(x) == IterEnd {
-            break
+        for val in left_results {
+          let right_results = eval_with_env(right, val, env)
+          for x in right_results {
+            if emit(x) == IterEnd {
+              return IterContinue
+            }
           }
         }
         IterContinue
