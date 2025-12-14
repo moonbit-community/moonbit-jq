@@ -4,5 +4,6 @@
   "repository": "git@github.com:moonbit-community/moobit-jq.git",
   "keywords": ["jq", "json", "query"],
   "description": "A jq implementation in MoonBit",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "warn-list": "+test_unqualified_package"
 }
