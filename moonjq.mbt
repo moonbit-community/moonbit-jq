@@ -14,6 +14,6 @@ pub fn eval(expr : @ast.Expr, input : Json) -> Iterator[Json] raise {
 /// Parse + evaluate a jq query against an input JSON string.
 pub fn run(query : String, input : String) -> Iterator[Json] raise {
   let expr = @parser.parse(query)
-  let json = @moonjq_json.parse(input)
+  let json = @json.parse(input[:])
   @ast.eval(expr, json)
 }

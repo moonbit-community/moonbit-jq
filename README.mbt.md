@@ -66,7 +66,7 @@ Use the `jq` helper function to evaluate queries:
 /// This mimics the command-line jq tool's behavior.
 fn jq(query : String, input : String) -> String raise {
   let expr = @parser.parse(query)
-  let json = @moonjq_json.parse(input)
+  let json = @json.parse(input[:])
   @ast.eval(expr, json).collect().map(fn(v) { v.to_string() }).join("\n")
 }
 ```
@@ -204,7 +204,6 @@ moon test
 # Run specific package tests
 moon test -p parser
 moon test -p ast
-moon test -p json
 
 # Type-check without running tests
 moon check

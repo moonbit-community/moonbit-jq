@@ -11,6 +11,18 @@ pub(all) suberror InterpreterError {
 } derive(Eq, Show)
 
 ///|
+fn json_type_name(json : Json) -> String {
+  match json {
+    Null => "null"
+    True | False => "boolean"
+    Number(_) => "number"
+    String(_) => "string"
+    Array(_) => "array"
+    Object(_) => "object"
+  }
+}
+
+///|
 /// Environment for variable and function bindings
 priv struct Env {
   bindings : Map[String, Json]
@@ -206,7 +218,7 @@ fn eval_with_env(
           _ =>
             raise InterpreterError::TypeMismatch(
               "string",
-              @moonjq_json.type_name(key_results[0]),
+              json_type_name(key_results[0]),
             )
         }
 
@@ -259,7 +271,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "array/object/string",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
       Iterator::singleton(Json::number(len.to_double()))
@@ -283,7 +295,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "object/array",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
     Expr::Values =>
@@ -299,11 +311,10 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "object/array",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
-    Expr::Type =>
-      Iterator::singleton(Json::string(@moonjq_json.type_name(input)))
+    Expr::Type => Iterator::singleton(Json::string(json_type_name(input)))
     Expr::Empty => Iterator::empty()
     Expr::Not => {
       let is_false = match input {
@@ -325,10 +336,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Select(condition) => {
       let cond_results = eval_with_env(condition, input, env).collect()
@@ -354,10 +362,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(sorted))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Reverse =>
       match input {
@@ -369,10 +374,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(reversed))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Flatten(depth_opt) =>
       match input {
@@ -384,10 +386,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(flatten_array(arr, depth)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Unique =>
       match input {
@@ -412,10 +411,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(unique))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
 
     // Numeric functions
@@ -432,28 +428,19 @@ fn eval_with_env(
           Iterator::singleton(Json::number(sum))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Floor =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.floor()))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Sqrt =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.sqrt()))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Min =>
       match input {
@@ -470,10 +457,7 @@ fn eval_with_env(
             Iterator::singleton(min_val)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Max =>
       match input {
@@ -490,10 +474,7 @@ fn eval_with_env(
             Iterator::singleton(max_val)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
 
     // Control flow
@@ -793,10 +774,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(sorted))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
 
     // GroupBy: group array elements by expression result
@@ -825,10 +803,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
 
     // Update operator: modify value in place
@@ -1053,28 +1028,19 @@ fn eval_with_env(
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.round()))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Ceil =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.ceil()))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Abs =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.abs()))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
 
     // String operations
@@ -1089,10 +1055,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(json_parts))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Join(sep) =>
       match input {
@@ -1107,28 +1070,19 @@ fn eval_with_env(
           Iterator::singleton(Json::string(parts.join(sep)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::StartsWith(prefix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_prefix(prefix)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::EndsWith(suffix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_suffix(suffix)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Contains(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
@@ -1260,7 +1214,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "object/array",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
     Expr::FromEntries =>
@@ -1299,10 +1253,7 @@ fn eval_with_env(
           Iterator::singleton(Json::object(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::WithEntries(expr) =>
       // Convert to entries, apply expr to each entry, convert back
@@ -1329,7 +1280,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "object/array",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
 
@@ -1350,10 +1301,7 @@ fn eval_with_env(
             Iterator::singleton(arr[0])
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Last =>
       match input {
@@ -1364,10 +1312,7 @@ fn eval_with_env(
             Iterator::singleton(arr[arr.length() - 1])
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::IndicesOf(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
@@ -1402,7 +1347,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "array/string",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
     }
@@ -1441,7 +1386,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "array/string",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
     }
@@ -1463,10 +1408,7 @@ fn eval_with_env(
           Iterator::singleton(Json::boolean(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::All =>
       match input {
@@ -1484,10 +1426,7 @@ fn eval_with_env(
           Iterator::singleton(Json::boolean(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
 
     // String trimming
@@ -1499,10 +1438,7 @@ fn eval_with_env(
             None => Iterator::singleton(input)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::RTrimStr(suffix) =>
       match input {
@@ -1512,10 +1448,7 @@ fn eval_with_env(
             None => Iterator::singleton(input)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::AsciiUpcase =>
       match input {
@@ -1531,10 +1464,7 @@ fn eval_with_env(
           Iterator::singleton(Json::string(result.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::AsciiDowncase =>
       match input {
@@ -1550,10 +1480,7 @@ fn eval_with_env(
           Iterator::singleton(Json::string(result.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
 
     // Array functions
@@ -1568,10 +1495,7 @@ fn eval_with_env(
             Iterator::empty()
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::RIndex(search_expr) => {
       let needle_results = eval_with_env(search_expr, input, env).collect()
@@ -1604,7 +1528,7 @@ fn eval_with_env(
         _ =>
           raise InterpreterError::TypeMismatch(
             "array or string",
-            @moonjq_json.type_name(input),
+            json_type_name(input),
           )
       }
     }
@@ -1782,83 +1706,56 @@ fn eval_with_env(
         (Number(base, ..), Number(exp, ..)) =>
           Iterator::singleton(Json::number(base.pow(exp)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     }
     Expr::Log =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.ln(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Exp =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.exp(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Sin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.sin(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Cos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.cos(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Tan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.tan(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Asin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.asin(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Acos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.acos(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
     Expr::Atan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.atan(n)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "number",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("number", json_type_name(input))
       }
 
     // Regex functions (simple implementations)
@@ -1866,10 +1763,7 @@ fn eval_with_env(
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.contains(pattern)))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Match(pattern) =>
       match input {
@@ -1890,19 +1784,13 @@ fn eval_with_env(
             Iterator::empty()
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Capture(_pattern) =>
       match input {
         String(_s) => Iterator::singleton(Json::object(Map::from_array([])))
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Splits(pattern) =>
       match input {
@@ -1911,10 +1799,7 @@ fn eval_with_env(
           parts.iterator().map(part => Json::string(part.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Sub(pattern, replacement) =>
       match input {
@@ -1923,10 +1808,7 @@ fn eval_with_env(
             Json::string(s.replace(old=pattern[:], new=replacement[:])),
           )
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::GSub(pattern, replacement) =>
       match input {
@@ -1935,10 +1817,7 @@ fn eval_with_env(
             Json::string(s.replace_all(old=pattern[:], new=replacement[:])),
           )
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
 
     // Newly added features - corner case implementations
@@ -1955,10 +1834,7 @@ fn eval_with_env(
           Iterator::singleton(Json::object(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "object",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("object", json_type_name(input))
       }
     Expr::RangeFromTo(from_expr, to_expr) => {
       let from_results = eval_with_env(from_expr, input, env).collect()
@@ -2054,10 +1930,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::Implode =>
       match input {
@@ -2078,10 +1951,7 @@ fn eval_with_env(
           Iterator::singleton(Json::string(buffer.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::ToJsonString => Iterator::singleton(Json::string(input.to_string()))
     Expr::FromJsonString =>
@@ -2094,10 +1964,7 @@ fn eval_with_env(
           Iterator::singleton(parsed)
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
     Expr::UniqueBy(expr) =>
       match input {
@@ -2117,10 +1984,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::MinBy(expr) =>
       match input {
@@ -2148,10 +2012,7 @@ fn eval_with_env(
             Iterator::singleton(min_elem)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::MaxBy(expr) =>
       match input {
@@ -2179,10 +2040,7 @@ fn eval_with_env(
             Iterator::singleton(max_elem)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Combinations =>
       match input {
@@ -2213,10 +2071,7 @@ fn eval_with_env(
           results.iterator().map(Json::array)
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::Transpose =>
       match input {
@@ -2245,10 +2100,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results.map(Json::array)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "array",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("array", json_type_name(input))
       }
     Expr::AnyGen(gen_expr, cond_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
@@ -2347,10 +2199,7 @@ fn eval_with_env(
           results.iterator()
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
-            "string",
-            @moonjq_json.type_name(input),
-          )
+          raise InterpreterError::TypeMismatch("string", json_type_name(input))
       }
   }
 }
@@ -2461,7 +2310,7 @@ fn json_add(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InterpreterError::InvalidOperation(
-        "Cannot add \{@moonjq_json.type_name(left)} and \{@moonjq_json.type_name(right)}",
+        "Cannot add \{json_type_name(left)} and \{json_type_name(right)}",
       )
   }
 }
@@ -2488,7 +2337,7 @@ fn json_subtract(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InterpreterError::InvalidOperation(
-        "Cannot subtract \{@moonjq_json.type_name(right)} from \{@moonjq_json.type_name(left)}",
+        "Cannot subtract \{json_type_name(right)} from \{json_type_name(left)}",
       )
   }
 }
@@ -2507,7 +2356,7 @@ fn json_multiply(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InterpreterError::InvalidOperation(
-        "Cannot multiply \{@moonjq_json.type_name(left)} and \{@moonjq_json.type_name(right)}",
+        "Cannot multiply \{json_type_name(left)} and \{json_type_name(right)}",
       )
   }
 }
@@ -2523,7 +2372,7 @@ fn json_divide(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InterpreterError::InvalidOperation(
-        "Cannot divide \{@moonjq_json.type_name(left)} by \{@moonjq_json.type_name(right)}",
+        "Cannot divide \{json_type_name(left)} by \{json_type_name(right)}",
       )
   }
 }
@@ -2539,7 +2388,7 @@ fn json_modulo(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InterpreterError::InvalidOperation(
-        "Cannot modulo \{@moonjq_json.type_name(left)} by \{@moonjq_json.type_name(right)}",
+        "Cannot modulo \{json_type_name(left)} by \{json_type_name(right)}",
       )
   }
 }

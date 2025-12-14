@@ -1,10 +1,5 @@
 {
-  "import": [
-    {
-      "path": "bobzhang/moonjq/json",
-      "alias": "moonjq_json"
-    }
-  ],
+  "import": [],
   "test-import": [
     "bobzhang/moonjq/parser"
   ]
