@@ -2,7 +2,7 @@
 fn cov_eval7(query : String, input : String) -> Array[Json] raise {
   let expr = @parser.parse(query)
   let json_input = @json.parse(input[:])
-  eval(expr, json_input).collect()
+  @ast.eval(expr, json_input).collect()
 }
 
 ///|

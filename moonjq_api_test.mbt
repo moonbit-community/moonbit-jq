@@ -5,39 +5,39 @@ fn collect(it : Iterator[Json]) -> Array[Json] {
 
 ///|
 test "api: parse succeeds" {
-  let result = try? parse(".a")
+  let result = try? @moonjq.parse(".a")
   assert_true(result is Ok(_))
 }
 
 ///|
 test "api: eval streams results" {
-  let query = parse(".a")
+  let query = @moonjq.parse(".a")
   let input = @json.parse("{\"a\": 1}"[:])
-  @json.inspect(collect(eval(query, input)), content=[1])
+  @json.inspect(collect(@moonjq.eval(query, input)), content=[1])
 }
 
 ///|
 test "api: eval_all collects results" {
-  let query = parse(".a")
+  let query = @moonjq.parse(".a")
   let input = @json.parse("{\"a\": 1}"[:])
-  @json.inspect(eval_all(query, input), content=[1])
+  @json.inspect(@moonjq.eval_all(query, input), content=[1])
 }
 
 ///|
 test "api: run parses strings and collects" {
-  @json.inspect(run(".a", "{\"a\": 1}"), content=[1])
+  @json.inspect(@moonjq.run(".a", "{\"a\": 1}"), content=[1])
 }
 
 ///|
 test "api: run_json reuses compiled query" {
-  let query = parse(".a")
+  let query = @moonjq.parse(".a")
   let json = @json.parse("{\"a\": 2}"[:])
-  @json.inspect(run_json(query, json), content=[2])
+  @json.inspect(@moonjq.run_json(query, json), content=[2])
 }
 
 ///|
 test "api: eval_logs processes newline logs" {
-  let query = parse(".a")
+  let query = @moonjq.parse(".a")
   let logs : String =
     #|{
     #|{"a":1}
@@ -49,7 +49,7 @@ test "api: eval_logs processes newline logs" {
 
 ///|
 test "api: eval_logs handles CRLF" {
-  let query = parse(".a")
+  let query = @moonjq.parse(".a")
   // let logs = "{\"a\":3}\r\n\r\ninvalid\r\n{\"a\":4}\r\n"
   let logs =
     #|{"a":3}
@@ -68,7 +68,7 @@ test "api: eval_logs handle diagsnotics" {
     #| Failed with 0 warnings, 0 errors.
     #| error: failed when checking project
     #|
-  @json.inspect(collect(parse(".message").eval_logs(logs)), content=[
+  @json.inspect(collect(@moonjq.parse(".message").eval_logs(logs)), content=[
     "The value identifier x is unbound.",
   ])
 }

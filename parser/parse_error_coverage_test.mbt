@@ -1,6 +1,6 @@
 ///|
 fn parse_err(query : String) -> Bool {
-  try parse(query) catch {
+  try @parser.parse(query) catch {
     _ => true
   } noraise {
     _ => false

@@ -3,7 +3,7 @@
 fn jq(query : String, input : String) -> Array[Json] raise {
   let expr = @parser.parse(query)
   let json = @json.parse(input)
-  eval(expr, json).collect()
+  @ast.eval(expr, json).collect()
 }
 
 ///|

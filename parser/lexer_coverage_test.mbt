@@ -1,7 +1,7 @@
 ///|
 test "coverage: peek at end of input" {
   // Triggers lexer.peek() at end for '-' number lookahead.
-  inspect(lex("-"), content="[TMinus, TEof]")
+  inspect(@parser.lex("-"), content="[TMinus, TEof]")
 }
 
 ///|
@@ -11,7 +11,7 @@ test "coverage: string escape sequences" {
   ]
   let expected : Array[String] = ["\n", "\r", "\t", "\b", "/", "\"", "\\"]
   for i = 0; i < query.length(); i = i + 1 {
-    let tokens = lex(query[i])
+    let tokens = @parser.lex(query[i])
     match tokens[0] {
       TString(s) => assert_true(s == expected[i])
       _ => assert_true(false)
@@ -24,7 +24,7 @@ test "coverage: interpolation lexer handles nested parens and strings" {
   // Includes nested parentheses and a nested string with an escaped quote.
   let query : String =
     #|"x \((1 + (2)) | "a\"b") y"
-  let tokens = lex(query)
+  let tokens = @parser.lex(query)
   match tokens[0] {
     TStringInterpolation(parts) => {
       inspect(parts.length(), content="3")
