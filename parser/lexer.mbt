@@ -112,10 +112,10 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
     }
   }
   let text = self.input[start:self.pos].to_string() catch {
-    _ => raise LexError::InvalidNumber(start, "invalid slice")
+    _ => raise InvalidNumber(start, "invalid slice")
   }
   let n = @strconv.parse_double(text) catch {
-    _ => raise LexError::InvalidNumber(start, text)
+    _ => raise InvalidNumber(start, text)
   }
   self.add_token(TNumber(n))
 }
@@ -129,7 +129,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
   let buf = @buffer.new()
   while true {
     match self.current() {
-      None => raise LexError::UnterminatedString(start)
+      None => raise UnterminatedString(start)
       Some('"') => {
         self.advance()
         break
@@ -137,7 +137,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
       Some('\\') => {
         self.advance()
         match self.current() {
-          None => raise LexError::UnterminatedString(start)
+          None => raise UnterminatedString(start)
           Some('(') => {
             // String interpolation: \\(expr)
             self.advance()
@@ -148,7 +148,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
             let mut paren_depth = 1
             while paren_depth > 0 {
               match self.current() {
-                None => raise LexError::UnterminatedString(start)
+                None => raise UnterminatedString(start)
                 Some('(') => {
                   paren_depth = paren_depth + 1
                   self.advance()
@@ -176,7 +176,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
                         self.advance()
                         self.advance()
                       }
-                      None => raise LexError::UnterminatedString(start)
+                      None => raise UnterminatedString(start)
                       _ => self.advance()
                     }
                   }
@@ -213,7 +213,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
             buf.write_char('\b')
             self.advance()
           }
-          Some(c) => raise LexError::InvalidEscape(self.pos, c)
+          Some(c) => raise InvalidEscape(self.pos, c)
         }
       }
       Some(c) => {
@@ -352,7 +352,7 @@ pub fn lex(input : String) -> Array[Token] raise LexError {
               lexer.advance()
               lexer.add_token(TNeq)
             } else {
-              raise LexError::UnexpectedChar(lexer.pos, c)
+              raise UnexpectedChar(lexer.pos, c)
             }
           }
           '<' => {
@@ -449,7 +449,7 @@ pub fn lex(input : String) -> Array[Token] raise LexError {
               lexer.add_token(TPercent)
             }
           }
-          _ => raise LexError::UnexpectedChar(lexer.pos, c)
+          _ => raise UnexpectedChar(lexer.pos, c)
         }
     }
   }

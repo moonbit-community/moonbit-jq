@@ -88,16 +88,16 @@ fn eval_with_env(
 ) -> Iterator[Json] raise InterpreterError {
   match expr {
     // Identity returns input as-is
-    Expr::Identity => Iterator::singleton(input)
+    Identity => Iterator::singleton(input)
 
     // Literals ignore input and return the literal value
-    Expr::Literal(lit) => Iterator::singleton(eval_literal(lit))
+    Literal(lit) => Iterator::singleton(eval_literal(lit))
 
     // Pipe: feed results of left into right
-    Expr::Pipe(left, right) => {
+    Pipe(left, right) => {
       // Special case: if left is a function definition, update env
       match left {
-        Expr::FunctionDef(name, params, body) => {
+        FunctionDef(name, params, body) => {
           let new_env = env.set_function(name, body, params)
           return eval_with_env(right, input, new_env)
         }
@@ -112,14 +112,14 @@ fn eval_with_env(
     }
 
     // Comma: produce multiple outputs
-    Expr::Comma(left, right) =>
+    Comma(left, right) =>
       Iterator::concat(
         eval_with_env(left, input, env),
         eval_with_env(right, input, env),
       )
 
     // Field access
-    Expr::Key(key) =>
+    Key(key) =>
       match input {
         Object(obj) =>
           match obj.get(key) {
@@ -130,7 +130,7 @@ fn eval_with_env(
       }
 
     // Array indexing and iteration
-    Expr::Index(indices) =>
+    Index(indices) =>
       if indices.is_empty() {
         // Empty index means iterate over array/object values
         match input {
@@ -164,7 +164,7 @@ fn eval_with_env(
       }
 
     // Array slicing
-    Expr::Slice(start, end) =>
+    Slice(start, end) =>
       match input {
         Array(arr) => {
           let len = arr.length()
@@ -188,13 +188,13 @@ fn eval_with_env(
       }
 
     // Optional: suppress errors and return empty on failure
-    Expr::Optional(inner) =>
+    Optional(inner) =>
       eval_with_env(inner, input, env) catch {
         _ => Iterator::empty()
       }
 
     // Array construction
-    Expr::ArrayConstruct(expr_opt) =>
+    ArrayConstruct(expr_opt) =>
       match expr_opt {
         None => Iterator::singleton(Json::array([]))
         Some(e) => {
@@ -204,7 +204,7 @@ fn eval_with_env(
       }
 
     // Object construction
-    Expr::ObjectConstruct(pairs) => {
+    ObjectConstruct(pairs) => {
       let obj : Map[String, Json] = {}
       for pair in pairs {
         let (key_expr, value_expr_opt) = pair
@@ -216,7 +216,7 @@ fn eval_with_env(
         let key_str = match key_results[0] {
           String(s) => s
           _ =>
-            raise InterpreterError::TypeMismatch(
+            raise TypeMismatch(
               "string",
               json_type_name(key_results[0]),
             )
@@ -249,7 +249,7 @@ fn eval_with_env(
     }
 
     // Binary operations
-    Expr::Operation(left, op, right) => {
+    Operation(left, op, right) => {
       let left_results = eval_with_env(left, input, env).collect()
       let right_results = eval_with_env(right, input, env).collect()
       let all_results : Array[Json] = []
@@ -262,21 +262,21 @@ fn eval_with_env(
     }
 
     // Built-in functions
-    Expr::Length => {
+    Length => {
       let len = match input {
         Array(arr) => arr.length()
         Object(obj) => obj.length()
         String(s) => s.length()
         Null => 0
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "array/object/string",
             json_type_name(input),
           )
       }
       Iterator::singleton(Json::number(len.to_double()))
     }
-    Expr::Keys =>
+    Keys =>
       match input {
         Object(obj) => {
           let keys : Array[Json] = []
@@ -290,12 +290,12 @@ fn eval_with_env(
           Iterator::singleton(Json::array(indices))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "object/array",
             json_type_name(input),
           )
       }
-    Expr::Values =>
+    Values =>
       match input {
         Object(obj) => {
           let values : Array[Json] = []
@@ -306,14 +306,14 @@ fn eval_with_env(
         }
         Array(arr) => Iterator::singleton(Json::array(arr))
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "object/array",
             json_type_name(input),
           )
       }
-    Expr::Type => Iterator::singleton(Json::string(json_type_name(input)))
-    Expr::Empty => Iterator::empty()
-    Expr::Not => {
+    Type => Iterator::singleton(Json::string(json_type_name(input)))
+    Empty => Iterator::empty()
+    Not => {
       let is_false = match input {
         False | Null => true
         _ => false
@@ -322,7 +322,7 @@ fn eval_with_env(
     }
 
     // Array functions
-    Expr::Map(inner) =>
+    Map(inner) =>
       match input {
         Array(arr) => {
           let results : Array[Json] = []
@@ -335,9 +335,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Select(condition) => {
+    Select(condition) => {
       let cond_results = eval_with_env(condition, input, env).collect()
       if cond_results.is_empty() {
         Iterator::empty()
@@ -353,7 +353,7 @@ fn eval_with_env(
         }
       }
     }
-    Expr::Sort =>
+    Sort =>
       match input {
         Array(arr) => {
           let sorted = arr.copy()
@@ -361,9 +361,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(sorted))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Reverse =>
+    Reverse =>
       match input {
         Array(arr) => {
           let reversed : Array[Json] = []
@@ -373,9 +373,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(reversed))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Flatten(depth_opt) =>
+    Flatten(depth_opt) =>
       match input {
         Array(arr) => {
           let depth = match depth_opt {
@@ -385,9 +385,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(flatten_array(arr, depth)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Unique =>
+    Unique =>
       match input {
         Array(arr) => {
           let sorted = arr.copy()
@@ -410,11 +410,11 @@ fn eval_with_env(
           Iterator::singleton(Json::array(unique))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
 
     // Numeric functions
-    Expr::Add =>
+    Add =>
       match input {
         Array(arr) => {
           let mut sum = 0.0
@@ -427,21 +427,21 @@ fn eval_with_env(
           Iterator::singleton(Json::number(sum))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Floor =>
+    Floor =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.floor()))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Sqrt =>
+    Sqrt =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.sqrt()))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Min =>
+    Min =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -456,9 +456,9 @@ fn eval_with_env(
             Iterator::singleton(min_val)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Max =>
+    Max =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -473,11 +473,11 @@ fn eval_with_env(
             Iterator::singleton(max_val)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
 
     // Control flow
-    Expr::IfThenElse(cond, then_expr, else_expr) => {
+    IfThenElse(cond, then_expr, else_expr) => {
       let cond_results = eval_with_env(cond, input, env).collect()
       if cond_results.is_empty() {
         eval_with_env(else_expr, input, env)
@@ -493,7 +493,7 @@ fn eval_with_env(
         }
       }
     }
-    Expr::TryCatch(try_expr, catch_opt) =>
+    TryCatch(try_expr, catch_opt) =>
       eval_with_env(try_expr, input, env) catch {
         _ =>
           match catch_opt {
@@ -503,20 +503,20 @@ fn eval_with_env(
       }
 
     // Variables
-    Expr::Variable(name) =>
+    Variable(name) =>
       match env.get(name) {
         Some(v) => Iterator::singleton(v)
         None =>
-          raise InterpreterError::InvalidOperation(
+          raise InvalidOperation(
             "Undefined variable: $\{name}",
           )
       }
 
     // Recursive descent
-    Expr::Recurse => recurse_all(input)
+    Recurse => recurse_all(input)
 
     // Alternative operator: return left, or right if left produces empty/null
-    Expr::Alternative(left, right) => {
+    Alternative(left, right) => {
       let left_results = eval_with_env(left, input, env).collect()
       if left_results.is_empty() {
         eval_with_env(right, input, env)
@@ -529,60 +529,60 @@ fn eval_with_env(
     }
 
     // Compound assignment operators: path += value
-    Expr::AddAssign(path, value_expr) =>
+    AddAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(
+        Update(
           path,
-          Expr::Operation(Expr::Identity, BinaryOp::Add, value_expr),
+          Operation(Identity, Add, value_expr),
         ),
         input,
         env,
       )
-    Expr::SubAssign(path, value_expr) =>
+    SubAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(
+        Update(
           path,
-          Expr::Operation(Expr::Identity, BinaryOp::Subtract, value_expr),
+          Operation(Identity, Subtract, value_expr),
         ),
         input,
         env,
       )
-    Expr::MulAssign(path, value_expr) =>
+    MulAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(
+        Update(
           path,
-          Expr::Operation(Expr::Identity, BinaryOp::Multiply, value_expr),
+          Operation(Identity, Multiply, value_expr),
         ),
         input,
         env,
       )
-    Expr::DivAssign(path, value_expr) =>
+    DivAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(
+        Update(
           path,
-          Expr::Operation(Expr::Identity, BinaryOp::Divide, value_expr),
+          Operation(Identity, Divide, value_expr),
         ),
         input,
         env,
       )
-    Expr::ModAssign(path, value_expr) =>
+    ModAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(
+        Update(
           path,
-          Expr::Operation(Expr::Identity, BinaryOp::Modulo, value_expr),
+          Operation(Identity, Modulo, value_expr),
         ),
         input,
         env,
       )
-    Expr::AltAssign(path, value_expr) =>
+    AltAssign(path, value_expr) =>
       eval_with_env(
-        Expr::Update(path, Expr::Alternative(Expr::Identity, value_expr)),
+        Update(path, Alternative(Identity, value_expr)),
         input,
         env,
       )
 
     // Format functions: @base64, @uri, etc.
-    Expr::Format(format_name) =>
+    Format(format_name) =>
       match format_name {
         "base64" =>
           match input {
@@ -592,21 +592,21 @@ fn eval_with_env(
               let encoded = base64_encode(bytes)
               Iterator::singleton(Json::string(encoded))
             }
-            _ => raise InterpreterError::TypeError("@base64 requires string")
+            _ => raise TypeError("@base64 requires string")
           }
         "base64d" =>
           match input {
             String(s) => {
               // Simple base64 decoding implementation
               let decoded_bytes = base64_decode(s) catch {
-                _ => raise InterpreterError::EvalError("Invalid base64")
+                _ => raise EvalError("Invalid base64")
               }
               let decoded_str = @encoding/utf8.decode(decoded_bytes) catch {
-                _ => raise InterpreterError::EvalError("Invalid UTF-8")
+                _ => raise EvalError("Invalid UTF-8")
               }
               Iterator::singleton(Json::string(decoded_str))
             }
-            _ => raise InterpreterError::TypeError("@base64d requires string")
+            _ => raise TypeError("@base64d requires string")
           }
         "uri" =>
           match input {
@@ -614,7 +614,7 @@ fn eval_with_env(
               let encoded = uri_encode(s)
               Iterator::singleton(Json::string(encoded))
             }
-            _ => raise InterpreterError::TypeError("@uri requires string")
+            _ => raise TypeError("@uri requires string")
           }
         "csv" | "tsv" =>
           // Simple CSV/TSV formatting for arrays
@@ -641,7 +641,7 @@ fn eval_with_env(
               }
               Iterator::singleton(Json::string(parts.join(sep)))
             }
-            _ => raise InterpreterError::TypeError("@csv/@tsv requires array")
+            _ => raise TypeError("@csv/@tsv requires array")
           }
         "json" => Iterator::singleton(Json::string(input.to_string()))
         "text" => Iterator::singleton(Json::string(input.to_string()))
@@ -651,14 +651,14 @@ fn eval_with_env(
               let escaped = html_escape(s)
               Iterator::singleton(Json::string(escaped))
             }
-            _ => raise InterpreterError::TypeError("@html requires string")
+            _ => raise TypeError("@html requires string")
           }
         _ =>
-          raise InterpreterError::EvalError("Unknown format: @\{format_name}")
+          raise EvalError("Unknown format: @\{format_name}")
       }
 
     // String interpolation: "text \(expr) more"
-    Expr::StringInterpolation(parts) => {
+    StringInterpolation(parts) => {
       let buf = @buffer.new()
       for pair in parts {
         let (text, expr_opt) = pair
@@ -681,19 +681,19 @@ fn eval_with_env(
 
     // Function definition: this is tricky because we need to update env
     // We handle this specially in the Pipe case when left is FunctionDef
-    Expr::FunctionDef(_name, _params, _body) =>
+    FunctionDef(_name, _params, _body) =>
       // Should not be evaluated directly, only through Pipe
       Iterator::singleton(input)
 
     // Function call: lookup and execute
-    Expr::FunctionCall(name, args) =>
+    FunctionCall(name, args) =>
       match env.get_function(name) {
         Some((body, params)) =>
           if params.is_empty() {
             // Zero-parameter function - just execute with current input
             eval_with_env(body, input, env)
           } else if args.length() != params.length() {
-            raise InterpreterError::EvalError(
+            raise EvalError(
               "Function \{name} expects \{params.length()} arguments, got \{args.length()}",
             )
           } else {
@@ -717,11 +717,11 @@ fn eval_with_env(
             // Execute function body with original input
             eval_with_env(body, input, new_env)
           }
-        None => raise InterpreterError::EvalError("Undefined function: \{name}")
+        None => raise EvalError("Undefined function: \{name}")
       }
 
     // As pattern: bind variable and continue with body
-    Expr::As(expr, var_name, body) => {
+    As(expr, var_name, body) => {
       // Evaluate expr and bind each result to the variable
       let results = eval_with_env(expr, input, env).collect()
       let all_results : Array[Json] = []
@@ -735,7 +735,7 @@ fn eval_with_env(
     }
 
     // Reduce: aggregate using accumulator
-    Expr::Reduce(expr, var_name, init_expr, update_expr) => {
+    Reduce(expr, var_name, init_expr, update_expr) => {
       // Evaluate init expression to get initial accumulator
       let init_results = eval_with_env(init_expr, input, env).collect()
       if init_results.is_empty() {
@@ -755,7 +755,7 @@ fn eval_with_env(
     }
 
     // SortBy: sort array by expression result
-    Expr::SortBy(expr) =>
+    SortBy(expr) =>
       match input {
         Array(arr) => {
           // Create array of (value, sort_key) pairs
@@ -773,11 +773,11 @@ fn eval_with_env(
           Iterator::singleton(Json::array(sorted))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
 
     // GroupBy: group array elements by expression result
-    Expr::GroupBy(expr) =>
+    GroupBy(expr) =>
       match input {
         Array(arr) => {
           // Create groups: Map[String, Array[Json]]
@@ -802,11 +802,11 @@ fn eval_with_env(
           Iterator::singleton(Json::array(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
 
     // Update operator: modify value in place
-    Expr::Update(path, update_expr) => {
+    Update(path, update_expr) => {
       // Update value at path: get current value, apply update, set new value
       fn apply_update(
         obj : Json,
@@ -814,7 +814,7 @@ fn eval_with_env(
         upd : Expr,
       ) -> Json raise InterpreterError {
         match p {
-          Expr::Identity => {
+          Identity => {
             // Update the whole object
             let results = eval_with_env(upd, obj, env).collect()
             if results.is_empty() {
@@ -823,7 +823,7 @@ fn eval_with_env(
               results[0]
             }
           }
-          Expr::Key(key) =>
+          Key(key) =>
             // Update at specific key in object
             match obj {
               Object(map) => {
@@ -845,7 +845,7 @@ fn eval_with_env(
               }
               _ => obj
             }
-          Expr::Index(indices) =>
+          Index(indices) =>
             // Update at specific index in array
             match obj {
               Array(arr) => {
@@ -868,13 +868,13 @@ fn eval_with_env(
               }
               _ => obj
             }
-          Expr::Pipe(left, right) =>
+          Pipe(left, right) =>
             // Chained path like .a.b: navigate left, update right within result, put back
             match left {
-              Expr::Identity =>
+              Identity =>
                 // Optimize: . | .b is just .b
                 apply_update(obj, right, upd)
-              Expr::Key(key) =>
+              Key(key) =>
                 // Navigate to key, update the right path within it
                 match obj {
                   Object(map) => {
@@ -892,7 +892,7 @@ fn eval_with_env(
                   }
                   _ => obj
                 }
-              Expr::Index(indices) =>
+              Index(indices) =>
                 // Navigate to index, update the right path within it
                 match obj {
                   Array(arr) => {
@@ -941,7 +941,7 @@ fn eval_with_env(
     }
 
     // Assign operator: set value at path
-    Expr::Assign(_path, value_expr) => {
+    Assign(_path, value_expr) => {
       // Evaluate the value expression
       let values = eval_with_env(value_expr, input, env).collect()
       if values.is_empty() {
@@ -952,7 +952,7 @@ fn eval_with_env(
     }
 
     // RecurseWith: custom recursion with function
-    Expr::RecurseWith(f, _cond) => {
+    RecurseWith(f, _cond) => {
       // Simplified: just apply function recursively
       // Full implementation would use condition to stop
       let results : Array[Json] = [input]
@@ -976,7 +976,7 @@ fn eval_with_env(
     }
 
     // Walk: recursively apply function to all values
-    Expr::Walk(f) => {
+    Walk(f) => {
       fn walk_value(v : Json) -> Json raise InterpreterError {
         match v {
           Array(arr) => {
@@ -1017,33 +1017,33 @@ fn eval_with_env(
     }
 
     // Path expression: get path to a value
-    Expr::Path(_expr) =>
+    Path(_expr) =>
       // Simplified: return empty array for now
       // Full implementation would track paths during evaluation
       Iterator::singleton(Json::array([]))
 
     // Additional numeric functions
-    Expr::Round =>
+    Round =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.round()))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Ceil =>
+    Ceil =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.ceil()))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Abs =>
+    Abs =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.abs()))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
 
     // String operations
-    Expr::Split(sep) =>
+    Split(sep) =>
       match input {
         String(s) => {
           let parts = s.split(sep)
@@ -1054,9 +1054,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(json_parts))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Join(sep) =>
+    Join(sep) =>
       match input {
         Array(arr) => {
           let parts : Array[String] = []
@@ -1069,21 +1069,21 @@ fn eval_with_env(
           Iterator::singleton(Json::string(parts.join(sep)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::StartsWith(prefix) =>
+    StartsWith(prefix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_prefix(prefix)))
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::EndsWith(suffix) =>
+    EndsWith(suffix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_suffix(suffix)))
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Contains(expr) => {
+    Contains(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
       if needle_results.is_empty() {
         return Iterator::singleton(Json::boolean(false))
@@ -1107,7 +1107,7 @@ fn eval_with_env(
         _ => Iterator::singleton(Json::boolean(false))
       }
     }
-    Expr::Inside(expr) => {
+    Inside(expr) => {
       // inside checks if input is a subset of container
       let container_results = eval_with_env(expr, input, env).collect()
       if container_results.is_empty() {
@@ -1142,7 +1142,7 @@ fn eval_with_env(
     }
 
     // Object/Array operations
-    Expr::Has(key) =>
+    Has(key) =>
       match input {
         Object(obj) => Iterator::singleton(Json::boolean(obj.contains(key)))
         Array(arr) => {
@@ -1162,7 +1162,7 @@ fn eval_with_env(
         }
         _ => Iterator::singleton(Json::boolean(false))
       }
-    Expr::In(expr) => {
+    In(expr) => {
       let container_results = eval_with_env(expr, input, env).collect()
       if container_results.is_empty() {
         return Iterator::singleton(Json::boolean(false))
@@ -1188,7 +1188,7 @@ fn eval_with_env(
         _ => Iterator::singleton(Json::boolean(false))
       }
     }
-    Expr::ToEntries =>
+    ToEntries =>
       match input {
         Object(obj) => {
           let entries : Array[Json] = []
@@ -1211,12 +1211,12 @@ fn eval_with_env(
           Iterator::singleton(Json::array(entries))
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "object/array",
             json_type_name(input),
           )
       }
-    Expr::FromEntries =>
+    FromEntries =>
       match input {
         Array(arr) => {
           let result : Map[String, Json] = {}
@@ -1252,21 +1252,21 @@ fn eval_with_env(
           Iterator::singleton(Json::object(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::WithEntries(expr) =>
+    WithEntries(expr) =>
       // Convert to entries, apply expr to each entry, convert back
       match input {
         Object(_) | Array(_) => {
           // to_entries
-          let entries_results = eval_with_env(Expr::ToEntries, input, env).collect()
+          let entries_results = eval_with_env(ToEntries, input, env).collect()
           if entries_results.is_empty() {
             return Iterator::singleton(input)
           }
           // Apply expression to each entry (like map)
           let entries_array = entries_results[0]
           let mapped_results = eval_with_env(
-            Expr::Map(expr),
+            Map(expr),
             entries_array,
             env,
           ).collect()
@@ -1274,24 +1274,24 @@ fn eval_with_env(
             return Iterator::singleton(input)
           }
           // from_entries
-          eval_with_env(Expr::FromEntries, mapped_results[0], env)
+          eval_with_env(FromEntries, mapped_results[0], env)
         }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "object/array",
             json_type_name(input),
           )
       }
 
     // Iteration helpers
-    Expr::Range(n) => {
+    Range(n) => {
       let results : Array[Json] = []
       for i = 0; i < n; i = i + 1 {
         results.push(Json::number(i.to_double()))
       }
       results.iterator()
     }
-    Expr::First =>
+    First =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -1300,9 +1300,9 @@ fn eval_with_env(
             Iterator::singleton(arr[0])
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Last =>
+    Last =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -1311,9 +1311,9 @@ fn eval_with_env(
             Iterator::singleton(arr[arr.length() - 1])
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::IndicesOf(expr) => {
+    IndicesOf(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
       if needle_results.is_empty() {
         return Iterator::singleton(Json::array([]))
@@ -1344,13 +1344,13 @@ fn eval_with_env(
             _ => Iterator::singleton(Json::array([]))
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "array/string",
             json_type_name(input),
           )
       }
     }
-    Expr::IndexOf(expr) => {
+    IndexOf(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
       if needle_results.is_empty() {
         return Iterator::singleton(null)
@@ -1383,7 +1383,7 @@ fn eval_with_env(
             _ => Iterator::singleton(null)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "array/string",
             json_type_name(input),
           )
@@ -1391,7 +1391,7 @@ fn eval_with_env(
     }
 
     // Predicates
-    Expr::Any =>
+    Any =>
       match input {
         Array(arr) => {
           let mut result = false
@@ -1407,9 +1407,9 @@ fn eval_with_env(
           Iterator::singleton(Json::boolean(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::All =>
+    All =>
       match input {
         Array(arr) => {
           let mut result = true
@@ -1425,11 +1425,11 @@ fn eval_with_env(
           Iterator::singleton(Json::boolean(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
 
     // String trimming
-    Expr::LTrimStr(prefix) =>
+    LTrimStr(prefix) =>
       match input {
         String(s) =>
           match s.strip_prefix(prefix[:]) {
@@ -1437,9 +1437,9 @@ fn eval_with_env(
             None => Iterator::singleton(input)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::RTrimStr(suffix) =>
+    RTrimStr(suffix) =>
       match input {
         String(s) =>
           match s.strip_suffix(suffix[:]) {
@@ -1447,9 +1447,9 @@ fn eval_with_env(
             None => Iterator::singleton(input)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::AsciiUpcase =>
+    AsciiUpcase =>
       match input {
         String(s) => {
           let result = @buffer.new()
@@ -1463,9 +1463,9 @@ fn eval_with_env(
           Iterator::singleton(Json::string(result.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::AsciiDowncase =>
+    AsciiDowncase =>
       match input {
         String(s) => {
           let result = @buffer.new()
@@ -1479,11 +1479,11 @@ fn eval_with_env(
           Iterator::singleton(Json::string(result.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
 
     // Array functions
-    Expr::Nth(n) =>
+    Nth(n) =>
       match input {
         Array(arr) =>
           if n >= 0 && n < arr.length() {
@@ -1494,9 +1494,9 @@ fn eval_with_env(
             Iterator::empty()
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::RIndex(search_expr) => {
+    RIndex(search_expr) => {
       let needle_results = eval_with_env(search_expr, input, env).collect()
       if needle_results.is_empty() {
         return Iterator::singleton(null)
@@ -1525,7 +1525,7 @@ fn eval_with_env(
             _ => Iterator::singleton(null)
           }
         _ =>
-          raise InterpreterError::TypeMismatch(
+          raise TypeMismatch(
             "array or string",
             json_type_name(input),
           )
@@ -1533,7 +1533,7 @@ fn eval_with_env(
     }
 
     // Path functions
-    Expr::Paths => {
+    Paths => {
       let paths_list : Array[Json] = []
       fn collect_paths(value : Json, path : Array[Json]) {
         match value {
@@ -1556,7 +1556,7 @@ fn eval_with_env(
       collect_paths(input, [])
       paths_list.iterator()
     }
-    Expr::LeafPaths => {
+    LeafPaths => {
       let paths_list : Array[Json] = []
       fn collect_leaf_paths(value : Json, path : Array[Json]) {
         match value {
@@ -1583,7 +1583,7 @@ fn eval_with_env(
       collect_leaf_paths(input, [])
       paths_list.iterator()
     }
-    Expr::GetPath(path_expr) => {
+    GetPath(path_expr) => {
       let path_results = eval_with_env(path_expr, input, env).collect()
       if path_results.is_empty() {
         return Iterator::singleton(null)
@@ -1614,7 +1614,7 @@ fn eval_with_env(
         _ => Iterator::singleton(null)
       }
     }
-    Expr::SetPath(path_expr, value_expr) => {
+    SetPath(path_expr, value_expr) => {
       let path_results = eval_with_env(path_expr, input, env).collect()
       let value_results = eval_with_env(value_expr, input, env).collect()
       if path_results.is_empty() || value_results.is_empty() {
@@ -1630,7 +1630,7 @@ fn eval_with_env(
         _ => Iterator::singleton(input)
       }
     }
-    Expr::DelPaths(paths_expr) => {
+    DelPaths(paths_expr) => {
       let paths_results = eval_with_env(paths_expr, input, env).collect()
       if paths_results.is_empty() {
         return Iterator::singleton(input)
@@ -1651,8 +1651,8 @@ fn eval_with_env(
     }
 
     // Control flow
-    Expr::Limit(n, expr) => eval_with_env(expr, input, env).take(n)
-    Expr::Until(cond_expr, update_expr) => {
+    Limit(n, expr) => eval_with_env(expr, input, env).take(n)
+    Until(cond_expr, update_expr) => {
       let mut current = input
       while true {
         let cond_results = eval_with_env(cond_expr, current, env).collect()
@@ -1672,7 +1672,7 @@ fn eval_with_env(
       }
       Iterator::singleton(current)
     }
-    Expr::While(cond_expr, update_expr) => {
+    While(cond_expr, update_expr) => {
       let results : Array[Json] = []
       let mut current = input
       while true {
@@ -1696,7 +1696,7 @@ fn eval_with_env(
     }
 
     // Math functions
-    Expr::Pow(exp_expr) => {
+    Pow(exp_expr) => {
       let exp_results = eval_with_env(exp_expr, input, env).collect()
       if exp_results.is_empty() {
         return Iterator::singleton(null)
@@ -1705,66 +1705,66 @@ fn eval_with_env(
         (Number(base, ..), Number(exp, ..)) =>
           Iterator::singleton(Json::number(base.pow(exp)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
     }
-    Expr::Log =>
+    Log =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.ln(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Exp =>
+    Exp =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.exp(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Sin =>
+    Sin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.sin(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Cos =>
+    Cos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.cos(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Tan =>
+    Tan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.tan(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Asin =>
+    Asin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.asin(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Acos =>
+    Acos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.acos(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
-    Expr::Atan =>
+    Atan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.atan(n)))
         _ =>
-          raise InterpreterError::TypeMismatch("number", json_type_name(input))
+          raise TypeMismatch("number", json_type_name(input))
       }
 
     // Regex functions (simple implementations)
-    Expr::Test(pattern) =>
+    Test(pattern) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.contains(pattern)))
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Match(pattern) =>
+    Match(pattern) =>
       match input {
         String(s) =>
           if s.contains(pattern) {
@@ -1783,44 +1783,44 @@ fn eval_with_env(
             Iterator::empty()
           }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Capture(_pattern) =>
+    Capture(_pattern) =>
       match input {
         String(_s) => Iterator::singleton(Json::object(Map::from_array([])))
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Splits(pattern) =>
+    Splits(pattern) =>
       match input {
         String(s) => {
           let parts = s.split(pattern).collect()
           parts.iterator().map(part => Json::string(part.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Sub(pattern, replacement) =>
+    Sub(pattern, replacement) =>
       match input {
         String(s) =>
           Iterator::singleton(
             Json::string(s.replace(old=pattern[:], new=replacement[:])),
           )
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::GSub(pattern, replacement) =>
+    GSub(pattern, replacement) =>
       match input {
         String(s) =>
           Iterator::singleton(
             Json::string(s.replace_all(old=pattern[:], new=replacement[:])),
           )
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
 
     // Newly added features - corner case implementations
-    Expr::MapValues(expr) =>
+    MapValues(expr) =>
       match input {
         Object(obj) => {
           let result : Map[String, Json] = {}
@@ -1833,9 +1833,9 @@ fn eval_with_env(
           Iterator::singleton(Json::object(result))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("object", json_type_name(input))
+          raise TypeMismatch("object", json_type_name(input))
       }
-    Expr::RangeFromTo(from_expr, to_expr) => {
+    RangeFromTo(from_expr, to_expr) => {
       let from_results = eval_with_env(from_expr, input, env).collect()
       let to_results = eval_with_env(to_expr, input, env).collect()
       if from_results.is_empty() || to_results.is_empty() {
@@ -1851,10 +1851,10 @@ fn eval_with_env(
           }
           results.iterator()
         }
-        _ => raise InterpreterError::TypeMismatch("numbers", "non-numbers")
+        _ => raise TypeMismatch("numbers", "non-numbers")
       }
     }
-    Expr::RangeWithStep(from_expr, to_expr, step_expr) => {
+    RangeWithStep(from_expr, to_expr, step_expr) => {
       let from_results = eval_with_env(from_expr, input, env).collect()
       let to_results = eval_with_env(to_expr, input, env).collect()
       let step_results = eval_with_env(step_expr, input, env).collect()
@@ -1884,10 +1884,10 @@ fn eval_with_env(
           }
           results.iterator()
         }
-        _ => raise InterpreterError::TypeMismatch("numbers", "non-numbers")
+        _ => raise TypeMismatch("numbers", "non-numbers")
       }
     }
-    Expr::FirstGen(gen_expr) => {
+    FirstGen(gen_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
       if gen_results.is_empty() {
         Iterator::empty()
@@ -1895,7 +1895,7 @@ fn eval_with_env(
         Iterator::singleton(gen_results[0])
       }
     }
-    Expr::LastGen(gen_expr) => {
+    LastGen(gen_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
       if gen_results.is_empty() {
         Iterator::empty()
@@ -1903,7 +1903,7 @@ fn eval_with_env(
         Iterator::singleton(gen_results[gen_results.length() - 1])
       }
     }
-    Expr::Repeat(expr) => {
+    Repeat(expr) => {
       // Repeat yields values infinitely - should be used with limit()
       let values = eval_with_env(expr, input, env).collect()
       if values.is_empty() {
@@ -1919,7 +1919,7 @@ fn eval_with_env(
         result
       })
     }
-    Expr::Explode =>
+    Explode =>
       match input {
         String(s) => {
           let results : Array[Json] = []
@@ -1929,9 +1929,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::Implode =>
+    Implode =>
       match input {
         Array(arr) => {
           let buffer = @buffer.new()
@@ -1950,22 +1950,22 @@ fn eval_with_env(
           Iterator::singleton(Json::string(buffer.to_string()))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::ToJsonString => Iterator::singleton(Json::string(input.to_string()))
-    Expr::FromJsonString =>
+    ToJsonString => Iterator::singleton(Json::string(input.to_string()))
+    FromJsonString =>
       match input {
         String(s) => {
           let parsed = @json.parse(s) catch {
             e =>
-              raise InterpreterError::InvalidOperation("JSON parse error: \{e}")
+              raise InvalidOperation("JSON parse error: \{e}")
           }
           Iterator::singleton(parsed)
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
-    Expr::UniqueBy(expr) =>
+    UniqueBy(expr) =>
       match input {
         Array(arr) => {
           let seen : Map[String, Bool] = {}
@@ -1983,9 +1983,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::MinBy(expr) =>
+    MinBy(expr) =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -2011,9 +2011,9 @@ fn eval_with_env(
             Iterator::singleton(min_elem)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::MaxBy(expr) =>
+    MaxBy(expr) =>
       match input {
         Array(arr) =>
           if arr.is_empty() {
@@ -2039,9 +2039,9 @@ fn eval_with_env(
             Iterator::singleton(max_elem)
           }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Combinations =>
+    Combinations =>
       match input {
         Array(arr) => {
           let arrays : Array[Array[Json]] = []
@@ -2070,9 +2070,9 @@ fn eval_with_env(
           results.iterator().map(Json::array)
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::Transpose =>
+    Transpose =>
       match input {
         Array(arr) => {
           let mut max_len = 0
@@ -2099,9 +2099,9 @@ fn eval_with_env(
           Iterator::singleton(Json::array(results.map(Json::array)))
         }
         _ =>
-          raise InterpreterError::TypeMismatch("array", json_type_name(input))
+          raise TypeMismatch("array", json_type_name(input))
       }
-    Expr::AnyGen(gen_expr, cond_expr) => {
+    AnyGen(gen_expr, cond_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
       let mut found = false
       for gen_result in gen_results {
@@ -2118,7 +2118,7 @@ fn eval_with_env(
       }
       Iterator::singleton(Json::boolean(found))
     }
-    Expr::AllGen(gen_expr, cond_expr) => {
+    AllGen(gen_expr, cond_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
       let mut all_true = true
       for gen_result in gen_results {
@@ -2138,7 +2138,7 @@ fn eval_with_env(
       }
       Iterator::singleton(Json::boolean(all_true))
     }
-    Expr::Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr) => {
+    Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
       let init_results = eval_with_env(init_expr, input, env).collect()
       if init_results.is_empty() {
@@ -2174,12 +2174,12 @@ fn eval_with_env(
       }
       results.iterator()
     }
-    Expr::PathsWithFilter(filter_expr) => {
+    PathsWithFilter(filter_expr) => {
       let results : Array[Array[String]] = []
       collect_paths_with_filter(input, [], filter_expr, env, results)
       results.iterator().map(path => Json::array(path.map(Json::string)))
     }
-    Expr::Scan(pattern) =>
+    Scan(pattern) =>
       match input {
         String(s) => {
           let results : Array[Json] = []
@@ -2198,7 +2198,7 @@ fn eval_with_env(
           results.iterator()
         }
         _ =>
-          raise InterpreterError::TypeMismatch("string", json_type_name(input))
+          raise TypeMismatch("string", json_type_name(input))
       }
   }
 }
@@ -2242,10 +2242,10 @@ fn collect_paths_with_filter(
 /// Evaluate a literal to JSON
 fn eval_literal(lit : Literal) -> Json {
   match lit {
-    Literal::Null => null
-    Literal::Bool(b) => Json::boolean(b)
-    Literal::Number(n) => Json::number(n)
-    Literal::String(s) => Json::string(s)
+    Null => null
+    Bool(b) => Json::boolean(b)
+    Number(n) => Json::number(n)
+    String(s) => Json::string(s)
   }
 }
 
@@ -2257,18 +2257,18 @@ fn eval_binary_op(
   right : Json,
 ) -> Json raise InterpreterError {
   match op {
-    BinaryOp::Add => json_add(left, right)
-    BinaryOp::Subtract => json_subtract(left, right)
-    BinaryOp::Multiply => json_multiply(left, right)
-    BinaryOp::Divide => json_divide(left, right)
-    BinaryOp::Modulo => json_modulo(left, right)
-    BinaryOp::Equal => Json::boolean(compare_json(left, right) == 0)
-    BinaryOp::NotEqual => Json::boolean(compare_json(left, right) != 0)
-    BinaryOp::LessThan => Json::boolean(compare_json(left, right) < 0)
-    BinaryOp::LessEq => Json::boolean(compare_json(left, right) <= 0)
-    BinaryOp::GreaterThan => Json::boolean(compare_json(left, right) > 0)
-    BinaryOp::GreaterEq => Json::boolean(compare_json(left, right) >= 0)
-    BinaryOp::And => {
+    Add => json_add(left, right)
+    Subtract => json_subtract(left, right)
+    Multiply => json_multiply(left, right)
+    Divide => json_divide(left, right)
+    Modulo => json_modulo(left, right)
+    Equal => Json::boolean(compare_json(left, right) == 0)
+    NotEqual => Json::boolean(compare_json(left, right) != 0)
+    LessThan => Json::boolean(compare_json(left, right) < 0)
+    LessEq => Json::boolean(compare_json(left, right) <= 0)
+    GreaterThan => Json::boolean(compare_json(left, right) > 0)
+    GreaterEq => Json::boolean(compare_json(left, right) >= 0)
+    And => {
       let left_truthy = match left {
         False | Null => false
         _ => true
@@ -2279,7 +2279,7 @@ fn eval_binary_op(
         Json::boolean(false)
       }
     }
-    BinaryOp::Or => {
+    Or => {
       let left_truthy = match left {
         False | Null => false
         _ => true
@@ -2308,7 +2308,7 @@ fn json_add(left : Json, right : Json) -> Json raise InterpreterError {
       Json::object(result)
     }
     _ =>
-      raise InterpreterError::InvalidOperation(
+      raise InvalidOperation(
         "Cannot add \{json_type_name(left)} and \{json_type_name(right)}",
       )
   }
@@ -2335,7 +2335,7 @@ fn json_subtract(left : Json, right : Json) -> Json raise InterpreterError {
       Json::array(result)
     }
     _ =>
-      raise InterpreterError::InvalidOperation(
+      raise InvalidOperation(
         "Cannot subtract \{json_type_name(right)} from \{json_type_name(left)}",
       )
   }
@@ -2354,7 +2354,7 @@ fn json_multiply(left : Json, right : Json) -> Json raise InterpreterError {
       Json::string(result)
     }
     _ =>
-      raise InterpreterError::InvalidOperation(
+      raise InvalidOperation(
         "Cannot multiply \{json_type_name(left)} and \{json_type_name(right)}",
       )
   }
@@ -2365,12 +2365,12 @@ fn json_divide(left : Json, right : Json) -> Json raise InterpreterError {
   match (left, right) {
     (Number(a, ..), Number(b, ..)) => {
       if b == 0.0 {
-        raise InterpreterError::DivisionByZero
+        raise DivisionByZero
       }
       Json::number(a / b)
     }
     _ =>
-      raise InterpreterError::InvalidOperation(
+      raise InvalidOperation(
         "Cannot divide \{json_type_name(left)} by \{json_type_name(right)}",
       )
   }
@@ -2381,12 +2381,12 @@ fn json_modulo(left : Json, right : Json) -> Json raise InterpreterError {
   match (left, right) {
     (Number(a, ..), Number(b, ..)) => {
       if b == 0.0 {
-        raise InterpreterError::DivisionByZero
+        raise DivisionByZero
       }
       Json::number(a % b)
     }
     _ =>
-      raise InterpreterError::InvalidOperation(
+      raise InvalidOperation(
         "Cannot modulo \{json_type_name(left)} by \{json_type_name(right)}",
       )
   }
@@ -2674,7 +2674,7 @@ fn base64_encode(bytes : Bytes) -> String {
 fn base64_decode(s : String) -> Bytes raise InterpreterError {
   let len = s.length()
   if len % 4 != 0 {
-    raise InterpreterError::EvalError("Invalid base64")
+    raise EvalError("Invalid base64")
   }
   fn base64_value(ch : Char) -> Int? {
     match ch {
@@ -2696,16 +2696,16 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
     let c4 = s.get_char(i + 3).unwrap()
     let v1 = match base64_value(c1) {
       Some(v) => v
-      None => raise InterpreterError::EvalError("Invalid base64")
+      None => raise EvalError("Invalid base64")
     }
     let v2 = match base64_value(c2) {
       Some(v) => v
-      None => raise InterpreterError::EvalError("Invalid base64")
+      None => raise EvalError("Invalid base64")
     }
 
     // Padding can only appear in the final 4-character quantum.
     if (c3 == '=' || c4 == '=') && i + 4 != len {
-      raise InterpreterError::EvalError("Invalid base64")
+      raise EvalError("Invalid base64")
     }
     let v1u : UInt = v1.reinterpret_as_uint()
     let v2u : UInt = v2.reinterpret_as_uint()
@@ -2714,7 +2714,7 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
     if c3 != '=' {
       let v3 = match base64_value(c3) {
         Some(v) => v
-        None => raise InterpreterError::EvalError("Invalid base64")
+        None => raise EvalError("Invalid base64")
       }
       let v3u : UInt = v3.reinterpret_as_uint()
       let b2 : UInt = ((v2u & 0x0f) << 4) | (v3u >> 2)
@@ -2722,14 +2722,14 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
       if c4 != '=' {
         let v4 = match base64_value(c4) {
           Some(v) => v
-          None => raise InterpreterError::EvalError("Invalid base64")
+          None => raise EvalError("Invalid base64")
         }
         let v4u : UInt = v4.reinterpret_as_uint()
         let b3 : UInt = ((v3u & 0x03) << 6) | v4u
         buf.push(b3.to_byte())
       }
     } else if c4 != '=' {
-      raise InterpreterError::EvalError("Invalid base64")
+      raise EvalError("Invalid base64")
     }
     i = i + 4
   }
