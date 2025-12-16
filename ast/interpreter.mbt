@@ -215,11 +215,7 @@ fn eval_with_env(
         }
         let key_str = match key_results[0] {
           String(s) => s
-          _ =>
-            raise TypeMismatch(
-              "string",
-              json_type_name(key_results[0]),
-            )
+          _ => raise TypeMismatch("string", json_type_name(key_results[0]))
         }
 
         // Evaluate value or use key from input
@@ -268,11 +264,7 @@ fn eval_with_env(
         Object(obj) => obj.length()
         String(s) => s.length()
         Null => 0
-        _ =>
-          raise TypeMismatch(
-            "array/object/string",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("array/object/string", json_type_name(input))
       }
       Iterator::singleton(Json::number(len.to_double()))
     }
@@ -289,11 +281,7 @@ fn eval_with_env(
           let indices = arr.mapi((i, _) => Json::number(i.to_double()))
           Iterator::singleton(Json::array(indices))
         }
-        _ =>
-          raise TypeMismatch(
-            "object/array",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("object/array", json_type_name(input))
       }
     Values =>
       match input {
@@ -305,11 +293,7 @@ fn eval_with_env(
           Iterator::singleton(Json::array(values))
         }
         Array(arr) => Iterator::singleton(Json::array(arr))
-        _ =>
-          raise TypeMismatch(
-            "object/array",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("object/array", json_type_name(input))
       }
     Type => Iterator::singleton(Json::string(json_type_name(input)))
     Empty => Iterator::empty()
@@ -334,8 +318,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(results))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Select(condition) => {
       let cond_results = eval_with_env(condition, input, env).collect()
@@ -360,8 +343,7 @@ fn eval_with_env(
           sorted.sort_by(compare_json)
           Iterator::singleton(Json::array(sorted))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Reverse =>
       match input {
@@ -372,8 +354,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(reversed))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Flatten(depth_opt) =>
       match input {
@@ -384,8 +365,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(flatten_array(arr, depth)))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Unique =>
       match input {
@@ -409,8 +389,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(unique))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
 
     // Numeric functions
@@ -426,20 +405,17 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::number(sum))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Floor =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.floor()))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Sqrt =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.sqrt()))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Min =>
       match input {
@@ -455,8 +431,7 @@ fn eval_with_env(
             }
             Iterator::singleton(min_val)
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Max =>
       match input {
@@ -472,8 +447,7 @@ fn eval_with_env(
             }
             Iterator::singleton(max_val)
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
 
     // Control flow
@@ -506,10 +480,7 @@ fn eval_with_env(
     Variable(name) =>
       match env.get(name) {
         Some(v) => Iterator::singleton(v)
-        None =>
-          raise InvalidOperation(
-            "Undefined variable: $\{name}",
-          )
+        None => raise InvalidOperation("Undefined variable: $\{name}")
       }
 
     // Recursive descent
@@ -531,55 +502,36 @@ fn eval_with_env(
     // Compound assignment operators: path += value
     AddAssign(path, value_expr) =>
       eval_with_env(
-        Update(
-          path,
-          Operation(Identity, Add, value_expr),
-        ),
+        Update(path, Operation(Identity, Add, value_expr)),
         input,
         env,
       )
     SubAssign(path, value_expr) =>
       eval_with_env(
-        Update(
-          path,
-          Operation(Identity, Subtract, value_expr),
-        ),
+        Update(path, Operation(Identity, Subtract, value_expr)),
         input,
         env,
       )
     MulAssign(path, value_expr) =>
       eval_with_env(
-        Update(
-          path,
-          Operation(Identity, Multiply, value_expr),
-        ),
+        Update(path, Operation(Identity, Multiply, value_expr)),
         input,
         env,
       )
     DivAssign(path, value_expr) =>
       eval_with_env(
-        Update(
-          path,
-          Operation(Identity, Divide, value_expr),
-        ),
+        Update(path, Operation(Identity, Divide, value_expr)),
         input,
         env,
       )
     ModAssign(path, value_expr) =>
       eval_with_env(
-        Update(
-          path,
-          Operation(Identity, Modulo, value_expr),
-        ),
+        Update(path, Operation(Identity, Modulo, value_expr)),
         input,
         env,
       )
     AltAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Alternative(Identity, value_expr)),
-        input,
-        env,
-      )
+      eval_with_env(Update(path, Alternative(Identity, value_expr)), input, env)
 
     // Format functions: @base64, @uri, etc.
     Format(format_name) =>
@@ -653,8 +605,7 @@ fn eval_with_env(
             }
             _ => raise TypeError("@html requires string")
           }
-        _ =>
-          raise EvalError("Unknown format: @\{format_name}")
+        _ => raise EvalError("Unknown format: @\{format_name}")
       }
 
     // String interpolation: "text \(expr) more"
@@ -772,8 +723,7 @@ fn eval_with_env(
           let sorted = sorted_pairs.map(fn(p) { p.0 })
           Iterator::singleton(Json::array(sorted))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
 
     // GroupBy: group array elements by expression result
@@ -801,8 +751,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(result))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
 
     // Update operator: modify value in place
@@ -1026,20 +975,17 @@ fn eval_with_env(
     Round =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.round()))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Ceil =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.ceil()))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Abs =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(n.abs()))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
 
     // String operations
@@ -1053,8 +999,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(json_parts))
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Join(sep) =>
       match input {
@@ -1068,20 +1013,17 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::string(parts.join(sep)))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     StartsWith(prefix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_prefix(prefix)))
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     EndsWith(suffix) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.has_suffix(suffix)))
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Contains(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
@@ -1210,11 +1152,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(entries))
         }
-        _ =>
-          raise TypeMismatch(
-            "object/array",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("object/array", json_type_name(input))
       }
     FromEntries =>
       match input {
@@ -1251,8 +1189,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::object(result))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     WithEntries(expr) =>
       // Convert to entries, apply expr to each entry, convert back
@@ -1265,22 +1202,14 @@ fn eval_with_env(
           }
           // Apply expression to each entry (like map)
           let entries_array = entries_results[0]
-          let mapped_results = eval_with_env(
-            Map(expr),
-            entries_array,
-            env,
-          ).collect()
+          let mapped_results = eval_with_env(Map(expr), entries_array, env).collect()
           if mapped_results.is_empty() {
             return Iterator::singleton(input)
           }
           // from_entries
           eval_with_env(FromEntries, mapped_results[0], env)
         }
-        _ =>
-          raise TypeMismatch(
-            "object/array",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("object/array", json_type_name(input))
       }
 
     // Iteration helpers
@@ -1299,8 +1228,7 @@ fn eval_with_env(
           } else {
             Iterator::singleton(arr[0])
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Last =>
       match input {
@@ -1310,8 +1238,7 @@ fn eval_with_env(
           } else {
             Iterator::singleton(arr[arr.length() - 1])
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     IndicesOf(expr) => {
       let needle_results = eval_with_env(expr, input, env).collect()
@@ -1343,11 +1270,7 @@ fn eval_with_env(
             }
             _ => Iterator::singleton(Json::array([]))
           }
-        _ =>
-          raise TypeMismatch(
-            "array/string",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("array/string", json_type_name(input))
       }
     }
     IndexOf(expr) => {
@@ -1382,11 +1305,7 @@ fn eval_with_env(
               }
             _ => Iterator::singleton(null)
           }
-        _ =>
-          raise TypeMismatch(
-            "array/string",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("array/string", json_type_name(input))
       }
     }
 
@@ -1406,8 +1325,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::boolean(result))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     All =>
       match input {
@@ -1424,8 +1342,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::boolean(result))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
 
     // String trimming
@@ -1436,8 +1353,7 @@ fn eval_with_env(
             Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
             None => Iterator::singleton(input)
           }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     RTrimStr(suffix) =>
       match input {
@@ -1446,8 +1362,7 @@ fn eval_with_env(
             Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
             None => Iterator::singleton(input)
           }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     AsciiUpcase =>
       match input {
@@ -1462,8 +1377,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::string(result.to_string()))
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     AsciiDowncase =>
       match input {
@@ -1478,8 +1392,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::string(result.to_string()))
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
 
     // Array functions
@@ -1493,8 +1406,7 @@ fn eval_with_env(
           } else {
             Iterator::empty()
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     RIndex(search_expr) => {
       let needle_results = eval_with_env(search_expr, input, env).collect()
@@ -1524,11 +1436,7 @@ fn eval_with_env(
               }
             _ => Iterator::singleton(null)
           }
-        _ =>
-          raise TypeMismatch(
-            "array or string",
-            json_type_name(input),
-          )
+        _ => raise TypeMismatch("array or string", json_type_name(input))
       }
     }
 
@@ -1704,65 +1612,55 @@ fn eval_with_env(
       match (input, exp_results[0]) {
         (Number(base, ..), Number(exp, ..)) =>
           Iterator::singleton(Json::number(base.pow(exp)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     }
     Log =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.ln(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Exp =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.exp(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Sin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.sin(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Cos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.cos(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Tan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.tan(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Asin =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.asin(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Acos =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.acos(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
     Atan =>
       match input {
         Number(n, ..) => Iterator::singleton(Json::number(@math.atan(n)))
-        _ =>
-          raise TypeMismatch("number", json_type_name(input))
+        _ => raise TypeMismatch("number", json_type_name(input))
       }
 
     // Regex functions (simple implementations)
     Test(pattern) =>
       match input {
         String(s) => Iterator::singleton(Json::boolean(s.contains(pattern)))
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Match(pattern) =>
       match input {
@@ -1782,14 +1680,12 @@ fn eval_with_env(
           } else {
             Iterator::empty()
           }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Capture(_pattern) =>
       match input {
         String(_s) => Iterator::singleton(Json::object(Map::from_array([])))
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Splits(pattern) =>
       match input {
@@ -1797,8 +1693,7 @@ fn eval_with_env(
           let parts = s.split(pattern).collect()
           parts.iterator().map(part => Json::string(part.to_string()))
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Sub(pattern, replacement) =>
       match input {
@@ -1806,8 +1701,7 @@ fn eval_with_env(
           Iterator::singleton(
             Json::string(s.replace(old=pattern[:], new=replacement[:])),
           )
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     GSub(pattern, replacement) =>
       match input {
@@ -1815,8 +1709,7 @@ fn eval_with_env(
           Iterator::singleton(
             Json::string(s.replace_all(old=pattern[:], new=replacement[:])),
           )
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
 
     // Newly added features - corner case implementations
@@ -1832,8 +1725,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::object(result))
         }
-        _ =>
-          raise TypeMismatch("object", json_type_name(input))
+        _ => raise TypeMismatch("object", json_type_name(input))
       }
     RangeFromTo(from_expr, to_expr) => {
       let from_results = eval_with_env(from_expr, input, env).collect()
@@ -1928,8 +1820,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(results))
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     Implode =>
       match input {
@@ -1949,21 +1840,18 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::string(buffer.to_string()))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     ToJsonString => Iterator::singleton(Json::string(input.to_string()))
     FromJsonString =>
       match input {
         String(s) => {
           let parsed = @json.parse(s) catch {
-            e =>
-              raise InvalidOperation("JSON parse error: \{e}")
+            e => raise InvalidOperation("JSON parse error: \{e}")
           }
           Iterator::singleton(parsed)
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
     UniqueBy(expr) =>
       match input {
@@ -1982,8 +1870,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(results))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     MinBy(expr) =>
       match input {
@@ -2010,8 +1897,7 @@ fn eval_with_env(
             }
             Iterator::singleton(min_elem)
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     MaxBy(expr) =>
       match input {
@@ -2038,8 +1924,7 @@ fn eval_with_env(
             }
             Iterator::singleton(max_elem)
           }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Combinations =>
       match input {
@@ -2069,8 +1954,7 @@ fn eval_with_env(
           }
           results.iterator().map(Json::array)
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     Transpose =>
       match input {
@@ -2098,8 +1982,7 @@ fn eval_with_env(
           }
           Iterator::singleton(Json::array(results.map(Json::array)))
         }
-        _ =>
-          raise TypeMismatch("array", json_type_name(input))
+        _ => raise TypeMismatch("array", json_type_name(input))
       }
     AnyGen(gen_expr, cond_expr) => {
       let gen_results = eval_with_env(gen_expr, input, env).collect()
@@ -2197,8 +2080,7 @@ fn eval_with_env(
           }
           results.iterator()
         }
-        _ =>
-          raise TypeMismatch("string", json_type_name(input))
+        _ => raise TypeMismatch("string", json_type_name(input))
       }
   }
 }

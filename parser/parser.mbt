@@ -63,8 +63,7 @@ fn Parser::consume(self : Parser, expected : Token) -> Bool {
 fn Parser::expect(self : Parser, expected : Token) -> Unit raise ParseError {
   match self.current() {
     Some(t) if t == expected => self.advance()
-    Some(t) =>
-      raise UnexpectedToken(t.to_string(), expected.to_string())
+    Some(t) => raise UnexpectedToken(t.to_string(), expected.to_string())
     None => raise UnexpectedEnd(expected.to_string())
   }
 }
@@ -451,10 +450,7 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
         match expr_opt {
           Some(expr_str) => {
             let expr_tokens = lex(expr_str) catch {
-              _ =>
-                raise InvalidExpression(
-                  "Failed to parse interpolation",
-                )
+              _ => raise InvalidExpression("Failed to parse interpolation")
             }
             let expr_parser = Parser::new(expr_tokens)
             let expr = expr_parser.parse_pipe()
@@ -752,8 +748,7 @@ fn Parser::parse_builtin(
           self.expect(TRParen)
           @ast.Expr::StartsWith(prefix)
         }
-        _ =>
-          raise InvalidSyntax("startswith expects string argument")
+        _ => raise InvalidSyntax("startswith expects string argument")
       }
     }
     "endswith" => {
@@ -792,10 +787,7 @@ fn Parser::parse_builtin(
           self.expect(TRParen)
           @ast.Expr::Has(n.to_string())
         }
-        _ =>
-          raise InvalidSyntax(
-            "has expects string or number argument",
-          )
+        _ => raise InvalidSyntax("has expects string or number argument")
       }
     }
     "in" => {
@@ -848,8 +840,7 @@ fn Parser::parse_builtin(
           match first_expr {
             @ast.Expr::Literal(@ast.Literal::Number(n)) =>
               @ast.Expr::Range(n.to_int())
-            _ =>
-              raise InvalidSyntax("range(n) expects literal number")
+            _ => raise InvalidSyntax("range(n) expects literal number")
           }
         }
       }
@@ -909,10 +900,7 @@ fn Parser::parse_builtin(
               self.expect(TRParen)
               @ast.Expr::AnyGen(gen_expr, cond_expr)
             }
-            _ =>
-              raise InvalidSyntax(
-                "any(gen; cond) expects semicolon",
-              )
+            _ => raise InvalidSyntax("any(gen; cond) expects semicolon")
           }
         }
         _ => @ast.Expr::Any
@@ -929,10 +917,7 @@ fn Parser::parse_builtin(
               self.expect(TRParen)
               @ast.Expr::AllGen(gen_expr, cond_expr)
             }
-            _ =>
-              raise InvalidSyntax(
-                "all(gen; cond) expects semicolon",
-              )
+            _ => raise InvalidSyntax("all(gen; cond) expects semicolon")
           }
         }
         _ => @ast.Expr::All
@@ -1093,8 +1078,7 @@ fn Parser::parse_builtin(
             gen_expr, var_name, init_expr, update_expr, extract_expr,
           )
         }
-        _ =>
-          raise InvalidSyntax("foreach expects variable after as")
+        _ => raise InvalidSyntax("foreach expects variable after as")
       }
     }
     "scan" => {
@@ -1203,8 +1187,7 @@ fn Parser::parse_builtin(
               self.expect(TRParen)
               @ast.Expr::Sub(pattern, replacement)
             }
-            _ =>
-              raise InvalidSyntax("sub expects string replacement")
+            _ => raise InvalidSyntax("sub expects string replacement")
           }
         }
         _ => raise InvalidSyntax("sub expects string pattern")
@@ -1222,8 +1205,7 @@ fn Parser::parse_builtin(
               self.expect(TRParen)
               @ast.Expr::GSub(pattern, replacement)
             }
-            _ =>
-              raise InvalidSyntax("gsub expects string replacement")
+            _ => raise InvalidSyntax("gsub expects string replacement")
           }
         }
         _ => raise InvalidSyntax("gsub expects string pattern")
