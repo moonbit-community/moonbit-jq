@@ -36,7 +36,7 @@ test "coverage: format errors" {
 ///|
 test "coverage: function argument handling" {
   assert_true(
-    (try? cov_eval9("def add(x; y): $x + $y; add(1)", "null")) is Err(_),
+    (try? cov_eval9("def f(x; y): $x + $y; f(1)", "null")) is Err(_),
   )
   @json.inspect(cov_eval9("def id(x): $x; id(empty)", "null"), content=[null])
 }

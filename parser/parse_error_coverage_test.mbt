@@ -8,6 +8,12 @@ fn parse_err(query : String) -> Bool {
 }
 
 ///|
+fn parse_ok(query : String) -> Unit raise {
+  let result : Result[_] = try? @parser.parse(query)
+  assert_true(result is Ok(_))
+}
+
+///|
 test "coverage: parse errors for string-arg builtins" {
   assert_true(parse_err("test(1)"))
   assert_true(parse_err("match(1)"))
@@ -40,6 +46,29 @@ test "coverage: parse errors for function definitions" {
 ///|
 test "coverage: parse errors for limit argument" {
   assert_true(parse_err("limit(\"2\"; .)"))
+}
+
+///|
+test "coverage: parse field access variants" {
+  parse_ok("1.[0]")
+  parse_ok("1. .")
+  parse_ok("1.")
+}
+
+///|
+test "coverage: parse object edge cases" {
+  parse_ok("{\"a\":1,}")
+  assert_true(parse_err("{1:2}"))
+}
+
+///|
+test "coverage: parse interpolation lex error" {
+  assert_true(parse_err("\"x \\(~)\""))
+}
+
+///|
+test "coverage: parse recurse builtin" {
+  parse_ok("recurse")
 }
 
 ///|
