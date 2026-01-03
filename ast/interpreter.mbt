@@ -95,11 +95,7 @@ fn eval_with_env(
       eval_try_catch(try_expr, catch_opt, input, env)
 
     // Variables
-    Variable(name) =>
-      match env.get(name) {
-        Some(v) => Iterator::singleton(v)
-        None => raise InvalidOperation("Undefined variable: $\{name}")
-      }
+    Variable(name) => eval_variable(name, env)
 
     // Recursive descent
     Recurse => recurse_all(input)
@@ -155,53 +151,10 @@ fn eval_with_env(
       Iterator::singleton(input)
 
     // Function call: lookup and execute
-    FunctionCall(name, args) =>
-      match env.get_function(name) {
-        Some((body, params)) =>
-          if params.is_empty() {
-            // Zero-parameter function - just execute with current input
-            eval_with_env(body, input, env)
-          } else if args.length() != params.length() {
-            raise EvalError(
-              "Function \{name} expects \{params.length()} arguments, got \{args.length()}",
-            )
-          } else {
-            // Evaluate arguments as expressions against current input
-            let arg_values : Array[Json] = []
-            for arg in args {
-              let results = eval_with_env(arg, input, env).collect()
-              arg_values.push(
-                if results.is_empty() {
-                  null
-                } else {
-                  results[0]
-                },
-              )
-            }
-            // Bind parameters as variables
-            let mut new_env = env
-            for i = 0; i < params.length(); i = i + 1 {
-              new_env = new_env.set(params[i], arg_values[i])
-            }
-            // Execute function body with original input
-            eval_with_env(body, input, new_env)
-          }
-        None => raise EvalError("Undefined function: \{name}")
-      }
+    FunctionCall(name, args) => eval_function_call(name, args, input, env)
 
     // As pattern: bind variable and continue with body
-    As(expr, var_name, body) => {
-      // Evaluate expr and bind each result to the variable
-      let results = eval_with_env(expr, input, env).collect()
-      let all_results : Array[Json] = []
-      for result in results {
-        let new_env = env.set(var_name, result)
-        for val in eval_with_env(body, input, new_env) {
-          all_results.push(val)
-        }
-      }
-      all_results.iterator()
-    }
+    As(expr, var_name, body) => eval_as(expr, var_name, body, input, env)
 
     // Reduce: aggregate using accumulator
     Reduce(expr, var_name, init_expr, update_expr) => {

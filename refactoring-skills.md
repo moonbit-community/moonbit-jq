@@ -109,3 +109,11 @@ After: ast/interpreter_control_flow.mbt provides eval_* control-flow helpers.
 - Example:
 Before: ast/interpreter.mbt implemented Length/Keys/Values/Type/Empty/Not inline.
 After: ast/interpreter_builtins.mbt hosts eval_* helpers for those cases.
+
+## 2026-01-03: Extract binding helpers
+- Problem: Variable lookup, function calls, and As bindings were inline in the evaluator.
+- Change: Moved Variable/FunctionCall/As into ast/interpreter_bindings.mbt.
+- Result: Binding logic is centralized with no behavior change.
+- Example:
+Before: ast/interpreter.mbt handled Variable, FunctionCall, and As inline.
+After: ast/interpreter_bindings.mbt provides eval_* helpers for binding cases.
