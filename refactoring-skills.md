@@ -189,3 +189,11 @@ After: generator helpers live in dedicated range/stream/predicate/foreach files.
 - Example:
 Before: parser/parser_builtin_flow.mbt matched all flow built-ins in one file.
 After: parser flow built-ins are routed through focused helper files.
+
+## 2026-01-03: Split collection helpers by role
+- Problem: ast/interpreter_collection_extras.mbt mixed object transforms, ordering, and matrix helpers.
+- Change: Split into ast/interpreter_collection_object.mbt, ast/interpreter_collection_order.mbt, and ast/interpreter_collection_matrix.mbt.
+- Result: Collection helpers are grouped by concern with smaller files.
+- Example:
+Before: ast/interpreter_collection_extras.mbt contained MapValues, UniqueBy/MinBy/MaxBy, and Combinations/Transpose together.
+After: collection helpers live in dedicated object/order/matrix files.
