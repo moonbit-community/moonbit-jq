@@ -149,3 +149,11 @@ After: those helpers live in dedicated generator/collection/string/json/path fil
 - Example:
 Before: parser/parser_builtin.mbt handled all built-ins in one match.
 After: parser/parser_builtin_core.mbt, parser/parser_builtin_array.mbt, parser/parser_builtin_string.mbt, parser/parser_builtin_numeric.mbt, parser/parser_builtin_object.mbt, parser/parser_builtin_path.mbt, and parser/parser_builtin_flow.mbt split the logic.
+
+## 2026-01-03: Split missing feature tests by theme
+- Problem: ast/missing_features_test.mbt bundled unrelated tests and helpers in one large file.
+- Change: Moved test_feature into ast/missing_features_helpers_test.mbt and split tests into themed files.
+- Result: Tests are easier to locate and maintain without behavior changes.
+- Example:
+Before: ast/missing_features_test.mbt contained all missing feature tests.
+After: ast/missing_features_array_path_test.mbt, ast/missing_features_string_test.mbt, ast/missing_features_format_regex_test.mbt, ast/missing_features_math_test.mbt, ast/missing_features_ops_flow_test.mbt, and ast/missing_features_functions_test.mbt organize them by topic.
