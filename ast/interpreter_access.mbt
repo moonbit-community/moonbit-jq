@@ -18,13 +18,11 @@ fn eval_index_access(indices : Array[Int], input : Json) -> Iterator[Json] {
     // Empty index means iterate over array/object values
     match input {
       Array(arr) => arr.iterator()
-      Object(obj) => {
-        let values : Array[Json] = []
-        for _k, v in obj {
-          values.push(v)
-        }
-        values.iterator()
-      }
+      Object(obj) =>
+        obj.to_array().map(fn(pair) {
+          let (_k, v) = pair
+          v
+        }).iterator()
       _ => Iterator::empty()
     }
   } else {
@@ -65,13 +63,14 @@ fn eval_slice_access(
         Some(n) => if n < 0 { len + n } else { n }
         None => len
       }
-      let result : Array[Json] = []
-      for i = s; i < e && i < len; i = i + 1 {
-        if i >= 0 {
-          result.push(arr[i])
-        }
+      let s_clamped = if s < 0 { 0 } else if s > len { len } else { s }
+      let e_clamped = if e < 0 { 0 } else if e > len { len } else { e }
+      let sliced = if s_clamped >= e_clamped {
+        []
+      } else {
+        arr[s_clamped:e_clamped].to_array()
       }
-      Iterator::singleton(Json::array(result))
+      Iterator::singleton(Json::array(sliced))
     }
     _ => Iterator::singleton(null)
   }

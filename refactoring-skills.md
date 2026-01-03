@@ -653,3 +653,11 @@ After: both use loop state with `continue` to update.
 - Example:
 Before: eval_repeat updated `let mut i` inside the closure.
 After: eval_repeat updates `idx.val` on a Ref[Int].
+
+## 2026-01-03: Use fold/slice helpers for access/operations
+- Problem: eval_operation_expr and accessors used nested loops and manual slice building.
+- Change: Used Array::fold + Array::each for binary op cartesian products, mapped object values from entries, and sliced arrays via clamped ArrayView.
+- Result: Access and operation helpers are more declarative with the same outputs.
+- Example:
+Before: eval_operation_expr nested loops; eval_index_access built object values via push; eval_slice_access looped indices.
+After: eval_operation_expr folds left values and eaches right values; eval_index_access maps obj.to_array(); eval_slice_access clamps and slices ArrayView.
