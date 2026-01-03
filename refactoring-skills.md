@@ -85,3 +85,11 @@ After: ast/interpreter_regex.mbt contains eval_* regex helpers.
 - Example:
 Before: ast/interpreter.mbt housed MapValues, RangeWithStep, UniqueBy, Foreach, Scan, and more inline.
 After: ast/interpreter_extras.mbt provides eval_* helpers for those cases.
+
+## 2026-01-03: Extract assignment and traversal helpers
+- Problem: Update/Assign and traversal logic were embedded in the evaluator.
+- Change: Moved Update/Assign into ast/interpreter_assignment.mbt and RecurseWith/Walk/Path into traversal/path helpers.
+- Result: The evaluator dispatch stays concise with behavior preserved.
+- Example:
+Before: ast/interpreter.mbt contained Update, Assign, Walk, RecurseWith, and Path logic inline.
+After: ast/interpreter_assignment.mbt and ast/interpreter_traversal.mbt/ast/interpreter_paths.mbt host eval_* helpers.

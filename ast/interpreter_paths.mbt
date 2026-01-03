@@ -271,3 +271,9 @@ fn eval_del_paths(
     _ => Iterator::singleton(input)
   }
 }
+
+///|
+/// Evaluate Path (placeholder)
+fn eval_path(_expr : Expr) -> Iterator[Json] {
+  Iterator::singleton(Json::array([]))
+}
