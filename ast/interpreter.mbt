@@ -222,13 +222,7 @@ fn eval_with_env(
       }
     Type => Iterator::singleton(Json::string(json_type_name(input)))
     Empty => Iterator::empty()
-    Not => {
-      let is_false = match input {
-        False | Null => true
-        _ => false
-      }
-      Iterator::singleton(Json::boolean(is_false))
-    }
+    Not => Iterator::singleton(Json::boolean(not(is_truthy(input))))
 
     // Array functions
     Map(inner) =>
@@ -250,11 +244,8 @@ fn eval_with_env(
       if cond_results.is_empty() {
         Iterator::empty()
       } else {
-        let is_truthy = match cond_results[0] {
-          False | Null => false
-          _ => true
-        }
-        if is_truthy {
+        let truthy = is_truthy(cond_results[0])
+        if truthy {
           Iterator::singleton(input)
         } else {
           Iterator::empty()
@@ -381,11 +372,8 @@ fn eval_with_env(
       if cond_results.is_empty() {
         eval_with_env(else_expr, input, env)
       } else {
-        let is_truthy = match cond_results[0] {
-          False | Null => false
-          _ => true
-        }
-        if is_truthy {
+        let truthy = is_truthy(cond_results[0])
+        if truthy {
           eval_with_env(then_expr, input, env)
         } else {
           eval_with_env(else_expr, input, env)
@@ -416,11 +404,10 @@ fn eval_with_env(
       let left_results = eval_with_env(left, input, env).collect()
       if left_results.is_empty() {
         eval_with_env(right, input, env)
+      } else if is_truthy(left_results[0]) {
+        left_results.iterator()
       } else {
-        match left_results[0] {
-          Null | False => eval_with_env(right, input, env)
-          _ => left_results.iterator()
-        }
+        eval_with_env(right, input, env)
       }
     }
 
@@ -1144,12 +1131,9 @@ fn eval_with_env(
         Array(arr) => {
           let mut result = false
           for elem in arr {
-            match elem {
-              False | Null => ()
-              _ => {
-                result = true
-                break
-              }
+            if is_truthy(elem) {
+              result = true
+              break
             }
           }
           Iterator::singleton(Json::boolean(result))
@@ -1161,12 +1145,9 @@ fn eval_with_env(
         Array(arr) => {
           let mut result = true
           for elem in arr {
-            match elem {
-              False | Null => {
-                result = false
-                break
-              }
-              _ => ()
+            if not(is_truthy(elem)) {
+              result = false
+              break
             }
           }
           Iterator::singleton(Json::boolean(result))
@@ -1417,16 +1398,15 @@ fn eval_with_env(
         if cond_results.is_empty() {
           break
         }
-        match cond_results[0] {
-          False | Null => break
-          _ => {
-            results.push(current)
-            let update_results = eval_with_env(update_expr, current, env).collect()
-            if update_results.is_empty() {
-              break
-            }
-            current = update_results[0]
+        if not(is_truthy(cond_results[0])) {
+          break
+        } else {
+          results.push(current)
+          let update_results = eval_with_env(update_expr, current, env).collect()
+          if update_results.is_empty() {
+            break
           }
+          current = update_results[0]
         }
       }
       results.iterator()
