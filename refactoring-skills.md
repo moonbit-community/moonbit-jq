@@ -285,3 +285,11 @@ After: ast/new_features_string_test.mbt, ast/new_features_object_test.mbt, ast/n
 - Example:
 Before: ast/integration_test.mbt bundled all integration cases in one file.
 After: ast/integration_basic_test.mbt, ast/integration_operators_test.mbt, ast/integration_constructs_test.mbt, ast/integration_builtins_test.mbt, ast/integration_control_flow_test.mbt, and ast/integration_scenarios_test.mbt organize the cases.
+
+## 2026-01-03: Extract lexer symbol handling
+- Problem: parser/lexer.mbt embedded a large punctuation/operator match in the main lex loop.
+- Change: Moved symbol handling into parser/lexer_symbol.mbt and delegated via lex_symbol.
+- Result: The main lex loop is shorter with identical tokenization behavior.
+- Example:
+Before: parser/lexer.mbt matched punctuation and operator cases inline.
+After: parser/lexer_symbol.mbt hosts lex_symbol with the same cases.
