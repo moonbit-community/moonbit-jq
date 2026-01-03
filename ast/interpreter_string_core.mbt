@@ -3,11 +3,8 @@
 fn eval_split(sep : String, input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     String(s) => {
-      let parts = s.split(sep)
-      let json_parts : Array[Json] = []
-      for part in parts {
-        json_parts.push(Json::string(part.to_string()))
-      }
+      let parts = s.split(sep).collect()
+      let json_parts = string_views_to_json(parts[:])
       Iterator::singleton(Json::array(json_parts))
     }
     _ => raise TypeMismatch("string", json_type_name(input))
@@ -19,13 +16,7 @@ fn eval_split(sep : String, input : Json) -> Iterator[Json] raise InterpreterErr
 fn eval_join(sep : String, input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let parts : Array[String] = []
-      for elem in arr {
-        match elem {
-          String(s) => parts.push(s)
-          _ => parts.push(elem.to_string())
-        }
-      }
+      let parts = json_to_strings(arr[:])
       Iterator::singleton(Json::string(parts.join(sep)))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
@@ -53,6 +44,24 @@ fn eval_ends_with(
   match input {
     String(s) => Iterator::singleton(Json::boolean(s.has_suffix(suffix)))
     _ => raise TypeMismatch("string", json_type_name(input))
+  }
+}
+
+///|
+fn string_views_to_json(parts : ArrayView[StringView]) -> Array[Json] {
+  match parts {
+    [] => []
+    [head, ..tail] =>
+      [Json::string(head.to_string())] + string_views_to_json(tail)
+  }
+}
+
+///|
+fn json_to_strings(parts : ArrayView[Json]) -> Array[String] {
+  match parts {
+    [] => []
+    [String(s), ..tail] => [s] + json_to_strings(tail)
+    [head, ..tail] => [head.to_string()] + json_to_strings(tail)
   }
 }
 

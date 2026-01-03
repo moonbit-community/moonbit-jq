@@ -34,27 +34,9 @@ fn eval_min_by(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) =>
-      if arr.is_empty() {
-        Iterator::singleton(null)
-      } else {
-        let mut min_elem : Json = arr[0]
-        let min_val_results = eval_with_env(expr, min_elem, env).collect()
-        if min_val_results.is_empty() {
-          return Iterator::singleton(null)
-        }
-        let mut min_val = min_val_results[0]
-        for i = 1; i < arr.length(); i = i + 1 {
-          let elem = arr[i]
-          let val_results = eval_with_env(expr, elem, env).collect()
-          if not(val_results.is_empty()) {
-            let val = val_results[0]
-            if compare_json(val, min_val) < 0 {
-              min_val = val
-              min_elem = elem
-            }
-          }
-        }
-        Iterator::singleton(min_elem)
+      match pick_min_by(expr, env, arr[:]) {
+        Some(elem) => Iterator::singleton(elem)
+        None => Iterator::singleton(null)
       }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
@@ -69,28 +51,96 @@ fn eval_max_by(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) =>
-      if arr.is_empty() {
-        Iterator::singleton(null)
-      } else {
-        let mut max_elem : Json = arr[0]
-        let max_val_results = eval_with_env(expr, max_elem, env).collect()
-        if max_val_results.is_empty() {
-          return Iterator::singleton(null)
-        }
-        let mut max_val = max_val_results[0]
-        for i = 1; i < arr.length(); i = i + 1 {
-          let elem = arr[i]
-          let val_results = eval_with_env(expr, elem, env).collect()
-          if not(val_results.is_empty()) {
-            let val = val_results[0]
-            if compare_json(val, max_val) > 0 {
-              max_val = val
-              max_elem = elem
-            }
-          }
-        }
-        Iterator::singleton(max_elem)
+      match pick_max_by(expr, env, arr[:]) {
+        Some(elem) => Iterator::singleton(elem)
+        None => Iterator::singleton(null)
       }
     _ => raise TypeMismatch("array", json_type_name(input))
+  }
+}
+
+///|
+fn pick_min_by(
+  expr : Expr,
+  env : Env,
+  arr : ArrayView[Json],
+) -> Json? raise InterpreterError {
+  match arr {
+    [] => None
+    [head, ..tail] =>
+      match eval_with_env(expr, head, env).collect() {
+        [] => None
+        [head_val, .. _] => {
+          let (min_elem, _min_val) =
+            reduce_min_by(expr, env, head, head_val, tail)
+          Some(min_elem)
+        }
+      }
+  }
+}
+
+///|
+fn reduce_min_by(
+  expr : Expr,
+  env : Env,
+  current_elem : Json,
+  current_val : Json,
+  rest : ArrayView[Json],
+) -> (Json, Json) raise InterpreterError {
+  match rest {
+    [] => (current_elem, current_val)
+    [elem, ..tail] =>
+      match eval_with_env(expr, elem, env).collect() {
+        [] => reduce_min_by(expr, env, current_elem, current_val, tail)
+        [val, .. _] =>
+          if compare_json(val, current_val) < 0 {
+            reduce_min_by(expr, env, elem, val, tail)
+          } else {
+            reduce_min_by(expr, env, current_elem, current_val, tail)
+          }
+      }
+  }
+}
+
+///|
+fn pick_max_by(
+  expr : Expr,
+  env : Env,
+  arr : ArrayView[Json],
+) -> Json? raise InterpreterError {
+  match arr {
+    [] => None
+    [head, ..tail] =>
+      match eval_with_env(expr, head, env).collect() {
+        [] => None
+        [head_val, .. _] => {
+          let (max_elem, _max_val) =
+            reduce_max_by(expr, env, head, head_val, tail)
+          Some(max_elem)
+        }
+      }
+  }
+}
+
+///|
+fn reduce_max_by(
+  expr : Expr,
+  env : Env,
+  current_elem : Json,
+  current_val : Json,
+  rest : ArrayView[Json],
+) -> (Json, Json) raise InterpreterError {
+  match rest {
+    [] => (current_elem, current_val)
+    [elem, ..tail] =>
+      match eval_with_env(expr, elem, env).collect() {
+        [] => reduce_max_by(expr, env, current_elem, current_val, tail)
+        [val, .. _] =>
+          if compare_json(val, current_val) > 0 {
+            reduce_max_by(expr, env, elem, val, tail)
+          } else {
+            reduce_max_by(expr, env, current_elem, current_val, tail)
+          }
+      }
   }
 }

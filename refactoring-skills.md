@@ -477,3 +477,11 @@ After: object/keys tests live with object and keys coverage, update/path cases l
 - Example:
 Before: eval_contains used `let mut found = false` loops over arrays.
 After: array_contains_view/array_contains_all use `match` on ArrayView (including nested patterns) to compute the result.
+
+## 2026-01-03: Make string, numeric, and min/max helpers more declarative
+- Problem: string joining/splitting and numeric min/max logic used mutable accumulators and loops.
+- Change: Added ArrayView-based recursive helpers with pattern matching for split/join, sum/min/max, and min_by/max_by selection.
+- Result: Less mutation and more declarative data flow while preserving behavior.
+- Example:
+Before: eval_add/eval_min/eval_max and eval_min_by/eval_max_by used mutable accumulators and index loops.
+After: sum_numbers/min_in_view/max_in_view and pick_min_by/pick_max_by use nested pattern matches and recursion.
