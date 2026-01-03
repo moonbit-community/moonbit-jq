@@ -670,13 +670,13 @@ After: parse_object uses `loop` with an accumulator; nested string skip uses `lo
 Before: eval_if_then_else and eval_select checked `is_empty()` then indexed.
 After: they match on `first_opt(results)` or `first_or_null(results)`.
 
-## 2026-01-03: Use internal/<package> layout for shared helpers
-- Problem: internal helper package was placed at `ast/internal`, not the `internal/<package>` layout.
-- Change: Moved helpers to `ast/internal/ast` and imported with an explicit alias.
-- Result: Internal package matches Mooncake's internal layout and avoids alias collisions.
+## 2026-01-03: Place helpers under ast/internal/helpers
+- Problem: internal helper package name matched `ast`, creating two packages with the same name.
+- Change: Moved helpers to `ast/internal/helpers` and imported with an explicit alias.
+- Result: Internal package remains under the `internal` boundary without duplicating package names.
 - Example:
-Before: helpers lived in `ast/internal`.
-After: helpers live in `ast/internal/ast` and are imported as `@ast_internal`.
+Before: helpers lived in `ast/internal/ast` (same package name as `ast`).
+After: helpers live in `ast/internal/helpers` and are imported as `@ast_internal`.
 
 ## 2026-01-03: Move interpreter helpers into internal package
 - Problem: truthy checks and type name formatting lived in the main ast package.

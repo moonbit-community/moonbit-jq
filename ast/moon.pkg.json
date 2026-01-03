@@ -1,6 +1,6 @@
 {
   "import": [
-    { "path": "bobzhang/moonjq/ast/internal/ast", "alias": "ast_internal" }
+    { "path": "bobzhang/moonjq/ast/internal/helpers", "alias": "ast_internal" }
   ],
   "test-import": [
     "bobzhang/moonjq/parser"
