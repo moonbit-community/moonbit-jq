@@ -541,3 +541,11 @@ After: eval_last_gen uses last_in_view on ArrayView.
 - Example:
 Before: eval_to_entries and eval_from_entries used mutable arrays and maps.
 After: eval_to_entries uses map/mapi; eval_from_entries uses filter_map + Map::from_array.
+
+## 2026-01-03: Use Array any/all and Map update in aggregates
+- Problem: aggregate helpers used explicit loops and mutable flags for any/all, plus manual map updates.
+- Change: Used Array::any/Array::all and Map::update with pattern matching to build groups and sort pairs.
+- Result: Aggregates read more declaratively while preserving behavior.
+- Example:
+Before: eval_any/eval_all used mut flags and break; eval_group_by used match on get.
+After: eval_any/eval_all call arr.any/arr.all; eval_group_by uses groups.update with pattern matching.

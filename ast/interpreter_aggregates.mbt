@@ -32,12 +32,14 @@ fn eval_sort_by(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let pairs : Array[(Json, Json)] = []
-      for elem in arr {
+      let pairs = arr.map(fn(elem) {
         let keys = eval_with_env(expr, elem, env).collect()
-        let sort_key = if keys.is_empty() { null } else { keys[0] }
-        pairs.push((elem, sort_key))
-      }
+        let sort_key = match keys {
+          [] => null
+          [first, .. _] => first
+        }
+        (elem, sort_key)
+      })
       let sorted_pairs = pairs.copy()
       sorted_pairs.sort_by(fn(a, b) { compare_json(a.1, b.1) })
       let sorted = sorted_pairs.map(fn(p) { p.0 })
@@ -59,15 +61,20 @@ fn eval_group_by(
       let groups : Map[String, Array[Json]] = {}
       for elem in arr {
         let keys = eval_with_env(expr, elem, env).collect()
-        let key_json = if keys.is_empty() { null } else { keys[0] }
-        let key_str = key_json.to_string()
-        match groups.get(key_str) {
-          Some(existing) => {
-            existing.push(elem)
-            groups[key_str] = existing
-          }
-          None => groups[key_str] = [elem]
+        let key_json = match keys {
+          [] => null
+          [first, .. _] => first
         }
+        let key_str = key_json.to_string()
+        groups.update(key_str, fn(existing) {
+          match existing {
+            Some(group) => {
+              group.push(elem)
+              Some(group)
+            }
+            None => Some([elem])
+          }
+        })
       }
       let result : Array[Json] = []
       for group in groups.values() {
@@ -84,14 +91,7 @@ fn eval_group_by(
 fn eval_any(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let mut result = false
-      for elem in arr {
-        if is_truthy(elem) {
-          result = true
-          break
-        }
-      }
-      Iterator::singleton(Json::boolean(result))
+      Iterator::singleton(Json::boolean(arr.any(is_truthy)))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
@@ -102,14 +102,7 @@ fn eval_any(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_all(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let mut result = true
-      for elem in arr {
-        if not(is_truthy(elem)) {
-          result = false
-          break
-        }
-      }
-      Iterator::singleton(Json::boolean(result))
+      Iterator::singleton(Json::boolean(arr.all(is_truthy)))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
