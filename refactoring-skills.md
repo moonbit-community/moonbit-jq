@@ -333,3 +333,11 @@ After: ast/corner_cases_recursive_descent_test.mbt, ast/corner_cases_optional_ac
 - Example:
 Before: ast/corner_cases_entries_search_test.mbt contained map_values and indices/inside tests together.
 After: entry tests live in ast/corner_cases_entries_test.mbt; membership tests live in ast/corner_cases_membership_test.mbt.
+
+## 2026-01-03: Split variables, reduce, and foreach corner cases
+- Problem: ast/corner_cases_reduce_foreach_vars_test.mbt grouped variable binding, reduce, and foreach scenarios.
+- Change: Split into ast/corner_cases_vars_test.mbt, ast/corner_cases_reduce_test.mbt, and ast/corner_cases_foreach_test.mbt.
+- Result: Variable, reduce, and foreach edge cases are separated with unchanged behavior.
+- Example:
+Before: ast/corner_cases_reduce_foreach_vars_test.mbt held variable, reduce, and foreach tests together.
+After: each topic has its own corner case file.
