@@ -517,3 +517,19 @@ After: eval_range uses Array::makei; eval_first/last pattern match on ArrayView.
 - Example:
 Before: eval_any_gen and eval_all_gen used mut flags and break.
 After: any_gen_results/all_gen_results recurse over ArrayView with match on condition results.
+
+## 2026-01-03: Make range generators more declarative
+- Problem: range generators used loops and mutation to build sequences.
+- Change: Used Array::makei with computed counts and pattern matching on evaluated arguments.
+- Result: Range generation is more declarative with the same outputs.
+- Example:
+Before: eval_range_from_to/eval_range_with_step used for/while loops with mutable counters.
+After: range_step_count plus Array::makei generate the same sequences.
+
+## 2026-01-03: Pattern match generator stream heads/tails
+- Problem: eval_first_gen/eval_last_gen used index access after emptiness checks.
+- Change: Used ArrayView pattern matching and last_in_view helper.
+- Result: Generator stream helpers are more declarative with no behavior change.
+- Example:
+Before: eval_last_gen used gen_results[gen_results.length() - 1].
+After: eval_last_gen uses last_in_view on ArrayView.

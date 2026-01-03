@@ -5,11 +5,9 @@ fn eval_first_gen(
   input : Json,
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
-  let gen_results = eval_with_env(gen_expr, input, env).collect()
-  if gen_results.is_empty() {
-    Iterator::empty()
-  } else {
-    Iterator::singleton(gen_results[0])
+  match eval_with_env(gen_expr, input, env).collect()[:] {
+    [] => Iterator::empty()
+    [head, .. _] => Iterator::singleton(head)
   }
 }
 
@@ -21,10 +19,9 @@ fn eval_last_gen(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let gen_results = eval_with_env(gen_expr, input, env).collect()
-  if gen_results.is_empty() {
-    Iterator::empty()
-  } else {
-    Iterator::singleton(gen_results[gen_results.length() - 1])
+  match last_in_view(gen_results[:]) {
+    Some(value) => Iterator::singleton(value)
+    None => Iterator::empty()
   }
 }
 

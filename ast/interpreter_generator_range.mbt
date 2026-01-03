@@ -8,18 +8,20 @@ fn eval_range_from_to(
 ) -> Iterator[Json] raise InterpreterError {
   let from_results = eval_with_env(from_expr, input, env).collect()
   let to_results = eval_with_env(to_expr, input, env).collect()
-  if from_results.is_empty() || to_results.is_empty() {
-    return Iterator::empty()
-  }
-  match (from_results[0], to_results[0]) {
-    (Number(from_num, ..), Number(to_num, ..)) => {
+  match (from_results, to_results) {
+    ([], _) | (_, []) => Iterator::empty()
+    ([Number(from_num, ..), .. _], [Number(to_num, ..), .. _]) => {
       let from_int = from_num.to_int()
       let to_int = to_num.to_int()
-      let results : Array[Json] = []
-      for i = from_int; i < to_int; i = i + 1 {
-        results.push(Json::number(i.to_double()))
+      if to_int <= from_int {
+        [].iterator()
+      } else {
+        let count = to_int - from_int
+        Array::makei(
+          count,
+          i => Json::number((from_int + i).to_double()),
+        ).iterator()
       }
-      results.iterator()
     }
     _ => raise TypeMismatch("numbers", "non-numbers")
   }
@@ -37,30 +39,44 @@ fn eval_range_with_step(
   let from_results = eval_with_env(from_expr, input, env).collect()
   let to_results = eval_with_env(to_expr, input, env).collect()
   let step_results = eval_with_env(step_expr, input, env).collect()
-  if from_results.is_empty() || to_results.is_empty() || step_results.is_empty() {
-    return Iterator::empty()
-  }
-  match (from_results[0], to_results[0], step_results[0]) {
-    (Number(from_num, ..), Number(to_num, ..), Number(step_num, ..)) => {
+  match (from_results, to_results, step_results) {
+    ([], _, _) | (_, [], _) | (_, _, []) => Iterator::empty()
+    (
+      [Number(from_num, ..), .. _],
+      [Number(to_num, ..), .. _],
+      [Number(step_num, ..), .. _],
+    ) => {
       let from_int = from_num.to_int()
       let to_int = to_num.to_int()
       let step_int = step_num.to_int()
-      let results : Array[Json] = []
-      if step_int > 0 {
-        let mut i = from_int
-        while i < to_int {
-          results.push(Json::number(i.to_double()))
-          i = i + step_int
-        }
-      } else if step_int < 0 {
-        let mut i = from_int
-        while i > to_int {
-          results.push(Json::number(i.to_double()))
-          i = i + step_int
-        }
+      let count = range_step_count(from_int, to_int, step_int)
+      if count <= 0 {
+        [].iterator()
+      } else {
+        Array::makei(
+          count,
+          i => Json::number((from_int + (i * step_int)).to_double()),
+        ).iterator()
       }
-      results.iterator()
     }
     _ => raise TypeMismatch("numbers", "non-numbers")
+  }
+}
+
+///|
+fn range_step_count(from_int : Int, to_int : Int, step_int : Int) -> Int {
+  if step_int == 0 {
+    0
+  } else if step_int > 0 {
+    if from_int >= to_int {
+      0
+    } else {
+      ((to_int - from_int - 1) / step_int) + 1
+    }
+  } else if from_int <= to_int {
+    0
+  } else {
+    let step_abs = -step_int
+    ((from_int - to_int - 1) / step_abs) + 1
   }
 }
