@@ -17,10 +17,7 @@ fn Env::get(self : Env, name : String) -> Json? {
 
 ///|
 fn Env::set(self : Env, name : String, value : Json) -> Env {
-  let new_bindings : Map[String, Json] = {}
-  for k, v in self.bindings {
-    new_bindings[k] = v
-  }
+  let new_bindings = self.bindings.copy()
   new_bindings[name] = value
   { bindings: new_bindings, functions: self.functions }
 }
@@ -32,14 +29,8 @@ fn Env::set_function(
   body : Expr,
   params : Array[String],
 ) -> Env {
-  let new_bindings : Map[String, Json] = {}
-  for k, v in self.bindings {
-    new_bindings[k] = v
-  }
-  let new_funcs : Map[String, (Expr, Array[String])] = {}
-  for k, v in self.functions {
-    new_funcs[k] = v
-  }
+  let new_bindings = self.bindings.copy()
+  let new_funcs = self.functions.copy()
   new_funcs[name] = (body, params)
   { bindings: new_bindings, functions: new_funcs }
 }

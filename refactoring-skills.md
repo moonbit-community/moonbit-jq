@@ -573,3 +573,11 @@ After: eval_keys/eval_values map over obj.to_array() to produce Json strings/val
 - Example:
 Before: eval_get_path walked with mut current; set_at_path/delete_at_path indexed and sliced Arrays.
 After: get_at_path/set_at_path/delete_at_path recurse on ArrayView with match; eval_del_paths folds over paths.
+
+## 2026-01-03: Copy env maps with Map::copy
+- Problem: env updates and foreach environment setup manually looped over maps.
+- Change: Switched Env::set/Env::set_function to Map::copy and used struct literal copies in eval_foreach.
+- Result: Environment setup is simpler and avoids manual loops.
+- Example:
+Before: Env::set/Env::set_function iterated maps to rebuild; eval_foreach rebuilt maps with loops.
+After: Env::set/Env::set_function call copy(); eval_foreach builds Env from copied maps then sets var.

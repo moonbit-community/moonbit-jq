@@ -17,14 +17,11 @@ fn eval_foreach(
   let mut accumulator = init_results[0]
   let results : Array[Json] = []
   for gen_result in gen_results {
-    let mut new_env = Env::new()
-    for key, value in env.bindings {
-      new_env = new_env.set(key, value)
+    let base_env : Env = {
+      bindings: env.bindings.copy(),
+      functions: env.functions.copy(),
     }
-    for key, value in env.functions {
-      new_env = new_env.set_function(key, value.0, value.1)
-    }
-    new_env = new_env.set(var_name, gen_result)
+    let new_env = base_env.set(var_name, gen_result)
     let update_results = eval_with_env(update_expr, accumulator, new_env).collect()
     if not(update_results.is_empty()) {
       accumulator = update_results[0]
