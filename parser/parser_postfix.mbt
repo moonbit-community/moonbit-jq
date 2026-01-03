@@ -1,25 +1,24 @@
 ///|
 /// Parse postfix operators
 fn Parser::parse_postfix(self : Parser) -> @ast.Expr raise ParseError {
-  let mut expr = self.parse_primary()
-  while true {
-    match self.current() {
-      Some(TQuestion) => {
-        self.advance()
-        expr = @ast.Expr::Optional(expr)
+  loop self.parse_primary() {
+    expr =>
+      match self.current() {
+        Some(TQuestion) => {
+          self.advance()
+          continue @ast.Expr::Optional(expr)
+        }
+        Some(TLBracket) => {
+          self.advance()
+          continue self.parse_index_or_slice(expr)
+        }
+        Some(TDot) => {
+          self.advance()
+          continue self.parse_field_access(expr)
+        }
+        _ => expr
       }
-      Some(TLBracket) => {
-        self.advance()
-        expr = self.parse_index_or_slice(expr)
-      }
-      Some(TDot) => {
-        self.advance()
-        expr = self.parse_field_access(expr)
-      }
-      _ => break
-    }
   }
-  expr
 }
 
 ///|

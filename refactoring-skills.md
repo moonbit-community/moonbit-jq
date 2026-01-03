@@ -629,3 +629,11 @@ After: eval_until uses loop current; eval_while loops over (current, results) st
 - Example:
 Before: base64_encode/base64_decode used `let mut i` with `while`.
 After: both use `for i = 0; ...; i = i + N` loops.
+
+## 2026-01-03: Use loop expressions in parser precedence chains
+- Problem: parse_additive/parse_multiplicative/parse_or/parse_and/parse_pipe/parse_comma/parse_postfix used mutable accumulators and while loops.
+- Change: Rewrote them as loop expressions with continue on left-associative parses.
+- Result: Parser combinators avoid explicit mutation while preserving precedence behavior.
+- Example:
+Before: parse_additive advanced mut expr in a while loop.
+After: parse_additive uses loop initial_expr { expr => match ... continue ... }.
