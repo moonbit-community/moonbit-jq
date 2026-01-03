@@ -24,17 +24,14 @@ fn eval_in(
   input : Json,
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
-  let container_results = eval_with_env(expr, input, env).collect()
-  if container_results.is_empty() {
-    return Iterator::singleton(Json::boolean(false))
-  }
-  match container_results[0] {
-    Object(obj) =>
+  match eval_with_env(expr, input, env).collect() {
+    [] => Iterator::singleton(Json::boolean(false))
+    [Object(obj), .. _] =>
       match input {
         String(key) => Iterator::singleton(Json::boolean(obj.contains(key)))
         _ => Iterator::singleton(Json::boolean(false))
       }
-    Array(arr) =>
+    [Array(arr), .. _] =>
       match input {
         Number(n, ..) => {
           let idx = n.to_int()
@@ -54,26 +51,17 @@ fn eval_in(
 /// Evaluate to_entries
 fn eval_to_entries(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
-    Object(obj) => {
-      let entries : Array[Json] = []
-      for k, v in obj {
-        let entry : Map[String, Json] = {}
-        entry["key"] = Json::string(k)
-        entry["value"] = v
-        entries.push(Json::object(entry))
-      }
-      Iterator::singleton(Json::array(entries))
-    }
-    Array(arr) => {
-      let entries : Array[Json] = []
-      for i = 0; i < arr.length(); i = i + 1 {
-        let entry : Map[String, Json] = {}
-        entry["key"] = Json::number(i.to_double())
-        entry["value"] = arr[i]
-        entries.push(Json::object(entry))
-      }
-      Iterator::singleton(Json::array(entries))
-    }
+    Object(obj) =>
+      Iterator::singleton(Json::array(
+        obj.to_array().map(fn(pair) {
+          let (k, v) = pair
+          entry_from_pair(Json::string(k), v)
+        }),
+      ))
+    Array(arr) =>
+      Iterator::singleton(Json::array(
+        arr.mapi(fn(i, v) { entry_from_pair(Json::number(i.to_double()), v) }),
+      ))
     _ => raise TypeMismatch("object/array", json_type_name(input))
   }
 }
@@ -82,40 +70,36 @@ fn eval_to_entries(input : Json) -> Iterator[Json] raise InterpreterError {
 /// Evaluate from_entries
 fn eval_from_entries(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
-    Array(arr) => {
-      let result : Map[String, Json] = {}
-      for entry in arr {
-        match entry {
-          Object(obj) => {
-            let key_opt = match obj.get("key") {
-              Some(k) => Some(k)
-              None => obj.get("name")
-            }
-            let value_opt = obj.get("value")
-            match key_opt {
-              Some(k) =>
-                match k {
-                  String(key_str) =>
-                    match value_opt {
-                      Some(v) => result[key_str] = v
-                      None => ()
-                    }
-                  Number(n, ..) =>
-                    match value_opt {
-                      Some(v) => result[n.to_int().to_string()] = v
-                      None => ()
-                    }
-                  _ => ()
-                }
-              _ => ()
-            }
-          }
-          _ => ()
-        }
-      }
-      Iterator::singleton(Json::object(result))
-    }
+    Array(arr) =>
+      Iterator::singleton(Json::object(
+        Map::from_array(arr.filter_map(entry_to_pair)[:]),
+      ))
     _ => raise TypeMismatch("array", json_type_name(input))
+  }
+}
+
+///|
+fn entry_from_pair(key : Json, value : Json) -> Json {
+  let entry : Map[String, Json] = { "key": key, "value": value }
+  Json::object(entry)
+}
+
+///|
+fn entry_to_pair(entry : Json) -> (String, Json)? {
+  match entry {
+    Object(obj) => {
+      let key_opt = match obj.get("key") {
+        Some(k) => Some(k)
+        None => obj.get("name")
+      }
+      let value_opt = obj.get("value")
+      match (key_opt, value_opt) {
+        (Some(String(key_str)), Some(v)) => Some((key_str, v))
+        (Some(Number(n, ..)), Some(v)) => Some((n.to_int().to_string(), v))
+        _ => None
+      }
+    }
+    _ => None
   }
 }
 

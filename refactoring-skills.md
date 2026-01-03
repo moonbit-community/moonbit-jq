@@ -533,3 +533,11 @@ After: range_step_count plus Array::makei generate the same sequences.
 - Example:
 Before: eval_last_gen used gen_results[gen_results.length() - 1].
 After: eval_last_gen uses last_in_view on ArrayView.
+
+## 2026-01-03: Make entry helpers more functional
+- Problem: object/array entry helpers used explicit loops and mutation.
+- Change: Used Array::mapi, Map::to_array, and filter_map with pattern matching to build entries and maps.
+- Result: Entry conversion is more declarative with preserved behavior.
+- Example:
+Before: eval_to_entries and eval_from_entries used mutable arrays and maps.
+After: eval_to_entries uses map/mapi; eval_from_entries uses filter_map + Map::from_array.
