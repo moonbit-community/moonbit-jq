@@ -462,26 +462,8 @@ fn eval_with_env(
     Format(format_name) => eval_format(format_name, input)
 
     // String interpolation: "text \(expr) more"
-    StringInterpolation(parts) => {
-      let buf = @buffer.new()
-      for pair in parts {
-        let (text, expr_opt) = pair
-        buf.write_string(text)
-        match expr_opt {
-          Some(expr) => {
-            let results = eval_with_env(expr, input, env).collect()
-            if not(results.is_empty()) {
-              match results[0] {
-                String(s) => buf.write_string(s)
-                _ => buf.write_string(results[0].to_string())
-              }
-            }
-          }
-          None => ()
-        }
-      }
-      Iterator::singleton(Json::string(buf.to_string()))
-    }
+    StringInterpolation(parts) =>
+      eval_string_interpolation(parts, input, env)
 
     // Function definition: this is tricky because we need to update env
     // We handle this specially in the Pipe case when left is FunctionDef
