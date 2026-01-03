@@ -269,3 +269,11 @@ After: ast/interpreter_basic_test.mbt, ast/interpreter_access_test.mbt, ast/inte
 - Example:
 Before: parser/parse_ops_test.mbt housed all operator parsing snapshots together.
 After: pipe/comma, arithmetic, comparison, and logic tests live in dedicated files.
+
+## 2026-01-03: Split new feature tests by behavior
+- Problem: ast/new_features_test.mbt mixed string, object, iteration, predicate, numeric, and binding cases.
+- Change: Moved run_jq into ast/new_features_helpers_test.mbt and split tests into focused files.
+- Result: New feature coverage stays the same with clearer grouping.
+- Example:
+Before: ast/new_features_test.mbt held all new feature tests in one file.
+After: ast/new_features_string_test.mbt, ast/new_features_object_test.mbt, ast/new_features_iteration_test.mbt, ast/new_features_predicate_test.mbt, ast/new_features_numeric_test.mbt, ast/new_features_collection_test.mbt, and ast/new_features_binding_test.mbt organize the cases.
