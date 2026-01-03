@@ -557,3 +557,11 @@ After: eval_any/eval_all call arr.any/arr.all; eval_group_by uses groups.update 
 - Example:
 Before: eval_map pushed results manually; eval_reverse indexed backwards; eval_unique tracked mut prev.
 After: eval_map uses iterator().flat_map(...).to_array(); eval_reverse uses arr.rev(); eval_unique folds with (Array, Json?) state.
+
+## 2026-01-03: Map keys/values from object entries
+- Problem: eval_keys/eval_values built arrays with explicit loops.
+- Change: Used Map::to_array + map with tuple destructuring for object keys and values.
+- Result: Builtins read declaratively without changing outputs.
+- Example:
+Before: eval_keys/eval_values used for loops to push into arrays.
+After: eval_keys/eval_values map over obj.to_array() to produce Json strings/values.
