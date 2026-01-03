@@ -253,3 +253,11 @@ After: assignment update/basic/compound helpers live in dedicated files.
 - Example:
 Before: ast/interpreter_encoding.mbt contained uri_encode, html_escape, and base64 helpers together.
 After: encoding helpers live in dedicated uri/html/base64 files.
+
+## 2026-01-03: Split interpreter smoke tests by theme
+- Problem: ast/interpreter_test.mbt combined helper logic with identity, access, operator, and builtin tests.
+- Change: Moved test_eval into ast/interpreter_eval_helpers_test.mbt and split tests into focused files.
+- Result: Interpreter smoke tests are grouped by concern without changing coverage.
+- Example:
+Before: ast/interpreter_test.mbt contained all basic eval tests in one file.
+After: ast/interpreter_basic_test.mbt, ast/interpreter_access_test.mbt, ast/interpreter_operators_test.mbt, and ast/interpreter_builtins_test.mbt organize the cases.
