@@ -237,3 +237,11 @@ After: literal, binary, and compare helpers live in dedicated files.
 - Example:
 Before: ast/interpreter_iteration.mbt handled range/first/last with index helpers in one file.
 After: sequence and index helpers live in dedicated files.
+
+## 2026-01-03: Split assignment helpers by role
+- Problem: ast/interpreter_assignment.mbt mixed update logic, simple assignment, and compound helpers.
+- Change: Split into ast/interpreter_assignment_update.mbt, ast/interpreter_assignment_basic.mbt, and ast/interpreter_assignment_compound.mbt.
+- Result: Assignment helpers are grouped by concern with smaller files.
+- Example:
+Before: ast/interpreter_assignment.mbt contained eval_update, eval_assign, and compound helpers together.
+After: assignment update/basic/compound helpers live in dedicated files.
