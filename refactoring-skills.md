@@ -317,3 +317,11 @@ After: ast/corner_cases_limit_test.mbt, ast/corner_cases_alternative_test.mbt, a
 - Example:
 Before: ast/corner_cases_conversion_iteration_test.mbt housed explode/implode and range/repeat/until in one file.
 After: conversion cases live in ast/corner_cases_conversion_test.mbt; iteration cases live in ast/corner_cases_iteration_test.mbt.
+
+## 2026-01-03: Split paths and optional corner cases
+- Problem: ast/corner_cases_paths_optional_test.mbt combined recursive descent, optional access, slicing, getpath, and paths filters.
+- Change: Split into dedicated corner case files per theme.
+- Result: Path/optional edge cases are grouped and easier to find with no behavior change.
+- Example:
+Before: ast/corner_cases_paths_optional_test.mbt grouped recursion, optional access, and path filters together.
+After: ast/corner_cases_recursive_descent_test.mbt, ast/corner_cases_optional_access_test.mbt, ast/corner_cases_slice_test.mbt, ast/corner_cases_getpath_test.mbt, and ast/corner_cases_paths_filter_test.mbt separate the topics.
