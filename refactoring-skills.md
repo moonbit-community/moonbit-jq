@@ -157,3 +157,11 @@ After: parser/parser_builtin_core.mbt, parser/parser_builtin_array.mbt, parser/p
 - Example:
 Before: ast/missing_features_test.mbt contained all missing feature tests.
 After: ast/missing_features_array_path_test.mbt, ast/missing_features_string_test.mbt, ast/missing_features_format_regex_test.mbt, ast/missing_features_math_test.mbt, ast/missing_features_ops_flow_test.mbt, and ast/missing_features_functions_test.mbt organize them by topic.
+
+## 2026-01-03: Split path helpers by responsibility
+- Problem: ast/interpreter_paths.mbt mixed enumeration, access, and mutation helpers.
+- Change: Split into ast/interpreter_path_enumeration.mbt, ast/interpreter_path_access.mbt, and ast/interpreter_path_mutation.mbt.
+- Result: Path logic is grouped by concern with smaller files.
+- Example:
+Before: ast/interpreter_paths.mbt contained collect_paths_with_filter, eval_get_path, and set/delete helpers together.
+After: enumeration/access/mutation helpers live in separate path-focused files.
