@@ -4,8 +4,7 @@ fn base64_encode(bytes : Bytes) -> String {
   let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
   let buf = @buffer.new()
   let len = bytes.length()
-  let mut i = 0
-  while i < len {
+  for i = 0; i < len; i = i + 3 {
     let b1 : UInt = bytes[i].to_uint()
     let b2 : UInt = if i + 1 < len { bytes[i + 1].to_uint() } else { 0 }
     let b3 : UInt = if i + 2 < len { bytes[i + 2].to_uint() } else { 0 }
@@ -25,7 +24,6 @@ fn base64_encode(bytes : Bytes) -> String {
     } else {
       buf.write_char('=')
     }
-    i = i + 3
   }
   buf.to_string()
 }
@@ -49,8 +47,7 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
   }
 
   let buf : Array[Byte] = []
-  let mut i = 0
-  while i < len {
+  for i = 0; i < len; i = i + 4 {
     let c1 = s.get_char(i).unwrap()
     let c2 = s.get_char(i + 1).unwrap()
     let c3 = s.get_char(i + 2).unwrap()
@@ -92,7 +89,6 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
     } else if c4 != '=' {
       raise EvalError("Invalid base64")
     }
-    i = i + 4
   }
   Bytes::from_array(buf)
 }

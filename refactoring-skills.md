@@ -621,3 +621,11 @@ After: eval_foreach folds gen_results and returns the collected outputs.
 - Example:
 Before: eval_until/eval_while mutated current inside while true.
 After: eval_until uses loop current; eval_while loops over (current, results) state.
+
+## 2026-01-03: Replace base64 while loops with for loops
+- Problem: base64 encode/decode used mutable index and while loops.
+- Change: Converted to for loops with explicit step to avoid mut indices.
+- Result: Encoding/decoding stays iterative but removes mutable loop variables.
+- Example:
+Before: base64_encode/base64_decode used `let mut i` with `while`.
+After: both use `for i = 0; ...; i = i + N` loops.
