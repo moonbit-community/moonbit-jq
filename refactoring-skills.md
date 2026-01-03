@@ -53,3 +53,11 @@ After: ast/interpreter_string_ops.mbt owns those implementations.
 - Example:
 Before: ast/interpreter.mbt implemented Has/In and *Entries cases inline.
 After: ast/interpreter_object_array_ops.mbt provides eval_* helpers for those cases.
+
+## 2026-01-03: Extract iteration and index helpers
+- Problem: Indexing helpers were scattered across iteration and array sections.
+- Change: Consolidated Range/First/Last/IndicesOf/IndexOf/Nth/RIndex into ast/interpreter_iteration.mbt.
+- Result: Iterator and index helpers are grouped for easier maintenance.
+- Example:
+Before: ast/interpreter.mbt contained range/index helpers inline in multiple blocks.
+After: ast/interpreter_iteration.mbt hosts the shared eval_* implementations.
