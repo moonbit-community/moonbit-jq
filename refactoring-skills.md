@@ -381,3 +381,11 @@ After: ast/jq_compat_uri_test.mbt, ast/jq_compat_base64_test.mbt, ast/jq_compat_
 - Example:
 Before: parser/parse_constructs_test.mbt included array/object and if/try/recurse tests together.
 After: collection constructs live in parser/parse_constructs_collection_test.mbt; control flow constructs live in parser/parse_constructs_control_flow_test.mbt.
+
+## 2026-01-03: Split parser access tests
+- Problem: parser/parse_access_test.mbt mixed field access, array access, optional, and variable parsing.
+- Change: Split into parser/parse_field_access_test.mbt, parser/parse_array_access_test.mbt, and parser/parse_optional_variable_test.mbt.
+- Result: Access parsing tests are grouped by access type without behavior changes.
+- Example:
+Before: parser/parse_access_test.mbt contained field, array, optional, and variable tests together.
+After: field, array, and optional/variable access tests live in dedicated files.
