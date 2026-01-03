@@ -165,3 +165,11 @@ After: ast/missing_features_array_path_test.mbt, ast/missing_features_string_tes
 - Example:
 Before: ast/interpreter_paths.mbt contained collect_paths_with_filter, eval_get_path, and set/delete helpers together.
 After: enumeration/access/mutation helpers live in separate path-focused files.
+
+## 2026-01-03: Split string helpers by theme
+- Problem: ast/interpreter_string_ops.mbt mixed core string ops, trim/case, and scan helpers.
+- Change: Split into ast/interpreter_string_core.mbt, ast/interpreter_string_trim.mbt, and ast/interpreter_string_scan.mbt.
+- Result: String helpers are organized by intent with smaller files.
+- Example:
+Before: ast/interpreter_string_ops.mbt contained split/join, trim/case, and scan/explode/implode together.
+After: string core, trim/case, and scan helpers live in dedicated files.
