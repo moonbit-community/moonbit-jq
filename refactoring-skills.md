@@ -405,3 +405,11 @@ After: identity parsing lives in parser/parse_identity_test.mbt; literals live i
 - Example:
 Before: parser/parse_builtins_test.mbt contained length/keys/type alongside map/select/sort/flatten.
 After: basic builtins live in parser/parse_builtins_basic_test.mbt; array builtins live in parser/parse_builtins_array_test.mbt.
+
+## 2026-01-03: Split complex parsing and error tests
+- Problem: parser/parse_complex_errors_test.mbt mixed a complex filter parse snapshot with error cases.
+- Change: Split into parser/parse_complex_filter_test.mbt and parser/parse_error_cases_test.mbt.
+- Result: Complex parse and error cases are separated without behavior changes.
+- Example:
+Before: parser/parse_complex_errors_test.mbt held both complex filter and error snapshots.
+After: complex filter lives in parser/parse_complex_filter_test.mbt; error cases live in parser/parse_error_cases_test.mbt.
