@@ -7,13 +7,18 @@ fn eval_map_values(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     Object(obj) => {
-      let result : Map[String, Json] = {}
-      for key, value in obj {
-        let transformed_results = eval_with_env(expr, value, env).collect()
-        if not(transformed_results.is_empty()) {
-          result[key] = transformed_results[0]
-        }
-      }
+      let result : Map[String, Json] = obj.to_array().fold(
+        init={},
+        fn(acc, pair) raise InterpreterError {
+          let (key, value) = pair
+          let transformed_results = eval_with_env(expr, value, env).collect()
+          match transformed_results {
+            [first, .. _] => acc[key] = first
+            _ => ()
+          }
+          acc
+        },
+      )
       Iterator::singleton(Json::object(result))
     }
     _ => raise TypeMismatch("object", json_type_name(input))

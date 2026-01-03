@@ -661,3 +661,11 @@ After: eval_repeat updates `idx.val` on a Ref[Int].
 - Example:
 Before: eval_operation_expr nested loops; eval_index_access built object values via push; eval_slice_access looped indices.
 After: eval_operation_expr folds left values and eaches right values; eval_index_access maps obj.to_array(); eval_slice_access clamps and slices ArrayView.
+
+## 2026-01-03: Map traversal values and fold object maps
+- Problem: recurse_all and map_values used manual loops to build arrays/maps.
+- Change: Mapped object entries to values for recursion and used Array::fold with pattern matching to build map_values output.
+- Result: Traversal and object mapping are more declarative without behavior changes.
+- Example:
+Before: recurse_all gathered object values via push; eval_map_values looped with a mutable map.
+After: recurse_all maps obj.to_array(); eval_map_values folds entries into a Map with matches.
