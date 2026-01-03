@@ -14,6 +14,6 @@ fn eval_from_json_string(input : Json) -> Iterator[Json] raise InterpreterError 
       }
       Iterator::singleton(parsed)
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }

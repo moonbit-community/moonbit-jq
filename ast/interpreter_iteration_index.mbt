@@ -22,7 +22,7 @@ fn eval_indices_of(
             }
             _ => Iterator::singleton(Json::array([]))
           }
-        _ => raise TypeMismatch("array/string", json_type_name(input))
+        _ => raise TypeMismatch("array/string", @ast_internal.json_type_name(input))
       }
   }
 }
@@ -53,7 +53,7 @@ fn eval_index_of(
               }
             _ => Iterator::singleton(null)
           }
-        _ => raise TypeMismatch("array/string", json_type_name(input))
+        _ => raise TypeMismatch("array/string", @ast_internal.json_type_name(input))
       }
   }
 }
@@ -70,7 +70,7 @@ fn eval_nth(n : Int, input : Json) -> Iterator[Json] raise InterpreterError {
       } else {
         Iterator::empty()
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -99,7 +99,7 @@ fn eval_rindex(
               }
             _ => Iterator::singleton(null)
           }
-        _ => raise TypeMismatch("array or string", json_type_name(input))
+        _ => raise TypeMismatch("array or string", @ast_internal.json_type_name(input))
       }
   }
 }

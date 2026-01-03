@@ -21,7 +21,7 @@ fn eval_unique_by(
       }
       Iterator::singleton(Json::array(results))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -38,7 +38,7 @@ fn eval_min_by(
         Some(elem) => Iterator::singleton(elem)
         None => Iterator::singleton(null)
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -55,7 +55,7 @@ fn eval_max_by(
         Some(elem) => Iterator::singleton(elem)
         None => Iterator::singleton(null)
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 

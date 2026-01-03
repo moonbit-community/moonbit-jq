@@ -62,7 +62,7 @@ fn eval_to_entries(input : Json) -> Iterator[Json] raise InterpreterError {
       Iterator::singleton(Json::array(
         arr.mapi(fn(i, v) { entry_from_pair(Json::number(i.to_double()), v) }),
       ))
-    _ => raise TypeMismatch("object/array", json_type_name(input))
+    _ => raise TypeMismatch("object/array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -74,7 +74,7 @@ fn eval_from_entries(input : Json) -> Iterator[Json] raise InterpreterError {
       Iterator::singleton(Json::object(
         Map::from_array(arr.filter_map(entry_to_pair)[:]),
       ))
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -117,6 +117,6 @@ fn eval_with_entries(
       let mapped_results = eval_with_env(Map(expr), entries_array, env).collect()
       eval_with_env(FromEntries, mapped_results[0], env)
     }
-    _ => raise TypeMismatch("object/array", json_type_name(input))
+    _ => raise TypeMismatch("object/array", @ast_internal.json_type_name(input))
   }
 }

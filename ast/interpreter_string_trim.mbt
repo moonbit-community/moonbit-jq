@@ -10,7 +10,7 @@ fn eval_ltrim_str(
         Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
         None => Iterator::singleton(input)
       }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -26,7 +26,7 @@ fn eval_rtrim_str(
         Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
         None => Iterator::singleton(input)
       }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -45,7 +45,7 @@ fn eval_ascii_upcase(input : Json) -> Iterator[Json] raise InterpreterError {
       }
       Iterator::singleton(Json::string(result.to_string()))
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -64,6 +64,6 @@ fn eval_ascii_downcase(input : Json) -> Iterator[Json] raise InterpreterError {
       }
       Iterator::singleton(Json::string(result.to_string()))
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }

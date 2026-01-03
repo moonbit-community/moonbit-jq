@@ -17,7 +17,7 @@ fn eval_first(input : Json) -> Iterator[Json] raise InterpreterError {
         [] => Iterator::empty()
         [head, .. _] => Iterator::singleton(head)
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -30,7 +30,7 @@ fn eval_last(input : Json) -> Iterator[Json] raise InterpreterError {
         Some(value) => Iterator::singleton(value)
         None => Iterator::empty()
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 

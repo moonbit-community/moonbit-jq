@@ -21,6 +21,6 @@ fn eval_map_values(
       )
       Iterator::singleton(Json::object(result))
     }
-    _ => raise TypeMismatch("object", json_type_name(input))
+    _ => raise TypeMismatch("object", @ast_internal.json_type_name(input))
   }
 }

@@ -3,7 +3,7 @@
 fn eval_round(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(n.round()))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -12,7 +12,7 @@ fn eval_round(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_ceil(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(n.ceil()))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -21,6 +21,6 @@ fn eval_ceil(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_abs(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(n.abs()))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }

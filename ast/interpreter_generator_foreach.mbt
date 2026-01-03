@@ -14,15 +14,11 @@ fn eval_foreach(
   if init_results.is_empty() {
     return Iterator::empty()
   }
-  let base_env : Env = {
-    bindings: env.bindings.copy(),
-    functions: env.functions.copy(),
-  }
   let (_acc, results) : (Json, Array[Json]) = gen_results.fold(
     init=(init_results[0], []),
     fn(state, gen_result) raise InterpreterError {
       let (acc, results) = state
-      let new_env = base_env.set(var_name, gen_result)
+      let new_env = env.extend(var_name, gen_result)
       let update_results = eval_with_env(update_expr, acc, new_env).collect()
       match update_results {
         [] => (acc, results)

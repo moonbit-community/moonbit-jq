@@ -678,6 +678,22 @@ After: they match on `first_opt(results)` or `first_or_null(results)`.
 Before: helpers lived in `ast/internal`.
 After: helpers live in `ast/internal/ast` and are imported as `@ast_internal`.
 
+## 2026-01-03: Move interpreter helpers into internal package
+- Problem: truthy checks and type name formatting lived in the main ast package.
+- Change: Moved `is_truthy` and `json_type_name` to `ast/internal/ast` and updated call sites to use `@ast_internal`.
+- Result: Interpreter helpers are now clearly internal and separated from AST surface.
+- Example:
+Before: files referenced `is_truthy` and `json_type_name` directly.
+After: references are `@ast_internal.is_truthy` and `@ast_internal.json_type_name`.
+
+## 2026-01-03: Add Env::extend for uniform environment updates
+- Problem: foreach rebuilt env maps manually for each iteration.
+- Change: Added `Env::extend` to copy bindings/functions and add one binding, then used it in foreach.
+- Result: Environment updates are centralized and more uniform.
+- Example:
+Before: eval_foreach built a base env with copied maps manually.
+After: eval_foreach calls `env.extend(var_name, gen_result)`.
+
 ## 2026-01-03: Use Ref state for repeat iterator
 - Problem: eval_repeat used a mutable index in an iterator closure.
 - Change: Switched to Ref[Int] to hold iterator state without a `let mut`.

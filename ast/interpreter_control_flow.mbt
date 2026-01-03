@@ -11,7 +11,7 @@ fn eval_if_then_else(
   match @ast_internal.first_opt(cond_results) {
     None => eval_with_env(else_expr, input, env)
     Some(first) =>
-      if is_truthy(first) {
+      if @ast_internal.is_truthy(first) {
         eval_with_env(then_expr, input, env)
       } else {
         eval_with_env(else_expr, input, env)
@@ -48,7 +48,7 @@ fn eval_alternative(
   match @ast_internal.first_opt(left_results) {
     None => eval_with_env(right, input, env)
     Some(first) =>
-      if is_truthy(first) {
+      if @ast_internal.is_truthy(first) {
         left_results.iterator()
       } else {
         eval_with_env(right, input, env)
@@ -108,7 +108,7 @@ fn eval_while(
       match cond_results {
         [] => results
         [first, .. _] =>
-          if not(is_truthy(first)) {
+          if not(@ast_internal.is_truthy(first)) {
             results
           } else {
             results.push(current)

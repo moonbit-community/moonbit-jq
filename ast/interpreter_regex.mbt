@@ -6,7 +6,7 @@ fn eval_test(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     String(s) => Iterator::singleton(Json::boolean(s.contains(pattern)))
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -33,7 +33,7 @@ fn eval_match(
       } else {
         Iterator::empty()
       }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -45,7 +45,7 @@ fn eval_capture(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     String(_s) => Iterator::singleton(Json::object(Map::from_array([])))
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -60,7 +60,7 @@ fn eval_splits(
       let parts = s.split(pattern).collect()
       parts.iterator().map(part => Json::string(part.to_string()))
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -76,7 +76,7 @@ fn eval_sub(
       Iterator::singleton(
         Json::string(s.replace(old=pattern[:], new=replacement[:])),
       )
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -92,6 +92,6 @@ fn eval_gsub(
       Iterator::singleton(
         Json::string(s.replace_all(old=pattern[:], new=replacement[:])),
       )
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }

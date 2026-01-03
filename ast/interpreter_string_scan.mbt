@@ -8,7 +8,7 @@ fn eval_explode(input : Json) -> Iterator[Json] raise InterpreterError {
         .to_array()
       Iterator::singleton(Json::array(results))
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 
@@ -26,7 +26,7 @@ fn eval_implode(input : Json) -> Iterator[Json] raise InterpreterError {
       let result = String::from_array(chars[:])
       Iterator::singleton(Json::string(result))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -42,7 +42,7 @@ fn eval_scan(
       scan_matches(s, pattern, 0, s.length(), pattern.length(), results)
       results.iterator()
     }
-    _ => raise TypeMismatch("string", json_type_name(input))
+    _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
 }
 

@@ -17,8 +17,8 @@ fn eval_binary_op(
     LessEq => Json::boolean(compare_json(left, right) <= 0)
     GreaterThan => Json::boolean(compare_json(left, right) > 0)
     GreaterEq => Json::boolean(compare_json(left, right) >= 0)
-    And => if is_truthy(left) { right } else { Json::boolean(false) }
-    Or => if is_truthy(left) { left } else { right }
+    And => if @ast_internal.is_truthy(left) { right } else { Json::boolean(false) }
+    Or => if @ast_internal.is_truthy(left) { left } else { right }
   }
 }
 
@@ -31,7 +31,7 @@ fn json_add(left : Json, right : Json) -> Json raise InterpreterError {
     (Object(a), Object(b)) => Json::object(a.merge(b))
     _ =>
       raise InvalidOperation(
-        "Cannot add \{json_type_name(left)} and \{json_type_name(right)}",
+        "Cannot add \{@ast_internal.json_type_name(left)} and \{@ast_internal.json_type_name(right)}",
       )
   }
 }
@@ -43,7 +43,7 @@ fn json_subtract(left : Json, right : Json) -> Json raise InterpreterError {
     (Array(a), Array(b)) => Json::array(array_without(a[:], b[:]))
     _ =>
       raise InvalidOperation(
-        "Cannot subtract \{json_type_name(right)} from \{json_type_name(left)}",
+        "Cannot subtract \{@ast_internal.json_type_name(right)} from \{@ast_internal.json_type_name(left)}",
       )
   }
 }
@@ -58,7 +58,7 @@ fn json_multiply(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InvalidOperation(
-        "Cannot multiply \{json_type_name(left)} and \{json_type_name(right)}",
+        "Cannot multiply \{@ast_internal.json_type_name(left)} and \{@ast_internal.json_type_name(right)}",
       )
   }
 }
@@ -109,7 +109,7 @@ fn json_divide(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InvalidOperation(
-        "Cannot divide \{json_type_name(left)} by \{json_type_name(right)}",
+        "Cannot divide \{@ast_internal.json_type_name(left)} by \{@ast_internal.json_type_name(right)}",
       )
   }
 }
@@ -125,7 +125,7 @@ fn json_modulo(left : Json, right : Json) -> Json raise InterpreterError {
     }
     _ =>
       raise InvalidOperation(
-        "Cannot modulo \{json_type_name(left)} by \{json_type_name(right)}",
+        "Cannot modulo \{@ast_internal.json_type_name(left)} by \{@ast_internal.json_type_name(right)}",
       )
   }
 }

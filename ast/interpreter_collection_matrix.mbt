@@ -11,7 +11,7 @@ fn eval_combinations(input : Json) -> Iterator[Json] raise InterpreterError {
             _ => cartesian_product(arrays[:]).iterator().map(Json::array)
           }
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -24,7 +24,7 @@ fn eval_transpose(input : Json) -> Iterator[Json] raise InterpreterError {
       let rows = build_columns(arr[:], 0, max_len)
       Iterator::singleton(Json::array(rows.map(Json::array)))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 

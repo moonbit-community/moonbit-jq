@@ -50,7 +50,7 @@ fn eval_sort_by(
       let sorted = sorted_pairs.map(fn(p) { p.0 })
       Iterator::singleton(Json::array(sorted))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -87,7 +87,7 @@ fn eval_group_by(
       }
       Iterator::singleton(Json::array(result))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -96,9 +96,9 @@ fn eval_group_by(
 fn eval_any(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      Iterator::singleton(Json::boolean(arr.any(is_truthy)))
+      Iterator::singleton(Json::boolean(arr.any(@ast_internal.is_truthy)))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -107,8 +107,8 @@ fn eval_any(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_all(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      Iterator::singleton(Json::boolean(arr.all(is_truthy)))
+      Iterator::singleton(Json::boolean(arr.all(@ast_internal.is_truthy)))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }

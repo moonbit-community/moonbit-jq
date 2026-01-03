@@ -19,7 +19,7 @@ fn eval_map(
       )
       Iterator::singleton(Json::array(results))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -34,7 +34,7 @@ fn eval_select(
   match @ast_internal.first_opt(cond_results) {
     None => Iterator::empty()
     Some(first) =>
-      if is_truthy(first) {
+      if @ast_internal.is_truthy(first) {
         Iterator::singleton(input)
       } else {
         Iterator::empty()
@@ -51,7 +51,7 @@ fn eval_sort(input : Json) -> Iterator[Json] raise InterpreterError {
       sorted.sort_by(compare_json)
       Iterator::singleton(Json::array(sorted))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -62,7 +62,7 @@ fn eval_reverse(input : Json) -> Iterator[Json] raise InterpreterError {
     Array(arr) => {
       Iterator::singleton(Json::array(arr.rev()))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -80,7 +80,7 @@ fn eval_flatten(
       }
       Iterator::singleton(Json::array(flatten_array(arr, depth)))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -112,6 +112,6 @@ fn eval_unique(input : Json) -> Iterator[Json] raise InterpreterError {
       )
       Iterator::singleton(Json::array(unique))
     }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }

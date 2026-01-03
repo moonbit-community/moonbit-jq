@@ -23,6 +23,14 @@ fn Env::set(self : Env, name : String, value : Json) -> Env {
 }
 
 ///|
+fn Env::extend(self : Env, name : String, value : Json) -> Env {
+  let new_bindings = self.bindings.copy()
+  let new_funcs = self.functions.copy()
+  new_bindings[name] = value
+  { bindings: new_bindings, functions: new_funcs }
+}
+
+///|
 fn Env::set_function(
   self : Env,
   name : String,

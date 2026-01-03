@@ -4,7 +4,7 @@ fn eval_add(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) =>
       Iterator::singleton(Json::number(sum_numbers(arr[:])))
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -13,7 +13,7 @@ fn eval_add(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_floor(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(n.floor()))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -22,7 +22,7 @@ fn eval_floor(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_sqrt(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(n.sqrt()))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -35,7 +35,7 @@ fn eval_min(input : Json) -> Iterator[Json] raise InterpreterError {
         Some(val) => Iterator::singleton(val)
         None => Iterator::singleton(null)
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 
@@ -48,7 +48,7 @@ fn eval_max(input : Json) -> Iterator[Json] raise InterpreterError {
         Some(val) => Iterator::singleton(val)
         None => Iterator::singleton(null)
       }
-    _ => raise TypeMismatch("array", json_type_name(input))
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
 

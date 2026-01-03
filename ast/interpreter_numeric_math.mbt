@@ -12,7 +12,7 @@ fn eval_pow(
   match (input, exp_results[0]) {
     (Number(base, ..), Number(exp, ..)) =>
       Iterator::singleton(Json::number(@math.pow(base, exp)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -21,7 +21,7 @@ fn eval_pow(
 fn eval_log(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.ln(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -30,7 +30,7 @@ fn eval_log(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_exp(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.exp(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -39,7 +39,7 @@ fn eval_exp(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_sin(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.sin(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -48,7 +48,7 @@ fn eval_sin(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_cos(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.cos(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -57,7 +57,7 @@ fn eval_cos(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_tan(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.tan(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -66,7 +66,7 @@ fn eval_tan(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_asin(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.asin(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -75,7 +75,7 @@ fn eval_asin(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_acos(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.acos(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
 
@@ -84,6 +84,6 @@ fn eval_acos(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_atan(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Number(n, ..) => Iterator::singleton(Json::number(@math.atan(n)))
-    _ => raise TypeMismatch("number", json_type_name(input))
+    _ => raise TypeMismatch("number", @ast_internal.json_type_name(input))
   }
 }
