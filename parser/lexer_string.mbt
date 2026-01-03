@@ -23,44 +23,50 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
             buf.reset()
             // Find the matching closing paren
             let expr_start = self.pos
-            let mut paren_depth = 1
-            while paren_depth > 0 {
-              match self.current() {
-                None => raise UnterminatedString(start)
-                Some('(') => {
-                  paren_depth = paren_depth + 1
-                  self.advance()
-                }
-                Some(')') => {
-                  paren_depth = paren_depth - 1
-                  if paren_depth == 0 {
-                    let expr_text = try! self.input[expr_start:self.pos].to_string()
-                    parts.push(("", Some(expr_text)))
+            let _ = loop 1 {
+              paren_depth =>
+                match self.current() {
+                  None => raise UnterminatedString(start)
+                  Some('(') => {
                     self.advance()
-                  } else {
-                    self.advance()
+                    continue paren_depth + 1
                   }
-                }
-                Some('"') => {
-                  // Skip nested strings
-                  self.advance()
-                  while true {
-                    match self.current() {
-                      Some('"') => {
-                        self.advance()
-                        break
-                      }
-                      Some('\\') => {
-                        self.advance()
-                        self.advance()
-                      }
-                      None => raise UnterminatedString(start)
-                      _ => self.advance()
+                  Some(')') => {
+                    let next_depth = paren_depth - 1
+                    if next_depth == 0 {
+                      let expr_text = try! self.input[expr_start:self.pos].to_string()
+                      parts.push(("", Some(expr_text)))
+                      self.advance()
+                      ()
+                    } else {
+                      self.advance()
+                      continue next_depth
                     }
                   }
+                  Some('"') => {
+                    // Skip nested strings
+                    self.advance()
+                    while true {
+                      match self.current() {
+                        Some('"') => {
+                          self.advance()
+                          break
+                        }
+                        Some('\\') => {
+                          self.advance()
+                          self.advance()
+                        }
+                        None => raise UnterminatedString(start)
+                        _ => self.advance()
+                      }
+                    }
+                    continue paren_depth
+                  }
+                  _ => {
+                    self.advance()
+                    continue paren_depth
+                  }
                 }
-                _ => self.advance()
-              }
             }
           }
           Some('n') => {

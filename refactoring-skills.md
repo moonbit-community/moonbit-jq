@@ -637,3 +637,11 @@ After: both use `for i = 0; ...; i = i + N` loops.
 - Example:
 Before: parse_additive advanced mut expr in a while loop.
 After: parse_additive uses loop initial_expr { expr => match ... continue ... }.
+
+## 2026-01-03: Remove mut flags in lexer loops
+- Problem: lexer_number and lexer_string used mutable flags for dot tracking and paren depth.
+- Change: Replaced mutable state with loop expressions carrying state.
+- Result: Lexer loops remain imperative but avoid explicit mutable locals.
+- Example:
+Before: lex_number used `let mut has_dot`; lex_string used `let mut paren_depth`.
+After: both use loop state with `continue` to update.
