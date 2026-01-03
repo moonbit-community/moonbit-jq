@@ -389,3 +389,11 @@ After: collection constructs live in parser/parse_constructs_collection_test.mbt
 - Example:
 Before: parser/parse_access_test.mbt contained field, array, optional, and variable tests together.
 After: field, array, and optional/variable access tests live in dedicated files.
+
+## 2026-01-03: Split parser identity and literal tests
+- Problem: parser/parse_literals_test.mbt mixed identity parsing with literal parsing.
+- Change: Split into parser/parse_identity_test.mbt and parser/parse_literal_test.mbt.
+- Result: Identity and literal parsing tests are separated with the same behavior.
+- Example:
+Before: parser/parse_literals_test.mbt included identity and literal cases together.
+After: identity parsing lives in parser/parse_identity_test.mbt; literals live in parser/parse_literal_test.mbt.
