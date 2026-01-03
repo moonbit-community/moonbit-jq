@@ -662,6 +662,14 @@ After: they use `loop () { ... continue () }` with match branches returning unit
 Before: parse_object and nested string skip used while/break.
 After: parse_object uses `loop` with an accumulator; nested string skip uses `loop ()`.
 
+## 2026-01-03: Centralize first-result handling
+- Problem: many interpreter helpers repeated `is_empty` checks and `results[0]` access.
+- Change: Added shared helpers for `first_opt` and `first_or_null` and used them in control flow, selection, interpolation, and object construction.
+- Result: Result handling is consistent and easier to audit.
+- Example:
+Before: eval_if_then_else and eval_select checked `is_empty()` then indexed.
+After: they match on `first_opt(results)` or `first_or_null(results)`.
+
 ## 2026-01-03: Use Ref state for repeat iterator
 - Problem: eval_repeat used a mutable index in an iterator closure.
 - Change: Switched to Ref[Int] to hold iterator state without a `let mut`.

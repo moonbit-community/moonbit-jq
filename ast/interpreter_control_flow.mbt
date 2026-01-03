@@ -8,15 +8,14 @@ fn eval_if_then_else(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let cond_results = eval_with_env(cond, input, env).collect()
-  if cond_results.is_empty() {
-    eval_with_env(else_expr, input, env)
-  } else {
-    let truthy = is_truthy(cond_results[0])
-    if truthy {
-      eval_with_env(then_expr, input, env)
-    } else {
-      eval_with_env(else_expr, input, env)
-    }
+  match first_opt(cond_results) {
+    None => eval_with_env(else_expr, input, env)
+    Some(first) =>
+      if is_truthy(first) {
+        eval_with_env(then_expr, input, env)
+      } else {
+        eval_with_env(else_expr, input, env)
+      }
   }
 }
 
@@ -46,12 +45,14 @@ fn eval_alternative(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let left_results = eval_with_env(left, input, env).collect()
-  if left_results.is_empty() {
-    eval_with_env(right, input, env)
-  } else if is_truthy(left_results[0]) {
-    left_results.iterator()
-  } else {
-    eval_with_env(right, input, env)
+  match first_opt(left_results) {
+    None => eval_with_env(right, input, env)
+    Some(first) =>
+      if is_truthy(first) {
+        left_results.iterator()
+      } else {
+        eval_with_env(right, input, env)
+      }
   }
 }
 

@@ -31,15 +31,14 @@ fn eval_select(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let cond_results = eval_with_env(condition, input, env).collect()
-  if cond_results.is_empty() {
-    Iterator::empty()
-  } else {
-    let truthy = is_truthy(cond_results[0])
-    if truthy {
-      Iterator::singleton(input)
-    } else {
-      Iterator::empty()
-    }
+  match first_opt(cond_results) {
+    None => Iterator::empty()
+    Some(first) =>
+      if is_truthy(first) {
+        Iterator::singleton(input)
+      } else {
+        Iterator::empty()
+      }
   }
 }
 

@@ -26,36 +26,30 @@ fn eval_object_construct(
     let (key_expr, value_expr_opt) = pair
     // Evaluate key to get string
     let key_results = eval_with_env(key_expr, input, env).collect()
-    if key_results.is_empty() {
-      continue
-    }
-    let key_str = match key_results[0] {
-      String(s) => s
-      _ => raise TypeMismatch("string", json_type_name(key_results[0]))
-    }
-
-    // Evaluate value or use key from input
-    let value = match value_expr_opt {
-      Some(value_expr) => {
-        let value_results = eval_with_env(value_expr, input, env).collect()
-        if value_results.is_empty() {
-          null
-        } else {
-          value_results[0]
-        }
-      }
-      None =>
-        // Shorthand: {foo} means {foo: .foo}
-        match input {
-          Object(input_obj) =>
-            match input_obj.get(key_str) {
-              Some(v) => v
-              None => null
+    match first_opt(key_results) {
+      None => ()
+      Some(String(key_str)) => {
+        // Evaluate value or use key from input
+        let value = match value_expr_opt {
+          Some(value_expr) => {
+            let value_results = eval_with_env(value_expr, input, env).collect()
+            first_or_null(value_results)
+          }
+          None =>
+            // Shorthand: {foo} means {foo: .foo}
+            match input {
+              Object(input_obj) =>
+                match input_obj.get(key_str) {
+                  Some(v) => v
+                  None => null
+                }
+              _ => null
             }
-          _ => null
         }
+        obj[key_str] = value
+      }
+      Some(other) => raise TypeMismatch("string", json_type_name(other))
     }
-    obj[key_str] = value
   }
   Iterator::singleton(Json::object(obj))
 }

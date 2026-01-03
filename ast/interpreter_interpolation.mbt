@@ -12,11 +12,10 @@ fn eval_string_interpolation(
     match expr_opt {
       Some(expr) => {
         let results = eval_with_env(expr, input, env).collect()
-        if not(results.is_empty()) {
-          match results[0] {
-            String(s) => buf.write_string(s)
-            _ => buf.write_string(results[0].to_string())
-          }
+        match first_opt(results) {
+          Some(String(s)) => buf.write_string(s)
+          Some(other) => buf.write_string(other.to_string())
+          None => ()
         }
       }
       None => ()
