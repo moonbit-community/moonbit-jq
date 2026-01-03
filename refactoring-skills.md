@@ -549,3 +549,11 @@ After: eval_to_entries uses map/mapi; eval_from_entries uses filter_map + Map::f
 - Example:
 Before: eval_any/eval_all used mut flags and break; eval_group_by used match on get.
 After: eval_any/eval_all call arr.any/arr.all; eval_group_by uses groups.update with pattern matching.
+
+## 2026-01-03: Refactor array helpers to iterator/fold style
+- Problem: array map/reverse/unique used explicit loops and mutable flags.
+- Change: Used iterator flat_map, Array::rev, and Array::fold with pattern matching to derive unique entries.
+- Result: Array helpers are more declarative with the same behavior.
+- Example:
+Before: eval_map pushed results manually; eval_reverse indexed backwards; eval_unique tracked mut prev.
+After: eval_map uses iterator().flat_map(...).to_array(); eval_reverse uses arr.rev(); eval_unique folds with (Array, Json?) state.

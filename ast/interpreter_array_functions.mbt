@@ -7,13 +7,16 @@ fn eval_map(
 ) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let results : Array[Json] = []
-      for elem in arr {
-        let mapped = eval_with_env(inner, elem, env).collect()
-        for v in mapped {
-          results.push(v)
-        }
-      }
+      let results : Array[Json] = arr.fold(
+        init=[],
+        fn(acc, elem) raise InterpreterError {
+          let mapped = eval_with_env(inner, elem, env).collect()
+          for v in mapped {
+            acc.push(v)
+          }
+          acc
+        },
+      )
       Iterator::singleton(Json::array(results))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
@@ -58,11 +61,7 @@ fn eval_sort(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_reverse(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let reversed : Array[Json] = []
-      for i = arr.length() - 1; i >= 0; i = i - 1 {
-        reversed.push(arr[i])
-      }
-      Iterator::singleton(Json::array(reversed))
+      Iterator::singleton(Json::array(arr.rev()))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
@@ -93,21 +92,25 @@ fn eval_unique(input : Json) -> Iterator[Json] raise InterpreterError {
     Array(arr) => {
       let sorted = arr.copy()
       sorted.sort_by(compare_json)
-      let unique : Array[Json] = []
-      let mut prev : Json? = None
-      for elem in sorted {
-        match prev {
-          None => {
-            unique.push(elem)
-            prev = Some(elem)
-          }
-          Some(p) =>
-            if compare_json(p, elem) != 0 {
-              unique.push(elem)
-              prev = Some(elem)
+      let (unique, _prev) : (Array[Json], Json?) = sorted.fold(
+        init=([], None),
+        fn(state, elem) {
+          let (acc, prev) = state
+          match prev {
+            None => {
+              acc.push(elem)
+              (acc, Some(elem))
             }
-        }
-      }
+            Some(p) =>
+              if compare_json(p, elem) != 0 {
+                acc.push(elem)
+                (acc, Some(elem))
+              } else {
+                (acc, prev)
+              }
+          }
+        },
+      )
       Iterator::singleton(Json::array(unique))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
