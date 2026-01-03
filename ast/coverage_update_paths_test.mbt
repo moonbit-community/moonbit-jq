@@ -23,3 +23,19 @@ test "coverage: getpath/setpath handle array segments" {
     content=[{ "a": { "b": 2 } }],
   )
 }
+
+///|
+test "coverage: setpath and delpaths for nested arrays" {
+  @json.inspect(coverage_eval("setpath([1]; 99)", "[10, 20, 30]"), content=[
+    [10, 99, 30],
+  ])
+  @json.inspect(coverage_eval("setpath([1, 0]; 99)", "[[0], [1, 2]]"), content=[
+    [[0], [99, 2]],
+  ])
+  @json.inspect(coverage_eval("delpaths([[1, 0]])", "[[0], [1, 2]]"), content=[
+    [[0], [2]],
+  ])
+  @json.inspect(coverage_eval("delpaths([[\"missing\", \"x\"]])", "{\"a\": 1}"), content=[
+    { "a": 1 },
+  ])
+}

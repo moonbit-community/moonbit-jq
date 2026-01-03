@@ -12,3 +12,9 @@ test "coverage: object construction edge cases" {
   @json.inspect(coverage_eval("{\"a\": empty}", "null"), content=[{ "a": null }])
   @json.inspect(coverage_eval("{a}", "1"), content=[{ "a": null }])
 }
+
+///|
+test "coverage: object constructor shorthand {a}" {
+  @json.inspect(coverage_eval("{a}", "{\"a\": 1}"), content=[{ "a": 1 }])
+  @json.inspect(coverage_eval("{a}", "{\"b\": 2}"), content=[{ "a": null }])
+}

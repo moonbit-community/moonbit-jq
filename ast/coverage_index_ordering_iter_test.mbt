@@ -39,3 +39,9 @@ test "coverage: iterator helpers and path edges" {
     content=[{ "a": 1 }],
   )
 }
+
+///|
+test "coverage: parse_slice_part handles spaced negative index" {
+  // Cover parser branch where '-' is tokenized separately from the number.
+  @json.inspect(coverage_eval(".[- 1]", "[10, 20, 30]"), content=[30])
+}

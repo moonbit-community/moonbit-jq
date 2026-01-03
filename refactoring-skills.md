@@ -461,3 +461,19 @@ After: coverage_flatten_entries_test.mbt, coverage_range_predicates_test.mbt, co
 - Example:
 Before: ast/coverage_remaining_test.mbt contained all remaining coverage checks together.
 After: coverage_repeat_test.mbt, coverage_explode_implode_test.mbt, coverage_fromjson_test.mbt, coverage_minmax_edges_test.mbt, coverage_combinations_mismatch_test.mbt, coverage_array_comparison_arithmetic_test.mbt, and coverage_setpath_out_of_range_test.mbt separate the cases.
+
+## 2026-01-03: Fold coverage gap tests into focused suites
+- Problem: ast/coverage_gap_test.mbt mixed object shorthand, keys, setpath/delpaths, update branches, base64 errors, and slice parsing.
+- Change: Moved each case into the existing focused coverage files and removed the gap file.
+- Result: Coverage gaps live alongside their related suites with no behavior changes.
+- Example:
+Before: ast/coverage_gap_test.mbt held unrelated coverage scenarios together.
+After: object/keys tests live with object and keys coverage, update/path cases live in coverage_update_* files, base64 errors in coverage_base64_test.mbt, and slice parsing in coverage_index_ordering_iter_test.mbt.
+
+## 2026-01-03: Use pattern matching for contains/inside
+- Problem: eval_contains/eval_inside relied on mutable flags and index access when scanning arrays.
+- Change: Introduced recursive ArrayView helpers with nested pattern matching and removed mutation.
+- Result: More declarative array membership logic with unchanged behavior.
+- Example:
+Before: eval_contains used `let mut found = false` loops over arrays.
+After: array_contains_view/array_contains_all use `match` on ArrayView (including nested patterns) to compute the result.

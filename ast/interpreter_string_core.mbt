@@ -57,33 +57,54 @@ fn eval_ends_with(
 }
 
 ///|
+fn array_contains_view(haystack : ArrayView[Json], needle : Json) -> Bool {
+  match haystack {
+    [] => false
+    [head, ..tail] =>
+      if head == needle {
+        true
+      } else {
+        array_contains_view(tail, needle)
+      }
+  }
+}
+
+///|
+fn array_contains_all(
+  haystack : ArrayView[Json],
+  needles : ArrayView[Json],
+) -> Bool {
+  match (needles, haystack) {
+    ([], _) => true
+    ([needle, ..rest], _) =>
+      if array_contains_view(haystack, needle) {
+        array_contains_all(haystack, rest)
+      } else {
+        false
+      }
+  }
+}
+
+///|
 /// Evaluate contains for strings, arrays, and objects
 fn eval_contains(
   expr : Expr,
   input : Json,
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
-  let needle_results = eval_with_env(expr, input, env).collect()
-  if needle_results.is_empty() {
-    return Iterator::singleton(Json::boolean(false))
-  }
-  let needle = needle_results[0]
-  match (input, needle) {
-    (String(haystack), String(n)) =>
-      Iterator::singleton(Json::boolean(haystack.contains(n)))
-    (Array(haystack), _) => {
-      let mut found = false
-      for elem in haystack {
-        if elem == needle {
-          found = true
-          break
-        }
+  match eval_with_env(expr, input, env).collect() {
+    [] => Iterator::singleton(Json::boolean(false))
+    [needle, .. _] => {
+      match (input, needle) {
+        (String(haystack), String(n)) =>
+          Iterator::singleton(Json::boolean(haystack.contains(n)))
+        (Array(haystack), _) =>
+          Iterator::singleton(Json::boolean(array_contains_view(haystack[:], needle)))
+        (Object(haystack), String(key)) =>
+          Iterator::singleton(Json::boolean(haystack.contains(key)))
+        _ => Iterator::singleton(Json::boolean(false))
       }
-      Iterator::singleton(Json::boolean(found))
     }
-    (Object(haystack), String(key)) =>
-      Iterator::singleton(Json::boolean(haystack.contains(key)))
-    _ => Iterator::singleton(Json::boolean(false))
   }
 }
 
@@ -94,33 +115,20 @@ fn eval_inside(
   input : Json,
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
-  let container_results = eval_with_env(expr, input, env).collect()
-  if container_results.is_empty() {
-    return Iterator::singleton(Json::boolean(false))
-  }
-  let container = container_results[0]
-  match (input, container) {
-    (String(needle), String(haystack)) =>
-      Iterator::singleton(Json::boolean(haystack.contains(needle)))
-    (Array(needle_arr), Array(haystack)) => {
-      let mut all_found = true
-      for needle_elem in needle_arr {
-        let mut found = false
-        for haystack_elem in haystack {
-          if haystack_elem == needle_elem {
-            found = true
-            break
-          }
-        }
-        if not(found) {
-          all_found = false
-          break
-        }
+  match eval_with_env(expr, input, env).collect() {
+    [] => Iterator::singleton(Json::boolean(false))
+    [container, .. _] => {
+      match (input, container) {
+        (String(needle), String(haystack)) =>
+          Iterator::singleton(Json::boolean(haystack.contains(needle)))
+        (Array(needle_arr), Array(haystack)) =>
+          Iterator::singleton(Json::boolean(
+            array_contains_all(haystack[:], needle_arr[:]),
+          ))
+        (String(key), Object(haystack)) =>
+          Iterator::singleton(Json::boolean(haystack.contains(key)))
+        _ => Iterator::singleton(Json::boolean(false))
       }
-      Iterator::singleton(Json::boolean(all_found))
     }
-    (String(key), Object(haystack)) =>
-      Iterator::singleton(Json::boolean(haystack.contains(key)))
-    _ => Iterator::singleton(Json::boolean(false))
   }
 }
