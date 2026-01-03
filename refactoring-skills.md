@@ -565,3 +565,11 @@ After: eval_map uses iterator().flat_map(...).to_array(); eval_reverse uses arr.
 - Example:
 Before: eval_keys/eval_values used for loops to push into arrays.
 After: eval_keys/eval_values map over obj.to_array() to produce Json strings/values.
+
+## 2026-01-03: Use ArrayView recursion for path access and mutation
+- Problem: path access/mutation used index-based loops and manual remaining slicing.
+- Change: Added ArrayView recursive helpers with nested pattern matching; fold paths in delpaths.
+- Result: Path operations are more declarative and avoid repeated copying.
+- Example:
+Before: eval_get_path walked with mut current; set_at_path/delete_at_path indexed and sliced Arrays.
+After: get_at_path/set_at_path/delete_at_path recurse on ArrayView with match; eval_del_paths folds over paths.

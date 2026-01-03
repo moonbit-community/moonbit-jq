@@ -1,95 +1,88 @@
 ///|
 /// Helper to set value at a path in JSON structure
-fn set_at_path(root : Json, path : Array[Json], value : Json) -> Json {
-  if path.is_empty() {
-    return value
-  }
-  let segment = path[0]
-  let remaining = path[1:]
-  match (root, segment) {
-    (Object(obj), String(key)) => {
-      let new_obj = Map::from_array(obj.iterator().collect())
-      if remaining.length() == 0 {
-        new_obj[key] = value
-      } else {
-        let current = obj.get(key).unwrap_or(null)
-        new_obj[key] = set_at_path(current, remaining.to_array(), value)
-      }
-      Json::object(new_obj)
-    }
-    (Array(arr), Number(idx, ..)) => {
-      let i = idx.to_int()
-      if i >= 0 && i < arr.length() {
-        let new_arr = arr.copy()
-        if remaining.length() == 0 {
-          new_arr[i] = value
-        } else {
-          new_arr[i] = set_at_path(arr[i], remaining.to_array(), value)
+fn set_at_path(root : Json, path : ArrayView[Json], value : Json) -> Json {
+  match path {
+    [] => value
+    [segment, .. rest] =>
+      match (root, segment) {
+        (Object(obj), String(key)) => {
+          let new_obj = obj.copy()
+          let next_value = match rest {
+            [] => value
+            _ => {
+              let current = obj.get(key).unwrap_or(null)
+              set_at_path(current, rest, value)
+            }
+          }
+          new_obj[key] = next_value
+          Json::object(new_obj)
         }
-        Json::array(new_arr)
-      } else {
-        root
+        (Array(arr), Number(idx, ..)) => {
+          let i = idx.to_int()
+          if i >= 0 && i < arr.length() {
+            let new_arr = arr.copy()
+            let next_value = match rest {
+              [] => value
+              _ => set_at_path(arr[i], rest, value)
+            }
+            new_arr[i] = next_value
+            Json::array(new_arr)
+          } else {
+            root
+          }
+        }
+        _ => root
       }
-    }
-    _ => root
   }
 }
 
 ///|
 /// Helper to delete value at a path in JSON structure
-fn delete_at_path(root : Json, path : Array[Json]) -> Json {
-  if path.is_empty() {
-    return null
-  }
-  if path.length() == 1 {
-    let segment = path[0]
-    match (root, segment) {
-      (Object(obj), String(key)) => {
-        let new_obj = Map::from_array(obj.iterator().collect())
-        new_obj.remove(key)
-        Json::object(new_obj)
-      }
-      (Array(arr), Number(idx, ..)) => {
-        let i = idx.to_int()
-        if i >= 0 && i < arr.length() {
-          let new_arr : Array[Json] = []
-          for j = 0; j < arr.length(); j = j + 1 {
-            if j != i {
-              new_arr.push(arr[j])
-            }
+fn delete_at_path(root : Json, path : ArrayView[Json]) -> Json {
+  match path {
+    [] => null
+    [segment] =>
+      match (root, segment) {
+        (Object(obj), String(key)) => {
+          let new_obj = obj.copy()
+          new_obj.remove(key)
+          Json::object(new_obj)
+        }
+        (Array(arr), Number(idx, ..)) => {
+          let i = idx.to_int()
+          if i >= 0 && i < arr.length() {
+            let filtered = arr.mapi(fn(j, v) {
+              if j == i { None } else { Some(v) }
+            })
+            Json::array(filtered.filter_map(fn(v) { v }))
+          } else {
+            root
           }
-          Json::array(new_arr)
-        } else {
-          root
         }
+        _ => root
       }
-      _ => root
-    }
-  } else {
-    let segment = path[0]
-    let remaining = path[1:]
-    match (root, segment) {
-      (Object(obj), String(key)) => {
-        let new_obj = Map::from_array(obj.iterator().collect())
-        match obj.get(key) {
-          Some(current) =>
-            new_obj[key] = delete_at_path(current, remaining.to_array())
-          None => ()
+    [segment, .. rest] =>
+      match (root, segment) {
+        (Object(obj), String(key)) => {
+          let new_obj = obj.copy()
+          match obj.get(key) {
+            Some(current) => new_obj[key] = delete_at_path(current, rest)
+            None => ()
+          }
+          Json::object(new_obj)
         }
-        Json::object(new_obj)
-      }
-      (Array(arr), Number(idx, ..)) => {
-        let i = idx.to_int()
-        if i >= 0 && i < arr.length() {
-          let new_arr = arr.copy()
-          new_arr[i] = delete_at_path(arr[i], remaining.to_array())
-          Json::array(new_arr)
-        } else {
-          root
+        (Array(arr), Number(idx, ..)) => {
+          let i = idx.to_int()
+          if i >= 0 && i < arr.length() {
+            let new_arr = arr.copy()
+            new_arr[i] = delete_at_path(arr[i], rest)
+            Json::array(new_arr)
+          } else {
+            root
+          }
         }
+        _ => root
       }
-      _ => root
-    }
   }
 }
 
@@ -111,7 +104,7 @@ fn eval_set_path(
       if path_arr.is_empty() {
         Iterator::singleton(value_results[0])
       } else {
-        Iterator::singleton(set_at_path(input, path_arr, value_results[0]))
+        Iterator::singleton(set_at_path(input, path_arr[:], value_results[0]))
       }
     _ => Iterator::singleton(input)
   }
@@ -129,16 +122,13 @@ fn eval_del_paths(
     return Iterator::singleton(input)
   }
   match paths_results[0] {
-    Array(paths_arr) => {
-      let mut result = input
-      for path_json in paths_arr {
+    Array(paths_arr) =>
+      Iterator::singleton(paths_arr.fold(init=input, fn(acc, path_json) {
         match path_json {
-          Array(path) => result = delete_at_path(result, path)
-          _ => ()
+          Array(path) => delete_at_path(acc, path[:])
+          _ => acc
         }
-      }
-      Iterator::singleton(result)
-    }
+      }))
     _ => Iterator::singleton(input)
   }
 }
