@@ -1,5 +1,5 @@
 ///|
-fn first_opt(results : Array[Json]) -> Json? {
+pub fn first_opt(results : Array[Json]) -> Json? {
   match results {
     [] => None
     [first, .. _] => Some(first)
@@ -7,7 +7,7 @@ fn first_opt(results : Array[Json]) -> Json? {
 }
 
 ///|
-fn first_or_null(results : Array[Json]) -> Json {
+pub fn first_or_null(results : Array[Json]) -> Json {
   match results {
     [] => null
     [first, .. _] => first

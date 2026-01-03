@@ -31,7 +31,7 @@ fn eval_select(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let cond_results = eval_with_env(condition, input, env).collect()
-  match first_opt(cond_results) {
+  match @ast_internal.first_opt(cond_results) {
     None => Iterator::empty()
     Some(first) =>
       if is_truthy(first) {

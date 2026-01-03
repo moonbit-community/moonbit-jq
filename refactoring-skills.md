@@ -670,6 +670,14 @@ After: parse_object uses `loop` with an accumulator; nested string skip uses `lo
 Before: eval_if_then_else and eval_select checked `is_empty()` then indexed.
 After: they match on `first_opt(results)` or `first_or_null(results)`.
 
+## 2026-01-03: Use internal/<package> layout for shared helpers
+- Problem: internal helper package was placed at `ast/internal`, not the `internal/<package>` layout.
+- Change: Moved helpers to `ast/internal/ast` and imported with an explicit alias.
+- Result: Internal package matches Mooncake's internal layout and avoids alias collisions.
+- Example:
+Before: helpers lived in `ast/internal`.
+After: helpers live in `ast/internal/ast` and are imported as `@ast_internal`.
+
 ## 2026-01-03: Use Ref state for repeat iterator
 - Problem: eval_repeat used a mutable index in an iterator closure.
 - Change: Switched to Ref[Int] to hold iterator state without a `let mut`.

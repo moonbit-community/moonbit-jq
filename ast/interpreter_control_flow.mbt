@@ -8,7 +8,7 @@ fn eval_if_then_else(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let cond_results = eval_with_env(cond, input, env).collect()
-  match first_opt(cond_results) {
+  match @ast_internal.first_opt(cond_results) {
     None => eval_with_env(else_expr, input, env)
     Some(first) =>
       if is_truthy(first) {
@@ -45,7 +45,7 @@ fn eval_alternative(
   env : Env,
 ) -> Iterator[Json] raise InterpreterError {
   let left_results = eval_with_env(left, input, env).collect()
-  match first_opt(left_results) {
+  match @ast_internal.first_opt(left_results) {
     None => eval_with_env(right, input, env)
     Some(first) =>
       if is_truthy(first) {

@@ -1,5 +1,7 @@
 {
-  "import": [],
+  "import": [
+    { "path": "bobzhang/moonjq/ast/internal/ast", "alias": "ast_internal" }
+  ],
   "test-import": [
     "bobzhang/moonjq/parser"
   ]

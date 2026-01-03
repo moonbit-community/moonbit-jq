@@ -12,7 +12,7 @@ fn eval_string_interpolation(
     match expr_opt {
       Some(expr) => {
         let results = eval_with_env(expr, input, env).collect()
-        match first_opt(results) {
+        match @ast_internal.first_opt(results) {
           Some(String(s)) => buf.write_string(s)
           Some(other) => buf.write_string(other.to_string())
           None => ()
