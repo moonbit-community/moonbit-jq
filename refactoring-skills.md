@@ -365,3 +365,11 @@ After: each feature has its own corner case file.
 - Example:
 Before: ast/corner_cases_basic_test.mbt combined empty/comma tests with has/in checks.
 After: empty output tests live in ast/corner_cases_empty_test.mbt; has/in tests live in ast/corner_cases_has_in_test.mbt.
+
+## 2026-01-03: Split jq compat tests by feature
+- Problem: ast/jq_compat_test.mbt mixed URI, base64, string, and paths compatibility tests.
+- Change: Moved jq_eval into ast/jq_compat_helpers_test.mbt and split tests into feature-focused files.
+- Result: Compatibility tests are grouped by feature with identical behavior.
+- Example:
+Before: ast/jq_compat_test.mbt contained all compat cases together.
+After: ast/jq_compat_uri_test.mbt, ast/jq_compat_base64_test.mbt, ast/jq_compat_string_test.mbt, and ast/jq_compat_paths_test.mbt hold the cases.
