@@ -349,3 +349,11 @@ After: each topic has its own corner case file.
 - Example:
 Before: ast/corner_cases_matrix_ascii_test.mbt housed splits, combinations, transpose, and ASCII tests together.
 After: each feature has its own corner case file.
+
+## 2026-01-03: Split type, predicate, and aggregation corner cases
+- Problem: ast/corner_cases_type_predicates_test.mbt mixed type conversion, predicates, min/max, unique, and group_by tests.
+- Change: Split into ast/corner_cases_type_conversion_test.mbt, ast/corner_cases_predicates_test.mbt, ast/corner_cases_minmax_test.mbt, ast/corner_cases_unique_test.mbt, and ast/corner_cases_group_by_test.mbt.
+- Result: Type, predicate, and aggregation edge cases are grouped by feature without changing behavior.
+- Example:
+Before: ast/corner_cases_type_predicates_test.mbt held all type/predicate/aggregation tests together.
+After: each feature has its own corner case file.
