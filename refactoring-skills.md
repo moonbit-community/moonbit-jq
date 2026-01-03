@@ -421,3 +421,11 @@ After: complex filter lives in parser/parse_complex_filter_test.mbt; error cases
 - Example:
 Before: parser/lex_complex_test.mbt contained all complex lexing snapshots.
 After: each lexing topic lives in its own test file.
+
+## 2026-01-03: Split advanced builtin coverage tests
+- Problem: ast/coverage_advanced_builtins_test.mbt mixed comparisons, membership, collection ops, string helpers, math, and base64 coverage.
+- Change: Split into focused coverage files by feature.
+- Result: Coverage cases are grouped by concern with no behavior change.
+- Example:
+Before: ast/coverage_advanced_builtins_test.mbt contained all advanced builtin coverage tests together.
+After: coverage_comparisons_test.mbt, coverage_membership_test.mbt, coverage_update_path_test.mbt, coverage_collection_ops_test.mbt, coverage_arithmetic_mixed_test.mbt, coverage_string_helpers_test.mbt, coverage_math_test.mbt, and coverage_base64_test.mbt separate the cases.
