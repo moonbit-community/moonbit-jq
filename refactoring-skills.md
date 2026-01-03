@@ -125,3 +125,11 @@ After: ast/interpreter_bindings.mbt provides eval_* helpers for binding cases.
 - Example:
 Before: ast/interpreter.mbt implemented Reduce/SortBy/GroupBy/Any/All inline.
 After: ast/interpreter_aggregates.mbt hosts eval_* helpers for those cases.
+
+## 2026-01-03: Extract compound assignment helpers
+- Problem: Compound assignment operators duplicated Update/Operation wiring.
+- Change: Added eval_compound_assign/eval_alt_assign in ast/interpreter_assignment.mbt and routed AddAssign/SubAssign/etc through them.
+- Result: Assignment handling is centralized with fewer repeated expressions.
+- Example:
+Before: ast/interpreter.mbt inlined Update(Operation(...)) for each compound assignment.
+After: ast/interpreter_assignment.mbt provides shared helpers for compound assignment cases.

@@ -105,37 +105,16 @@ fn eval_with_env(
 
     // Compound assignment operators: path += value
     AddAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Operation(Identity, Add, value_expr)),
-        input,
-        env,
-      )
+      eval_compound_assign(path, Add, value_expr, input, env)
     SubAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Operation(Identity, Subtract, value_expr)),
-        input,
-        env,
-      )
+      eval_compound_assign(path, Subtract, value_expr, input, env)
     MulAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Operation(Identity, Multiply, value_expr)),
-        input,
-        env,
-      )
+      eval_compound_assign(path, Multiply, value_expr, input, env)
     DivAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Operation(Identity, Divide, value_expr)),
-        input,
-        env,
-      )
+      eval_compound_assign(path, Divide, value_expr, input, env)
     ModAssign(path, value_expr) =>
-      eval_with_env(
-        Update(path, Operation(Identity, Modulo, value_expr)),
-        input,
-        env,
-      )
-    AltAssign(path, value_expr) =>
-      eval_with_env(Update(path, Alternative(Identity, value_expr)), input, env)
+      eval_compound_assign(path, Modulo, value_expr, input, env)
+    AltAssign(path, value_expr) => eval_alt_assign(path, value_expr, input, env)
 
     // Format functions: @base64, @uri, etc.
     Format(format_name) => eval_format(format_name, input)
