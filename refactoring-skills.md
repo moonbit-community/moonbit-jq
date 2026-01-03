@@ -221,3 +221,11 @@ After: each precedence tier lives in a focused parser file.
 - Example:
 Before: ast/interpreter_numeric.mbt held add/min/max, round/ceil/abs, and trig/exp helpers together.
 After: numeric helpers live in dedicated basic/round/math files.
+
+## 2026-01-03: Split JSON operation helpers
+- Problem: ast/interpreter_json_ops.mbt mixed literal evaluation, binary ops, and comparison logic.
+- Change: Split into ast/interpreter_literal_eval.mbt, ast/interpreter_binary_ops.mbt, and ast/interpreter_compare.mbt.
+- Result: JSON operations are grouped by responsibility with smaller files.
+- Example:
+Before: ast/interpreter_json_ops.mbt contained eval_literal, eval_binary_op, and compare_json together.
+After: literal, binary, and compare helpers live in dedicated files.
