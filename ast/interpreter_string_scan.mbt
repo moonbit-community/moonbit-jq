@@ -3,10 +3,9 @@
 fn eval_explode(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     String(s) => {
-      let results : Array[Json] = []
-      for char in s {
-        results.push(Json::number(char.to_int().to_double()))
-      }
+      let results = s.iterator()
+        .map(fn(char) { Json::number(char.to_int().to_double()) })
+        .to_array()
       Iterator::singleton(Json::array(results))
     }
     _ => raise TypeMismatch("string", json_type_name(input))
@@ -18,20 +17,14 @@ fn eval_explode(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_implode(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let buffer = @buffer.new()
-      for elem in arr {
+      let chars = arr.filter_map(fn(elem) {
         match elem {
-          Number(n, ..) => {
-            let code = n.to_int()
-            match Int::to_char(code) {
-              Some(c) => buffer.write_char(c)
-              None => ()
-            }
-          }
-          _ => ()
+          Number(n, ..) => Int::to_char(n.to_int())
+          _ => None
         }
-      }
-      Iterator::singleton(Json::string(buffer.to_string()))
+      })
+      let result = String::from_array(chars[:])
+      Iterator::singleton(Json::string(result))
     }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
@@ -46,25 +39,35 @@ fn eval_scan(
   match input {
     String(s) => {
       let results : Array[Json] = []
-      let slen = s.length()
-      let plen = pattern.length()
-      let mut i = 0
-      while i <= slen - plen {
-        let slice_result = s[i:i + plen] catch {
-          _ => {
-            i = i + 1
-            continue
-          }
-        }
-        if slice_result.to_string() == pattern {
-          results.push(Json::string(pattern))
-          i = i + plen
-        } else {
-          i = i + 1
-        }
-      }
+      scan_matches(s, pattern, 0, s.length(), pattern.length(), results)
       results.iterator()
     }
     _ => raise TypeMismatch("string", json_type_name(input))
+  }
+}
+
+///|
+fn scan_matches(
+  s : String,
+  pattern : String,
+  idx : Int,
+  slen : Int,
+  plen : Int,
+  results : Array[Json],
+) -> Unit {
+  if idx > slen - plen {
+    return
+  }
+  let slice_result = s[idx:idx + plen] catch {
+    _ => {
+      scan_matches(s, pattern, idx + 1, slen, plen, results)
+      return
+    }
+  }
+  if slice_result.to_string() == pattern {
+    results.push(Json::string(pattern))
+    scan_matches(s, pattern, idx + plen, slen, plen, results)
+  } else {
+    scan_matches(s, pattern, idx + 1, slen, plen, results)
   }
 }

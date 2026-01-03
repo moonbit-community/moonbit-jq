@@ -581,3 +581,11 @@ After: get_at_path/set_at_path/delete_at_path recurse on ArrayView with match; e
 - Example:
 Before: Env::set/Env::set_function iterated maps to rebuild; eval_foreach rebuilt maps with loops.
 After: Env::set/Env::set_function call copy(); eval_foreach builds Env from copied maps then sets var.
+
+## 2026-01-03: Use iterator/fold helpers in string scan utilities
+- Problem: explode/implode/scan relied on manual loops and mutable indices.
+- Change: Used String iterator + map for explode, Array::filter_map + String::from_array for implode, and a recursive scan helper for matches.
+- Result: String helpers are more declarative while preserving behavior.
+- Example:
+Before: eval_explode/implode used loop+buffer; eval_scan used a while loop with mut index.
+After: eval_explode maps iterator; eval_implode builds chars array; eval_scan delegates to scan_matches recursion.
