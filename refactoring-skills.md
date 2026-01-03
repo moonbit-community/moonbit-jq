@@ -357,3 +357,11 @@ After: each feature has its own corner case file.
 - Example:
 Before: ast/corner_cases_type_predicates_test.mbt held all type/predicate/aggregation tests together.
 After: each feature has its own corner case file.
+
+## 2026-01-03: Split empty and has/in corner cases
+- Problem: ast/corner_cases_basic_test.mbt mixed empty output checks with has/in membership tests.
+- Change: Split into ast/corner_cases_empty_test.mbt and ast/corner_cases_has_in_test.mbt.
+- Result: Empty output and membership edge cases are separated with the same behavior.
+- Example:
+Before: ast/corner_cases_basic_test.mbt combined empty/comma tests with has/in checks.
+After: empty output tests live in ast/corner_cases_empty_test.mbt; has/in tests live in ast/corner_cases_has_in_test.mbt.
