@@ -509,3 +509,11 @@ After: find_first_index/find_last_index and compare_array_view recursively match
 - Example:
 Before: eval_range used a mutable results array with a for loop.
 After: eval_range uses Array::makei; eval_first/last pattern match on ArrayView.
+
+## 2026-01-03: Make generator predicates recursive
+- Problem: eval_any_gen/eval_all_gen relied on mutable flags and loops.
+- Change: Added ArrayView recursive helpers with nested pattern matching for predicate evaluation.
+- Result: More declarative generator predicates without behavior changes.
+- Example:
+Before: eval_any_gen and eval_all_gen used mut flags and break.
+After: any_gen_results/all_gen_results recurse over ArrayView with match on condition results.
