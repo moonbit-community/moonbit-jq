@@ -141,3 +141,11 @@ After: ast/interpreter_assignment.mbt provides shared helpers for compound assig
 - Example:
 Before: ast/interpreter_extras.mbt contained MapValues, RangeWithStep, Foreach, Scan, and conversions.
 After: those helpers live in dedicated generator/collection/string/json/path files.
+
+## 2026-01-03: Split parser built-in dispatch by category
+- Problem: parser/parser_builtin.mbt had a massive match over every built-in.
+- Change: Moved category-specific parsing into parser/parser_builtin_* helpers and routed through parse_builtin_by_name.
+- Result: Built-in parsing is modular and easier to extend.
+- Example:
+Before: parser/parser_builtin.mbt handled all built-ins in one match.
+After: parser/parser_builtin_core.mbt, parser/parser_builtin_array.mbt, parser/parser_builtin_string.mbt, parser/parser_builtin_numeric.mbt, parser/parser_builtin_object.mbt, parser/parser_builtin_path.mbt, and parser/parser_builtin_flow.mbt split the logic.
