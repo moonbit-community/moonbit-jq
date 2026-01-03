@@ -555,99 +555,12 @@ fn eval_with_env(
     Abs => eval_abs(input)
 
     // String operations
-    Split(sep) =>
-      match input {
-        String(s) => {
-          let parts = s.split(sep)
-          let json_parts : Array[Json] = []
-          for part in parts {
-            json_parts.push(Json::string(part.to_string()))
-          }
-          Iterator::singleton(Json::array(json_parts))
-        }
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    Join(sep) =>
-      match input {
-        Array(arr) => {
-          let parts : Array[String] = []
-          for elem in arr {
-            match elem {
-              String(s) => parts.push(s)
-              _ => parts.push(elem.to_string())
-            }
-          }
-          Iterator::singleton(Json::string(parts.join(sep)))
-        }
-        _ => raise TypeMismatch("array", json_type_name(input))
-      }
-    StartsWith(prefix) =>
-      match input {
-        String(s) => Iterator::singleton(Json::boolean(s.has_prefix(prefix)))
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    EndsWith(suffix) =>
-      match input {
-        String(s) => Iterator::singleton(Json::boolean(s.has_suffix(suffix)))
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    Contains(expr) => {
-      let needle_results = eval_with_env(expr, input, env).collect()
-      if needle_results.is_empty() {
-        return Iterator::singleton(Json::boolean(false))
-      }
-      let needle = needle_results[0]
-      match (input, needle) {
-        (String(haystack), String(n)) =>
-          Iterator::singleton(Json::boolean(haystack.contains(n)))
-        (Array(haystack), _) => {
-          let mut found = false
-          for elem in haystack {
-            if elem == needle {
-              found = true
-              break
-            }
-          }
-          Iterator::singleton(Json::boolean(found))
-        }
-        (Object(haystack), String(key)) =>
-          Iterator::singleton(Json::boolean(haystack.contains(key)))
-        _ => Iterator::singleton(Json::boolean(false))
-      }
-    }
-    Inside(expr) => {
-      // inside checks if input is a subset of container
-      let container_results = eval_with_env(expr, input, env).collect()
-      if container_results.is_empty() {
-        return Iterator::singleton(Json::boolean(false))
-      }
-      let container = container_results[0]
-      match (input, container) {
-        (String(needle), String(haystack)) =>
-          Iterator::singleton(Json::boolean(haystack.contains(needle)))
-        (Array(needle_arr), Array(haystack)) => {
-          // Check if all elements of needle_arr exist in haystack
-          let mut all_found = true
-          for needle_elem in needle_arr {
-            let mut found = false
-            for haystack_elem in haystack {
-              if haystack_elem == needle_elem {
-                found = true
-                break
-              }
-            }
-            if not(found) {
-              all_found = false
-              break
-            }
-          }
-          Iterator::singleton(Json::boolean(all_found))
-        }
-        (String(key), Object(haystack)) =>
-          Iterator::singleton(Json::boolean(haystack.contains(key)))
-        _ => Iterator::singleton(Json::boolean(false))
-      }
-    }
+    Split(sep) => eval_split(sep, input)
+    Join(sep) => eval_join(sep, input)
+    StartsWith(prefix) => eval_starts_with(prefix, input)
+    EndsWith(suffix) => eval_ends_with(suffix, input)
+    Contains(expr) => eval_contains(expr, input, env)
+    Inside(expr) => eval_inside(expr, input, env)
 
     // Object/Array operations
     Has(key) =>
@@ -900,54 +813,10 @@ fn eval_with_env(
       }
 
     // String trimming
-    LTrimStr(prefix) =>
-      match input {
-        String(s) =>
-          match s.strip_prefix(prefix[:]) {
-            Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
-            None => Iterator::singleton(input)
-          }
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    RTrimStr(suffix) =>
-      match input {
-        String(s) =>
-          match s.strip_suffix(suffix[:]) {
-            Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
-            None => Iterator::singleton(input)
-          }
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    AsciiUpcase =>
-      match input {
-        String(s) => {
-          let result = @buffer.new()
-          for ch in s {
-            if ch >= 'a' && ch <= 'z' {
-              result.write_char(Int::unsafe_to_char(ch.to_int() - 32))
-            } else {
-              result.write_char(ch)
-            }
-          }
-          Iterator::singleton(Json::string(result.to_string()))
-        }
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
-    AsciiDowncase =>
-      match input {
-        String(s) => {
-          let result = @buffer.new()
-          for ch in s {
-            if ch >= 'A' && ch <= 'Z' {
-              result.write_char(Int::unsafe_to_char(ch.to_int() + 32))
-            } else {
-              result.write_char(ch)
-            }
-          }
-          Iterator::singleton(Json::string(result.to_string()))
-        }
-        _ => raise TypeMismatch("string", json_type_name(input))
-      }
+    LTrimStr(prefix) => eval_ltrim_str(prefix, input)
+    RTrimStr(suffix) => eval_rtrim_str(suffix, input)
+    AsciiUpcase => eval_ascii_upcase(input)
+    AsciiDowncase => eval_ascii_downcase(input)
 
     // Array functions
     Nth(n) =>

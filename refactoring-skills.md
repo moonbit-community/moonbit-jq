@@ -37,3 +37,11 @@ After: ast/interpreter_array_functions.mbt owns those implementations.
 - Example:
 Before: ast/interpreter.mbt contained Add/Floor/Sqrt/Min/Max, Round/Ceil/Abs, and Pow/Log/Exp/Sin/Cos/Tan/Asin/Acos/Atan inline.
 After: ast/interpreter_numeric.mbt provides eval_* helpers for those cases.
+
+## 2026-01-03: Extract string operations and trimming
+- Problem: String operations and ASCII trimming logic were mixed into the main evaluator.
+- Change: Moved string ops and trimming helpers into ast/interpreter_string_ops.mbt.
+- Result: String cases are easier to scan and reuse.
+- Example:
+Before: ast/interpreter.mbt had Split/Join/Contains/Inside and LTrimStr/RTrimStr/AsciiUpcase/AsciiDowncase inline.
+After: ast/interpreter_string_ops.mbt owns those implementations.
