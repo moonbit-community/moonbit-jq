@@ -429,3 +429,11 @@ After: each lexing topic lives in its own test file.
 - Example:
 Before: ast/coverage_advanced_builtins_test.mbt contained all advanced builtin coverage tests together.
 After: coverage_comparisons_test.mbt, coverage_membership_test.mbt, coverage_update_path_test.mbt, coverage_collection_ops_test.mbt, coverage_arithmetic_mixed_test.mbt, coverage_string_helpers_test.mbt, coverage_math_test.mbt, and coverage_base64_test.mbt separate the cases.
+
+## 2026-01-03: Split error-branch coverage tests
+- Problem: ast/coverage_error_branches_test.mbt bundled control flow fallbacks, format errors, update branches, and iterator/path edges.
+- Change: Split into focused coverage files for control flow, format/string mismatches, update/walk/recurse, numeric/range mismatches, index/ordering/iterator edges, and entries edges.
+- Result: Coverage edge cases are grouped by feature without behavior changes.
+- Example:
+Before: ast/coverage_error_branches_test.mbt held all error-branch coverage scenarios.
+After: coverage_error_control_flow_test.mbt, coverage_format_string_mismatch_test.mbt, coverage_update_walk_recurse_test.mbt, coverage_numeric_range_test.mbt, coverage_index_ordering_iter_test.mbt, and coverage_entries_edge_test.mbt separate the cases.
