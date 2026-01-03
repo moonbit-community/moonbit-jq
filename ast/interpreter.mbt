@@ -123,27 +123,10 @@ fn eval_with_env(
     Max => eval_max(input)
 
     // Control flow
-    IfThenElse(cond, then_expr, else_expr) => {
-      let cond_results = eval_with_env(cond, input, env).collect()
-      if cond_results.is_empty() {
-        eval_with_env(else_expr, input, env)
-      } else {
-        let truthy = is_truthy(cond_results[0])
-        if truthy {
-          eval_with_env(then_expr, input, env)
-        } else {
-          eval_with_env(else_expr, input, env)
-        }
-      }
-    }
+    IfThenElse(cond, then_expr, else_expr) =>
+      eval_if_then_else(cond, then_expr, else_expr, input, env)
     TryCatch(try_expr, catch_opt) =>
-      eval_with_env(try_expr, input, env) catch {
-        _ =>
-          match catch_opt {
-            Some(catch_expr) => eval_with_env(catch_expr, input, env)
-            None => Iterator::empty()
-          }
-      }
+      eval_try_catch(try_expr, catch_opt, input, env)
 
     // Variables
     Variable(name) =>
@@ -156,16 +139,7 @@ fn eval_with_env(
     Recurse => recurse_all(input)
 
     // Alternative operator: return left, or right if left produces empty/null
-    Alternative(left, right) => {
-      let left_results = eval_with_env(left, input, env).collect()
-      if left_results.is_empty() {
-        eval_with_env(right, input, env)
-      } else if is_truthy(left_results[0]) {
-        left_results.iterator()
-      } else {
-        eval_with_env(right, input, env)
-      }
-    }
+    Alternative(left, right) => eval_alternative(left, right, input, env)
 
     // Compound assignment operators: path += value
     AddAssign(path, value_expr) =>
@@ -423,48 +397,11 @@ fn eval_with_env(
     DelPaths(paths_expr) => eval_del_paths(paths_expr, input, env)
 
     // Control flow
-    Limit(n, expr) => eval_with_env(expr, input, env).take(n)
-    Until(cond_expr, update_expr) => {
-      let mut current = input
-      while true {
-        let cond_results = eval_with_env(cond_expr, current, env).collect()
-        if cond_results.is_empty() {
-          break
-        }
-        match cond_results[0] {
-          True => break
-          _ => {
-            let update_results = eval_with_env(update_expr, current, env).collect()
-            if update_results.is_empty() {
-              break
-            }
-            current = update_results[0]
-          }
-        }
-      }
-      Iterator::singleton(current)
-    }
-    While(cond_expr, update_expr) => {
-      let results : Array[Json] = []
-      let mut current = input
-      while true {
-        let cond_results = eval_with_env(cond_expr, current, env).collect()
-        if cond_results.is_empty() {
-          break
-        }
-        if not(is_truthy(cond_results[0])) {
-          break
-        } else {
-          results.push(current)
-          let update_results = eval_with_env(update_expr, current, env).collect()
-          if update_results.is_empty() {
-            break
-          }
-          current = update_results[0]
-        }
-      }
-      results.iterator()
-    }
+    Limit(n, expr) => eval_limit(n, expr, input, env)
+    Until(cond_expr, update_expr) =>
+      eval_until(cond_expr, update_expr, input, env)
+    While(cond_expr, update_expr) =>
+      eval_while(cond_expr, update_expr, input, env)
 
     // Math functions
     Pow(exp_expr) => eval_pow(exp_expr, input, env)

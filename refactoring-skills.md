@@ -93,3 +93,11 @@ After: ast/interpreter_extras.mbt provides eval_* helpers for those cases.
 - Example:
 Before: ast/interpreter.mbt contained Update, Assign, Walk, RecurseWith, and Path logic inline.
 After: ast/interpreter_assignment.mbt and ast/interpreter_traversal.mbt/ast/interpreter_paths.mbt host eval_* helpers.
+
+## 2026-01-03: Extract control-flow evaluators
+- Problem: Control-flow branches were mixed into the main evaluator.
+- Change: Moved IfThenElse/TryCatch/Alternative/Limit/Until/While into ast/interpreter_control_flow.mbt.
+- Result: Control flow logic is centralized and the dispatcher is leaner.
+- Example:
+Before: ast/interpreter.mbt implemented control flow inline.
+After: ast/interpreter_control_flow.mbt provides eval_* control-flow helpers.
