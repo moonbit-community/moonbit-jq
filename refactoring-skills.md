@@ -341,3 +341,11 @@ After: entry tests live in ast/corner_cases_entries_test.mbt; membership tests l
 - Example:
 Before: ast/corner_cases_reduce_foreach_vars_test.mbt held variable, reduce, and foreach tests together.
 After: each topic has its own corner case file.
+
+## 2026-01-03: Split matrix and ASCII corner cases
+- Problem: ast/corner_cases_matrix_ascii_test.mbt mixed splits, combinations, transpose, and ASCII casing tests.
+- Change: Split into ast/corner_cases_splits_test.mbt, ast/corner_cases_combinations_test.mbt, ast/corner_cases_transpose_test.mbt, and ast/corner_cases_ascii_test.mbt.
+- Result: Matrix/ASCII edge cases are grouped by feature with no behavior change.
+- Example:
+Before: ast/corner_cases_matrix_ascii_test.mbt housed splits, combinations, transpose, and ASCII tests together.
+After: each feature has its own corner case file.
