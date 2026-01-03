@@ -277,3 +277,11 @@ After: pipe/comma, arithmetic, comparison, and logic tests live in dedicated fil
 - Example:
 Before: ast/new_features_test.mbt held all new feature tests in one file.
 After: ast/new_features_string_test.mbt, ast/new_features_object_test.mbt, ast/new_features_iteration_test.mbt, ast/new_features_predicate_test.mbt, ast/new_features_numeric_test.mbt, ast/new_features_collection_test.mbt, and ast/new_features_binding_test.mbt organize the cases.
+
+## 2026-01-03: Split integration tests by scenario
+- Problem: ast/integration_test.mbt mixed helper logic with basic ops, operators, built-ins, control flow, and scenario tests.
+- Change: Moved jq into ast/integration_helpers_test.mbt and split tests into focused integration files.
+- Result: Integration coverage remains intact with clearer grouping by concern.
+- Example:
+Before: ast/integration_test.mbt bundled all integration cases in one file.
+After: ast/integration_basic_test.mbt, ast/integration_operators_test.mbt, ast/integration_constructs_test.mbt, ast/integration_builtins_test.mbt, ast/integration_control_flow_test.mbt, and ast/integration_scenarios_test.mbt organize the cases.
