@@ -1,11 +1,11 @@
 ///|
 /// Evaluate range
 fn eval_range(n : Int) -> Iterator[Json] {
-  let results : Array[Json] = []
-  for i = 0; i < n; i = i + 1 {
-    results.push(Json::number(i.to_double()))
+  if n <= 0 {
+    [].iterator()
+  } else {
+    Array::makei(n, i => Json::number(i.to_double())).iterator()
   }
-  results.iterator()
 }
 
 ///|
@@ -13,10 +13,9 @@ fn eval_range(n : Int) -> Iterator[Json] {
 fn eval_first(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) =>
-      if arr.is_empty() {
-        Iterator::empty()
-      } else {
-        Iterator::singleton(arr[0])
+      match arr[:] {
+        [] => Iterator::empty()
+        [head, .. _] => Iterator::singleton(head)
       }
     _ => raise TypeMismatch("array", json_type_name(input))
   }
@@ -27,11 +26,19 @@ fn eval_first(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_last(input : Json) -> Iterator[Json] raise InterpreterError {
   match input {
     Array(arr) =>
-      if arr.is_empty() {
-        Iterator::empty()
-      } else {
-        Iterator::singleton(arr[arr.length() - 1])
+      match last_in_view(arr[:]) {
+        Some(value) => Iterator::singleton(value)
+        None => Iterator::empty()
       }
     _ => raise TypeMismatch("array", json_type_name(input))
+  }
+}
+
+///|
+fn last_in_view(arr : ArrayView[Json]) -> Json? {
+  match arr {
+    [] => None
+    [head] => Some(head)
+    [_head, ..tail] => last_in_view(tail)
   }
 }

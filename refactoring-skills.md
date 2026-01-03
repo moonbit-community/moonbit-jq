@@ -501,3 +501,11 @@ After: array_without/cartesian_product/build_columns use recursive pattern match
 - Example:
 Before: eval_index_of and compare_json used for-loops over arrays.
 After: find_first_index/find_last_index and compare_array_view recursively match ArrayView tails.
+
+## 2026-01-03: Make range/first/last more declarative
+- Problem: eval_range/eval_first/eval_last used explicit loops and index-based access.
+- Change: Used Array::makei for range and ArrayView pattern matching for first/last.
+- Result: Less manual mutation while preserving range semantics.
+- Example:
+Before: eval_range used a mutable results array with a for loop.
+After: eval_range uses Array::makei; eval_first/last pattern match on ArrayView.
