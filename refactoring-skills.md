@@ -261,3 +261,11 @@ After: encoding helpers live in dedicated uri/html/base64 files.
 - Example:
 Before: ast/interpreter_test.mbt contained all basic eval tests in one file.
 After: ast/interpreter_basic_test.mbt, ast/interpreter_access_test.mbt, ast/interpreter_operators_test.mbt, and ast/interpreter_builtins_test.mbt organize the cases.
+
+## 2026-01-03: Split parser operator tests by category
+- Problem: parser/parse_ops_test.mbt combined pipe, arithmetic, precedence, comparison, and logic tests.
+- Change: Split tests into parser/parse_ops_pipe_comma_test.mbt, parser/parse_ops_arithmetic_test.mbt, parser/parse_ops_comparison_test.mbt, and parser/parse_ops_logic_test.mbt.
+- Result: Operator parsing tests are grouped by operator class with no behavioral changes.
+- Example:
+Before: parser/parse_ops_test.mbt housed all operator parsing snapshots together.
+After: pipe/comma, arithmetic, comparison, and logic tests live in dedicated files.
