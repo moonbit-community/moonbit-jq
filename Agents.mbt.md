@@ -804,9 +804,9 @@ fn parse_int(s : String) -> Int raise ParseError {
 }
 
 ///|
-fn div(x : Int, y : Int) -> Int raise {
+fn div(x : Int, y : Int) -> Int raise Failure {
   if y == 0 {
-    raise Failure("Division by zero")
+    raise @builtin.Failure("Division by zero")
   }
   x / y
 }
