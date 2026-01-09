@@ -5,11 +5,11 @@ fn eval_assign(
   value_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let values = eval_with_env(value_expr, input, env).collect()
   if values.is_empty() {
-    Iterator::singleton(input)
+    Iter::singleton(input)
   } else {
-    Iterator::singleton(values[0])
+    Iter::singleton(values[0])
   }
 }

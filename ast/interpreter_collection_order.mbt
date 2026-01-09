@@ -4,7 +4,7 @@ fn eval_unique_by(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
       let seen : Map[String, Bool] = {}
@@ -19,7 +19,7 @@ fn eval_unique_by(
           }
         }
       }
-      Iterator::singleton(Json::array(results))
+      Iter::singleton(Json::array(results))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -31,12 +31,12 @@ fn eval_min_by(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) =>
       match pick_min_by(expr, env, arr[:]) {
-        Some(elem) => Iterator::singleton(elem)
-        None => Iterator::singleton(null)
+        Some(elem) => Iter::singleton(elem)
+        None => Iter::singleton(null)
       }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -48,12 +48,12 @@ fn eval_max_by(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) =>
       match pick_max_by(expr, env, arr[:]) {
-        Some(elem) => Iterator::singleton(elem)
-        None => Iterator::singleton(null)
+        Some(elem) => Iter::singleton(elem)
+        None => Iter::singleton(null)
       }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -67,12 +67,13 @@ fn pick_min_by(
 ) -> Json? raise InterpreterError {
   match arr {
     [] => None
-    [head, ..tail] =>
+    [head, .. tail] =>
       match eval_with_env(expr, head, env).collect() {
         [] => None
-        [head_val, .. _] => {
-          let (min_elem, _min_val) =
-            reduce_min_by(expr, env, head, head_val, tail)
+        [head_val, ..] => {
+          let (min_elem, _min_val) = reduce_min_by(
+            expr, env, head, head_val, tail,
+          )
           Some(min_elem)
         }
       }
@@ -89,10 +90,10 @@ fn reduce_min_by(
 ) -> (Json, Json) raise InterpreterError {
   match rest {
     [] => (current_elem, current_val)
-    [elem, ..tail] =>
+    [elem, .. tail] =>
       match eval_with_env(expr, elem, env).collect() {
         [] => reduce_min_by(expr, env, current_elem, current_val, tail)
-        [val, .. _] =>
+        [val, ..] =>
           if compare_json(val, current_val) < 0 {
             reduce_min_by(expr, env, elem, val, tail)
           } else {
@@ -110,12 +111,13 @@ fn pick_max_by(
 ) -> Json? raise InterpreterError {
   match arr {
     [] => None
-    [head, ..tail] =>
+    [head, .. tail] =>
       match eval_with_env(expr, head, env).collect() {
         [] => None
-        [head_val, .. _] => {
-          let (max_elem, _max_val) =
-            reduce_max_by(expr, env, head, head_val, tail)
+        [head_val, ..] => {
+          let (max_elem, _max_val) = reduce_max_by(
+            expr, env, head, head_val, tail,
+          )
           Some(max_elem)
         }
       }
@@ -132,10 +134,10 @@ fn reduce_max_by(
 ) -> (Json, Json) raise InterpreterError {
   match rest {
     [] => (current_elem, current_val)
-    [elem, ..tail] =>
+    [elem, .. tail] =>
       match eval_with_env(expr, elem, env).collect() {
         [] => reduce_max_by(expr, env, current_elem, current_val, tail)
-        [val, .. _] =>
+        [val, ..] =>
           if compare_json(val, current_val) > 0 {
             reduce_max_by(expr, env, elem, val, tail)
           } else {

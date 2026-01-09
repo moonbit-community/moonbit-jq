@@ -6,7 +6,7 @@ fn eval_if_then_else(
   else_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let cond_results = eval_with_env(cond, input, env).collect()
   match @ast_internal.first_opt(cond_results) {
     None => eval_with_env(else_expr, input, env)
@@ -26,12 +26,12 @@ fn eval_try_catch(
   catch_opt : Expr?,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   eval_with_env(try_expr, input, env) catch {
     _ =>
       match catch_opt {
         Some(catch_expr) => eval_with_env(catch_expr, input, env)
-        None => Iterator::empty()
+        None => Iter::empty()
       }
   }
 }
@@ -43,13 +43,13 @@ fn eval_alternative(
   right : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let left_results = eval_with_env(left, input, env).collect()
   match @ast_internal.first_opt(left_results) {
     None => eval_with_env(right, input, env)
     Some(first) =>
       if @ast_internal.is_truthy(first) {
-        left_results.iterator()
+        left_results.iter()
       } else {
         eval_with_env(right, input, env)
       }
@@ -63,7 +63,7 @@ fn eval_limit(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   eval_with_env(expr, input, env).take(n)
 }
 
@@ -74,24 +74,24 @@ fn eval_until(
   update_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let result = loop input {
     current => {
       let cond_results = eval_with_env(cond_expr, current, env).collect()
       match cond_results {
         [] => current
-        [True, .. _] => current
+        [True, ..] => current
         _ => {
           let update_results = eval_with_env(update_expr, current, env).collect()
           match update_results {
             [] => current
-            [next, .. _] => continue next
+            [next, ..] => continue next
           }
         }
       }
     }
   }
-  Iterator::singleton(result)
+  Iter::singleton(result)
 }
 
 ///|
@@ -101,13 +101,13 @@ fn eval_while(
   update_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let results : Array[Json] = loop (input, []) {
     (current, results) => {
       let cond_results = eval_with_env(cond_expr, current, env).collect()
       match cond_results {
         [] => results
-        [first, .. _] =>
+        [first, ..] =>
           if not(@ast_internal.is_truthy(first)) {
             results
           } else {
@@ -115,11 +115,11 @@ fn eval_while(
             let update_results = eval_with_env(update_expr, current, env).collect()
             match update_results {
               [] => results
-              [next, .. _] => continue (next, results)
+              [next, ..] => continue (next, results)
             }
           }
       }
     }
   }
-  results.iterator()
+  results.iter()
 }

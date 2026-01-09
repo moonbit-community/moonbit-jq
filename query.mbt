@@ -6,7 +6,7 @@ pub struct Query {
 
 ///|
 /// Methods on Query for direct control.
-pub fn Query::eval(self : Query, input : Json) -> Iterator[Json] raise {
+pub fn Query::eval(self : Query, input : Json) -> Iter[Json] raise {
   @ast.eval(self.expr, input)
 }
 
@@ -17,7 +17,7 @@ pub fn Query::eval_all(self : Query, input : Json) -> Array[Json] raise {
 
 ///|
 /// Apply the query to newline-delimited JSON logs, skipping invalid lines.
-pub fn Query::eval_logs(self : Query, logs : String) -> Iterator[Json] raise {
+pub fn Query::eval_logs(self : Query, logs : String) -> Iter[Json] raise {
   let aggregated : Array[Json] = []
   for raw_line in logs.split("\n") {
     let line = match raw_line.strip_suffix("\r"[:]) {
@@ -32,5 +32,5 @@ pub fn Query::eval_logs(self : Query, logs : String) -> Iterator[Json] raise {
       aggregated.push(value)
     }
   }
-  aggregated.iterator()
+  aggregated.iter()
 }

@@ -1,5 +1,5 @@
 ///|
-fn collect(it : Iterator[Json]) -> Array[Json] {
+fn collect(it : Iter[Json]) -> Array[Json] {
   it.collect()
 }
 

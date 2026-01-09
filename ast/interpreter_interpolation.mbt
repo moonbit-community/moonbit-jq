@@ -4,7 +4,7 @@ fn eval_string_interpolation(
   parts : Array[(String, Expr?)],
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let buf = @buffer.new()
   for pair in parts {
     let (text, expr_opt) = pair
@@ -21,5 +21,5 @@ fn eval_string_interpolation(
       None => ()
     }
   }
-  Iterator::singleton(Json::string(buf.to_string()))
+  Iter::singleton(Json::string(buf.to_string()))
 }

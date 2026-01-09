@@ -3,12 +3,12 @@
 fn eval_ltrim_str(
   prefix : String,
   input : Json,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) =>
       match s.strip_prefix(prefix[:]) {
-        Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
-        None => Iterator::singleton(input)
+        Some(rest) => Iter::singleton(Json::string(rest.to_string()))
+        None => Iter::singleton(input)
       }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
@@ -19,12 +19,12 @@ fn eval_ltrim_str(
 fn eval_rtrim_str(
   suffix : String,
   input : Json,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) =>
       match s.strip_suffix(suffix[:]) {
-        Some(rest) => Iterator::singleton(Json::string(rest.to_string()))
-        None => Iterator::singleton(input)
+        Some(rest) => Iter::singleton(Json::string(rest.to_string()))
+        None => Iter::singleton(input)
       }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
@@ -32,7 +32,7 @@ fn eval_rtrim_str(
 
 ///|
 /// Evaluate ASCII upcase
-fn eval_ascii_upcase(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_ascii_upcase(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) => {
       let result = @buffer.new()
@@ -43,7 +43,7 @@ fn eval_ascii_upcase(input : Json) -> Iterator[Json] raise InterpreterError {
           result.write_char(ch)
         }
       }
-      Iterator::singleton(Json::string(result.to_string()))
+      Iter::singleton(Json::string(result.to_string()))
     }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
@@ -51,7 +51,7 @@ fn eval_ascii_upcase(input : Json) -> Iterator[Json] raise InterpreterError {
 
 ///|
 /// Evaluate ASCII downcase
-fn eval_ascii_downcase(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_ascii_downcase(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) => {
       let result = @buffer.new()
@@ -62,7 +62,7 @@ fn eval_ascii_downcase(input : Json) -> Iterator[Json] raise InterpreterError {
           result.write_char(ch)
         }
       }
-      Iterator::singleton(Json::string(result.to_string()))
+      Iter::singleton(Json::string(result.to_string()))
     }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }

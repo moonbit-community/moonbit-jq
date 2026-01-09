@@ -35,7 +35,7 @@ fn collect_paths_with_filter(
 
 ///|
 /// Evaluate Paths
-fn eval_paths(input : Json) -> Iterator[Json] {
+fn eval_paths(input : Json) -> Iter[Json] {
   let paths_list : Array[Json] = []
   fn collect_paths(value : Json, path : Array[Json]) {
     match value {
@@ -56,12 +56,12 @@ fn eval_paths(input : Json) -> Iterator[Json] {
   }
 
   collect_paths(input, [])
-  paths_list.iterator()
+  paths_list.iter()
 }
 
 ///|
 /// Evaluate LeafPaths
-fn eval_leaf_paths(input : Json) -> Iterator[Json] {
+fn eval_leaf_paths(input : Json) -> Iter[Json] {
   let paths_list : Array[Json] = []
   fn collect_leaf_paths(value : Json, path : Array[Json]) {
     match value {
@@ -86,7 +86,7 @@ fn eval_leaf_paths(input : Json) -> Iterator[Json] {
   }
 
   collect_leaf_paths(input, [])
-  paths_list.iterator()
+  paths_list.iter()
 }
 
 ///|
@@ -95,8 +95,8 @@ fn eval_paths_with_filter(
   filter_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let results : Array[Array[String]] = []
   collect_paths_with_filter(input, [], filter_expr, env, results)
-  results.iterator().map(path => Json::array(path.map(Json::string)))
+  results.iter().map(path => Json::array(path.map(Json::string)))
 }

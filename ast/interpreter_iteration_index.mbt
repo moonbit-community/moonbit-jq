@@ -4,13 +4,13 @@ fn eval_indices_of(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match eval_with_env(expr, input, env).collect() {
-    [] => Iterator::singleton(Json::array([]))
-    [needle, .. _] =>
+    [] => Iter::singleton(Json::array([]))
+    [needle, ..] =>
       match input {
         Array(arr) =>
-          Iterator::singleton(Json::array(indices_of_array(arr[:], needle, 0)))
+          Iter::singleton(Json::array(indices_of_array(arr[:], needle, 0)))
         String(s) =>
           match needle {
             String(substr) => {
@@ -18,11 +18,15 @@ fn eval_indices_of(
               if s.contains(substr) {
                 ()
               }
-              Iterator::singleton(Json::array(indices))
+              Iter::singleton(Json::array(indices))
             }
-            _ => Iterator::singleton(Json::array([]))
+            _ => Iter::singleton(Json::array([]))
           }
-        _ => raise TypeMismatch("array/string", @ast_internal.json_type_name(input))
+        _ =>
+          raise TypeMismatch(
+            "array/string",
+            @ast_internal.json_type_name(input),
+          )
       }
   }
 }
@@ -33,42 +37,46 @@ fn eval_index_of(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match eval_with_env(expr, input, env).collect() {
-    [] => Iterator::singleton(null)
-    [needle, .. _] =>
+    [] => Iter::singleton(null)
+    [needle, ..] =>
       match input {
         Array(arr) =>
           match find_first_index(arr[:], needle, 0) {
-            Some(idx) => Iterator::singleton(Json::number(idx.to_double()))
-            None => Iterator::singleton(null)
+            Some(idx) => Iter::singleton(Json::number(idx.to_double()))
+            None => Iter::singleton(null)
           }
         String(s) =>
           match needle {
             String(substr) =>
               if s.contains(substr) {
-                Iterator::singleton(Json::number(0.0))
+                Iter::singleton(Json::number(0.0))
               } else {
-                Iterator::singleton(null)
+                Iter::singleton(null)
               }
-            _ => Iterator::singleton(null)
+            _ => Iter::singleton(null)
           }
-        _ => raise TypeMismatch("array/string", @ast_internal.json_type_name(input))
+        _ =>
+          raise TypeMismatch(
+            "array/string",
+            @ast_internal.json_type_name(input),
+          )
       }
   }
 }
 
 ///|
 /// Evaluate nth
-fn eval_nth(n : Int, input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_nth(n : Int, input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) =>
       if n >= 0 && n < arr.length() {
-        Iterator::singleton(arr[n])
+        Iter::singleton(arr[n])
       } else if n < 0 && -n <= arr.length() {
-        Iterator::singleton(arr[arr.length() + n])
+        Iter::singleton(arr[arr.length() + n])
       } else {
-        Iterator::empty()
+        Iter::empty()
       }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -80,26 +88,30 @@ fn eval_rindex(
   search_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match eval_with_env(search_expr, input, env).collect() {
-    [] => Iterator::singleton(null)
-    [needle, .. _] =>
+    [] => Iter::singleton(null)
+    [needle, ..] =>
       match input {
         Array(arr) =>
           match find_last_index(arr[:], needle, 0) {
-            Some(idx) => Iterator::singleton(Json::number(idx.to_double()))
-            None => Iterator::singleton(null)
+            Some(idx) => Iter::singleton(Json::number(idx.to_double()))
+            None => Iter::singleton(null)
           }
         String(s) =>
           match needle {
             String(substr) =>
               match s.rev_find(substr[:]) {
-                Some(pos) => Iterator::singleton(Json::number(pos.to_double()))
-                None => Iterator::singleton(null)
+                Some(pos) => Iter::singleton(Json::number(pos.to_double()))
+                None => Iter::singleton(null)
               }
-            _ => Iterator::singleton(null)
+            _ => Iter::singleton(null)
           }
-        _ => raise TypeMismatch("array or string", @ast_internal.json_type_name(input))
+        _ =>
+          raise TypeMismatch(
+            "array or string",
+            @ast_internal.json_type_name(input),
+          )
       }
   }
 }
@@ -112,10 +124,10 @@ fn indices_of_array(
 ) -> Array[Json] {
   match arr {
     [] => []
-    [head, ..tail] =>
+    [head, .. tail] =>
       if head == needle {
         [Json::number(offset.to_double())] +
-          indices_of_array(tail, needle, offset + 1)
+        indices_of_array(tail, needle, offset + 1)
       } else {
         indices_of_array(tail, needle, offset + 1)
       }
@@ -123,14 +135,10 @@ fn indices_of_array(
 }
 
 ///|
-fn find_first_index(
-  arr : ArrayView[Json],
-  needle : Json,
-  offset : Int,
-) -> Int? {
+fn find_first_index(arr : ArrayView[Json], needle : Json, offset : Int) -> Int? {
   match arr {
     [] => None
-    [head, ..tail] =>
+    [head, .. tail] =>
       if head == needle {
         Some(offset)
       } else {
@@ -140,14 +148,10 @@ fn find_first_index(
 }
 
 ///|
-fn find_last_index(
-  arr : ArrayView[Json],
-  needle : Json,
-  offset : Int,
-) -> Int? {
+fn find_last_index(arr : ArrayView[Json], needle : Json, offset : Int) -> Int? {
   match arr {
     [] => None
-    [head, ..tail] => {
+    [head, .. tail] => {
       let tail_idx = find_last_index(tail, needle, offset + 1)
       match tail_idx {
         Some(_) => tail_idx

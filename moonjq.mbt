@@ -6,7 +6,7 @@ pub fn parse(query : String) -> Query raise {
 
 ///|
 /// Evaluate a compiled query against an input JSON value and stream results.
-pub fn eval(query : Query, input : Json) -> Iterator[Json] raise {
+pub fn eval(query : Query, input : Json) -> Iter[Json] raise {
   query.eval(input)
 }
 

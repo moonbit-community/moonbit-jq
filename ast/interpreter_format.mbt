@@ -1,6 +1,9 @@
 ///|
 /// Evaluate format functions: @base64, @uri, @csv, etc.
-fn eval_format(format_name : String, input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_format(
+  format_name : String,
+  input : Json,
+) -> Iter[Json] raise InterpreterError {
   match format_name {
     "base64" =>
       match input {
@@ -8,7 +11,7 @@ fn eval_format(format_name : String, input : Json) -> Iterator[Json] raise Inter
           // Simple base64 encoding implementation
           let bytes = @encoding/utf8.encode(s)
           let encoded = base64_encode(bytes)
-          Iterator::singleton(Json::string(encoded))
+          Iter::singleton(Json::string(encoded))
         }
         _ => raise TypeError("@base64 requires string")
       }
@@ -22,7 +25,7 @@ fn eval_format(format_name : String, input : Json) -> Iterator[Json] raise Inter
           let decoded_str = @encoding/utf8.decode(decoded_bytes) catch {
             _ => raise EvalError("Invalid UTF-8")
           }
-          Iterator::singleton(Json::string(decoded_str))
+          Iter::singleton(Json::string(decoded_str))
         }
         _ => raise TypeError("@base64d requires string")
       }
@@ -30,7 +33,7 @@ fn eval_format(format_name : String, input : Json) -> Iterator[Json] raise Inter
       match input {
         String(s) => {
           let encoded = uri_encode(s)
-          Iterator::singleton(Json::string(encoded))
+          Iter::singleton(Json::string(encoded))
         }
         _ => raise TypeError("@uri requires string")
       }
@@ -57,17 +60,17 @@ fn eval_format(format_name : String, input : Json) -> Iterator[Json] raise Inter
               _ => parts.push(item.to_string())
             }
           }
-          Iterator::singleton(Json::string(parts.join(sep)))
+          Iter::singleton(Json::string(parts.join(sep)))
         }
         _ => raise TypeError("@csv/@tsv requires array")
       }
-    "json" => Iterator::singleton(Json::string(input.to_string()))
-    "text" => Iterator::singleton(Json::string(input.to_string()))
+    "json" => Iter::singleton(Json::string(input.to_string()))
+    "text" => Iter::singleton(Json::string(input.to_string()))
     "html" =>
       match input {
         String(s) => {
           let escaped = html_escape(s)
-          Iterator::singleton(Json::string(escaped))
+          Iter::singleton(Json::string(escaped))
         }
         _ => raise TypeError("@html requires string")
       }

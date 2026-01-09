@@ -1,12 +1,13 @@
 ///|
 /// Evaluate Explode
-fn eval_explode(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_explode(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) => {
-      let results = s.iterator()
+      let results = s
+        .iter()
         .map(fn(char) { Json::number(char.to_int().to_double()) })
         .to_array()
-      Iterator::singleton(Json::array(results))
+      Iter::singleton(Json::array(results))
     }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
@@ -14,7 +15,7 @@ fn eval_explode(input : Json) -> Iterator[Json] raise InterpreterError {
 
 ///|
 /// Evaluate Implode
-fn eval_implode(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_implode(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
       let chars = arr.filter_map(fn(elem) {
@@ -24,7 +25,7 @@ fn eval_implode(input : Json) -> Iterator[Json] raise InterpreterError {
         }
       })
       let result = String::from_array(chars[:])
-      Iterator::singleton(Json::string(result))
+      Iter::singleton(Json::string(result))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -35,12 +36,12 @@ fn eval_implode(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_scan(
   pattern : String,
   input : Json,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     String(s) => {
       let results : Array[Json] = []
       scan_matches(s, pattern, 0, s.length(), pattern.length(), results)
-      results.iterator()
+      results.iter()
     }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
@@ -59,11 +60,11 @@ fn scan_matches(
     return
   }
   let slice_result = s[idx:idx + plen] catch {
-    _ => {
-      scan_matches(s, pattern, idx + 1, slen, plen, results)
-      return
+      _ => {
+        scan_matches(s, pattern, idx + 1, slen, plen, results)
+        return
+      }
     }
-  }
   if slice_result.to_string() == pattern {
     results.push(Json::string(pattern))
     scan_matches(s, pattern, idx + plen, slen, plen, results)

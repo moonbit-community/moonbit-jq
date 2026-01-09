@@ -31,18 +31,20 @@ fn flatten_array(arr : Array[Json], depth : Int) -> Array[Json] {
 
 ///|
 /// Recursive descent: yield input and all nested values
-fn recurse_all(input : Json) -> Iterator[Json] {
+fn recurse_all(input : Json) -> Iter[Json] {
   match input {
     Array(arr) =>
-      Iterator::singleton(input).concat(arr.iterator().flat_map(recurse_all))
+      Iter::singleton(input).concat(arr.iter().flat_map(recurse_all))
     Object(obj) => {
-      let values = obj.to_array().map(fn(pair) {
-        let (_k, v) = pair
-        v
-      })
-      Iterator::singleton(input).concat(values.iterator().flat_map(recurse_all))
+      let values = obj
+        .to_array()
+        .map(fn(pair) {
+          let (_k, v) = pair
+          v
+        })
+      Iter::singleton(input).concat(values.iter().flat_map(recurse_all))
     }
-    _ => Iterator::singleton(input)
+    _ => Iter::singleton(input)
   }
 }
 
@@ -53,7 +55,7 @@ fn eval_recurse_with(
   _cond : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let results : Array[Json] = [input]
   let to_process_ref : Ref[Array[Json]] = Ref::new([input])
   while not(to_process_ref.val.is_empty()) {
@@ -71,7 +73,7 @@ fn eval_recurse_with(
       break
     }
   }
-  results.iterator()
+  results.iter()
 }
 
 ///|
@@ -80,7 +82,7 @@ fn eval_walk(
   f : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   fn walk_value(v : Json) -> Json raise InterpreterError {
     match v {
       Array(arr) => {
@@ -117,5 +119,5 @@ fn eval_walk(
     }
   }
 
-  Iterator::singleton(walk_value(input))
+  Iter::singleton(walk_value(input))
 }

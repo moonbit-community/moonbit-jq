@@ -4,19 +4,18 @@ fn eval_get_path(
   path_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let path_results = eval_with_env(path_expr, input, env).collect()
   if path_results.is_empty() {
-    return Iterator::singleton(null)
+    return Iter::singleton(null)
   }
   match path_results[0] {
-    Array(path_arr) => {
+    Array(path_arr) =>
       match get_at_path(input, path_arr[:]) {
-        Some(value) => Iterator::singleton(value)
-        None => Iterator::singleton(null)
+        Some(value) => Iter::singleton(value)
+        None => Iter::singleton(null)
       }
-    }
-    _ => Iterator::singleton(null)
+    _ => Iter::singleton(null)
   }
 }
 
@@ -46,6 +45,6 @@ fn get_at_path(current : Json, path : ArrayView[Json]) -> Json? {
 
 ///|
 /// Evaluate Path (placeholder)
-fn eval_path(_expr : Expr) -> Iterator[Json] {
-  Iterator::singleton(Json::array([]))
+fn eval_path(_expr : Expr) -> Iter[Json] {
+  Iter::singleton(Json::array([]))
 }

@@ -4,20 +4,20 @@ fn eval_map(
   inner : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let results : Array[Json] = arr.fold(
-        init=[],
-        fn(acc, elem) raise InterpreterError {
-          let mapped = eval_with_env(inner, elem, env).collect()
-          for v in mapped {
-            acc.push(v)
-          }
-          acc
-        },
-      )
-      Iterator::singleton(Json::array(results))
+      let results : Array[Json] = arr.fold(init=[], fn(
+        acc,
+        elem,
+      ) raise InterpreterError {
+        let mapped = eval_with_env(inner, elem, env).collect()
+        for v in mapped {
+          acc.push(v)
+        }
+        acc
+      })
+      Iter::singleton(Json::array(results))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -29,27 +29,27 @@ fn eval_select(
   condition : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let cond_results = eval_with_env(condition, input, env).collect()
   match @ast_internal.first_opt(cond_results) {
-    None => Iterator::empty()
+    None => Iter::empty()
     Some(first) =>
       if @ast_internal.is_truthy(first) {
-        Iterator::singleton(input)
+        Iter::singleton(input)
       } else {
-        Iterator::empty()
+        Iter::empty()
       }
   }
 }
 
 ///|
 /// Evaluate array sort
-fn eval_sort(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_sort(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
       let sorted = arr.copy()
       sorted.sort_by(compare_json)
-      Iterator::singleton(Json::array(sorted))
+      Iter::singleton(Json::array(sorted))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -57,11 +57,9 @@ fn eval_sort(input : Json) -> Iterator[Json] raise InterpreterError {
 
 ///|
 /// Evaluate array reverse
-fn eval_reverse(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_reverse(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
-    Array(arr) => {
-      Iterator::singleton(Json::array(arr.rev()))
-    }
+    Array(arr) => Iter::singleton(Json::array(arr.rev()))
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
 }
@@ -71,14 +69,14 @@ fn eval_reverse(input : Json) -> Iterator[Json] raise InterpreterError {
 fn eval_flatten(
   depth_opt : Int?,
   input : Json,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
       let depth = match depth_opt {
         Some(d) => d
         None => 999999 // Flatten all levels
       }
-      Iterator::singleton(Json::array(flatten_array(arr, depth)))
+      Iter::singleton(Json::array(flatten_array(arr, depth)))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -86,7 +84,7 @@ fn eval_flatten(
 
 ///|
 /// Evaluate array unique
-fn eval_unique(input : Json) -> Iterator[Json] raise InterpreterError {
+fn eval_unique(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
       let sorted = arr.copy()
@@ -110,7 +108,7 @@ fn eval_unique(input : Json) -> Iterator[Json] raise InterpreterError {
           }
         },
       )
-      Iterator::singleton(Json::array(unique))
+      Iter::singleton(Json::array(unique))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }

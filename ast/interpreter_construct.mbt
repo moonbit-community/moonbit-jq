@@ -4,12 +4,12 @@ fn eval_array_construct(
   expr_opt : Expr?,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match expr_opt {
-    None => Iterator::singleton(Json::array([]))
+    None => Iter::singleton(Json::array([]))
     Some(e) => {
       let results = eval_with_env(e, input, env).collect()
-      Iterator::singleton(Json::array(results))
+      Iter::singleton(Json::array(results))
     }
   }
 }
@@ -20,7 +20,7 @@ fn eval_object_construct(
   pairs : Array[(Expr, Expr?)],
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let obj : Map[String, Json] = {}
   for pair in pairs {
     let (key_expr, value_expr_opt) = pair
@@ -48,8 +48,9 @@ fn eval_object_construct(
         }
         obj[key_str] = value
       }
-      Some(other) => raise TypeMismatch("string", @ast_internal.json_type_name(other))
+      Some(other) =>
+        raise TypeMismatch("string", @ast_internal.json_type_name(other))
     }
   }
-  Iterator::singleton(Json::object(obj))
+  Iter::singleton(Json::object(obj))
 }

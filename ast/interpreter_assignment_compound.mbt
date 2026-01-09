@@ -6,7 +6,7 @@ fn eval_compound_assign(
   value_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   eval_with_env(Update(path, Operation(Identity, op, value_expr)), input, env)
 }
 
@@ -17,6 +17,6 @@ fn eval_alt_assign(
   value_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   eval_with_env(Update(path, Alternative(Identity, value_expr)), input, env)
 }

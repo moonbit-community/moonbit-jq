@@ -5,8 +5,12 @@ fn eval_update(
   update_expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
-  fn apply_update(obj : Json, p : Expr, upd : Expr) -> Json raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
+  fn apply_update(
+    obj : Json,
+    p : Expr,
+    upd : Expr,
+  ) -> Json raise InterpreterError {
     match p {
       Identity => {
         let results = eval_with_env(upd, obj, env).collect()
@@ -121,5 +125,5 @@ fn eval_update(
     }
   }
 
-  Iterator::singleton(apply_update(input, path, update_expr))
+  Iter::singleton(apply_update(input, path, update_expr))
 }

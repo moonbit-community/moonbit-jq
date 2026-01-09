@@ -1,6 +1,6 @@
 ///|
 /// Evaluate an expression with input JSON, returns iterator of results
-pub fn eval(expr : Expr, input : Json) -> Iterator[Json] raise {
+pub fn eval(expr : Expr, input : Json) -> Iter[Json] raise {
   eval_with_env(expr, input, Env::new())
 }
 
@@ -10,13 +10,13 @@ fn eval_with_env(
   expr : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match expr {
     // Identity returns input as-is
-    Identity => Iterator::singleton(input)
+    Identity => Iter::singleton(input)
 
     // Literals ignore input and return the literal value
-    Literal(lit) => Iterator::singleton(eval_literal(lit))
+    Literal(lit) => Iter::singleton(eval_literal(lit))
 
     // Pipe: feed results of left into right
     Pipe(left, right) => {
@@ -29,16 +29,16 @@ fn eval_with_env(
         _ => ()
       }
       let left_results = eval_with_env(left, input, env).collect()
-      let right_iters : Array[Iterator[Json]] = []
+      let right_iters : Array[Iter[Json]] = []
       for v in left_results {
         right_iters.push(eval_with_env(right, v, env))
       }
-      right_iters.iterator().flatten()
+      right_iters.iter().flatten()
     }
 
     // Comma: produce multiple outputs
     Comma(left, right) =>
-      Iterator::concat(
+      Iter::concat(
         eval_with_env(left, input, env),
         eval_with_env(right, input, env),
       )
@@ -120,14 +120,13 @@ fn eval_with_env(
     Format(format_name) => eval_format(format_name, input)
 
     // String interpolation: "text \(expr) more"
-    StringInterpolation(parts) =>
-      eval_string_interpolation(parts, input, env)
+    StringInterpolation(parts) => eval_string_interpolation(parts, input, env)
 
     // Function definition: this is tricky because we need to update env
     // We handle this specially in the Pipe case when left is FunctionDef
     FunctionDef(_name, _params, _body) =>
       // Should not be evaluated directly, only through Pipe
-      Iterator::singleton(input)
+      Iter::singleton(input)
 
     // Function call: lookup and execute
     FunctionCall(name, args) => eval_function_call(name, args, input, env)
@@ -257,15 +256,10 @@ fn eval_with_env(
     AllGen(gen_expr, cond_expr) => eval_all_gen(gen_expr, cond_expr, input, env)
     Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr) =>
       eval_foreach(
-        gen_expr,
-        var_name,
-        init_expr,
-        update_expr,
-        extract_expr,
-        input,
-        env,
+        gen_expr, var_name, init_expr, update_expr, extract_expr, input, env,
       )
-    PathsWithFilter(filter_expr) => eval_paths_with_filter(filter_expr, input, env)
+    PathsWithFilter(filter_expr) =>
+      eval_paths_with_filter(filter_expr, input, env)
     Scan(pattern) => eval_scan(pattern, input)
   }
 }

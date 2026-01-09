@@ -1,8 +1,8 @@
 ///|
 /// Evaluate variable lookup
-fn eval_variable(name : String, env : Env) -> Iterator[Json] raise InterpreterError {
+fn eval_variable(name : String, env : Env) -> Iter[Json] raise InterpreterError {
   match env.get(name) {
-    Some(v) => Iterator::singleton(v)
+    Some(v) => Iter::singleton(v)
     None => raise InvalidOperation("Undefined variable: $\{name}")
   }
 }
@@ -14,7 +14,7 @@ fn eval_function_call(
   args : Array[Expr],
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   match env.get_function(name) {
     Some((body, params)) =>
       if params.is_empty() {
@@ -28,7 +28,7 @@ fn eval_function_call(
           let results = eval_with_env(arg, input, env).collect()
           match results {
             [] => null
-            [first, .. _] => first
+            [first, ..] => first
           }
         })
         let new_env = bind_params(env, params[:], arg_values[:])
@@ -60,7 +60,7 @@ fn eval_as(
   body : Expr,
   input : Json,
   env : Env,
-) -> Iterator[Json] raise InterpreterError {
+) -> Iter[Json] raise InterpreterError {
   let results = eval_with_env(expr, input, env).collect()
   let all_results : Array[Json] = []
   for result in results {
@@ -69,5 +69,5 @@ fn eval_as(
       all_results.push(val)
     }
   }
-  all_results.iterator()
+  all_results.iter()
 }
