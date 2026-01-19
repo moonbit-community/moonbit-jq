@@ -5,9 +5,10 @@ fn eval_first_gen(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match eval_with_env(gen_expr, input, env).collect()[:] {
-    [] => Iter::empty()
-    [head, ..] => Iter::singleton(head)
+  let gen_results = eval_with_env(gen_expr, input, env).collect()
+  match gen_results.get(0) {
+    Some(value) => Iter::singleton(value)
+    None => Iter::empty()
   }
 }
 
