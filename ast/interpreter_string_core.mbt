@@ -70,7 +70,7 @@ fn json_to_strings(parts : ArrayView[Json]) -> Array[String] {
 
 ///|
 fn array_contains_view(haystack : ArrayView[Json], needle : Json) -> Bool {
-  haystack.iter().any(item => item == needle)
+  haystack.contains(needle)
 }
 
 ///|
