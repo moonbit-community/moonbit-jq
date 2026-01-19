@@ -8,12 +8,8 @@ fn eval_has(key : String, input : Json) -> Iter[Json] {
         _ => return Iter::singleton(Json::boolean(false))
       }
       let len = arr.length()
-      let actual_idx = if idx_result < 0 {
-        len + idx_result
-      } else {
-        idx_result
-      }
-      Iter::singleton(Json::boolean(actual_idx >= 0 && actual_idx < len))
+      let actual_idx = normalize_index(idx_result, len)
+      Iter::singleton(Json::boolean(index_in_bounds(actual_idx, len)))
     }
     _ => Iter::singleton(Json::boolean(false))
   }
@@ -38,8 +34,8 @@ fn eval_in(
         Number(n, ..) => {
           let idx = n.to_int()
           let len = arr.length()
-          let actual_idx = if idx < 0 { len + idx } else { idx }
-          Iter::singleton(Json::boolean(actual_idx >= 0 && actual_idx < len))
+          let actual_idx = normalize_index(idx, len)
+          Iter::singleton(Json::boolean(index_in_bounds(actual_idx, len)))
         }
         _ => Iter::singleton(Json::boolean(false))
       }

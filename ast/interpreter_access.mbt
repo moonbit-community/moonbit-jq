@@ -1,4 +1,36 @@
 ///|
+fn normalize_index(idx : Int, len : Int) -> Int {
+  if idx < 0 { len + idx } else { idx }
+}
+
+///|
+fn clamp_index(value : Int, len : Int) -> Int {
+  if value < 0 {
+    0
+  } else if value > len {
+    len
+  } else {
+    value
+  }
+}
+
+///|
+fn index_in_bounds(idx : Int, len : Int) -> Bool {
+  idx >= 0 && idx < len
+}
+
+///|
+fn array_index_or_null(arr : Array[Json], idx : Int) -> Json {
+  let len = arr.length()
+  let actual_idx = normalize_index(idx, len)
+  if index_in_bounds(actual_idx, len) {
+    arr[actual_idx]
+  } else {
+    null
+  }
+}
+
+///|
 /// Evaluate field access against input JSON
 fn eval_key_access(key : String, input : Json) -> Iter[Json] {
   match input {
@@ -27,14 +59,7 @@ fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
     .iter()
     .map(fn(idx) {
       match input {
-        Array(arr) => {
-          let i = if idx < 0 { arr.length() + idx } else { idx }
-          if i >= 0 && i < arr.length() {
-            arr[i]
-          } else {
-            null
-          }
-        }
+        Array(arr) => array_index_or_null(arr, idx)
         _ => null
       }
     })
@@ -48,15 +73,15 @@ fn eval_slice_access(start : Int?, end : Int?, input : Json) -> Iter[Json] {
     Array(arr) => {
       let len = arr.length()
       let s = match start {
-        Some(n) => if n < 0 { len + n } else { n }
+        Some(n) => normalize_index(n, len)
         None => 0
       }
       let e = match end {
-        Some(n) => if n < 0 { len + n } else { n }
+        Some(n) => normalize_index(n, len)
         None => len
       }
-      let s_clamped = if s < 0 { 0 } else if s > len { len } else { s }
-      let e_clamped = if e < 0 { 0 } else if e > len { len } else { e }
+      let s_clamped = clamp_index(s, len)
+      let e_clamped = clamp_index(e, len)
       let sliced = if s_clamped >= e_clamped {
         []
       } else {
