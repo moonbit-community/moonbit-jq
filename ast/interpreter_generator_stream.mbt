@@ -34,9 +34,7 @@ fn eval_repeat(
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
   let values = eval_with_env(expr, input, env).collect()
-  if values.is_empty() {
-    return Iter::empty()
-  }
+  guard not(values.is_empty()) else { Iter::empty() }
   let idx : Ref[Int] = Ref::new(0)
   Iter::new(fn() {
     let i = idx.val
