@@ -1,7 +1,7 @@
 ///|
 /// Test parsing if-then-else
 test "parse if-then-else" {
-  @json.inspect(@parser.parse("if .x then .y else .z end"), content=[
+  json_inspect(@parser.parse("if .x then .y else .z end"), content=[
     "IfThenElse",
     ["Key", "x"],
     ["Key", "y"],
@@ -12,7 +12,7 @@ test "parse if-then-else" {
 ///|
 /// Test parsing try-catch
 test "parse try without catch" {
-  @json.inspect(@parser.parse("try .foo"), content=[
+  json_inspect(@parser.parse("try .foo"), content=[
     "TryCatch",
     ["Key", "foo"],
     null,
@@ -21,7 +21,7 @@ test "parse try without catch" {
 
 ///|
 test "parse try with catch" {
-  @json.inspect(@parser.parse("try .foo catch .bar"), content=[
+  json_inspect(@parser.parse("try .foo catch .bar"), content=[
     "TryCatch",
     ["Key", "foo"],
     [["Key", "bar"]],
@@ -31,5 +31,5 @@ test "parse try with catch" {
 ///|
 /// Test parsing recurse
 test "parse recurse" {
-  @json.inspect(@parser.parse(".."), content="Recurse")
+  json_inspect(@parser.parse(".."), content="Recurse")
 }

@@ -1,6 +1,6 @@
 ///|
 test "coverage: fromjson parses and errors" {
-  @json.inspect(coverage_eval("fromjson", "\"{\\\"a\\\": 1}\""), content=[
+  json_inspect(coverage_eval("fromjson", "\"{\\\"a\\\": 1}\""), content=[
     { "a": 1 },
   ])
   assert_true((try? coverage_eval("fromjson", "\"{\"")) is Err(_))

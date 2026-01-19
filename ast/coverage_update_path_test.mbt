@@ -4,5 +4,5 @@ test "coverage: update path navigates through arrays" {
     #|{
     #|  "a": [1]
     #|}
-  @json.inspect(coverage_eval(".a[0] |= . + 1", input), content=[{ "a": [2] }])
+  json_inspect(coverage_eval(".a[0] |= . + 1", input), content=[{ "a": [2] }])
 }

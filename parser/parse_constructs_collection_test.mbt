@@ -1,12 +1,12 @@
 ///|
 /// Test parsing array constructor
 test "parse empty array" {
-  @json.inspect(@parser.parse("[]"), content=["ArrayConstruct", null])
+  json_inspect(@parser.parse("[]"), content=["ArrayConstruct", null])
 }
 
 ///|
 test "parse array with expression" {
-  @json.inspect(@parser.parse("[.foo]"), content=[
+  json_inspect(@parser.parse("[.foo]"), content=[
     "ArrayConstruct",
     [["Key", "foo"]],
   ])
@@ -15,12 +15,12 @@ test "parse array with expression" {
 ///|
 /// Test parsing object constructor
 test "parse empty object" {
-  @json.inspect(@parser.parse("{}"), content=["ObjectConstruct", []])
+  json_inspect(@parser.parse("{}"), content=["ObjectConstruct", []])
 }
 
 ///|
 test "parse object with single field" {
-  @json.inspect(@parser.parse("{foo: .bar}"), content=[
+  json_inspect(@parser.parse("{foo: .bar}"), content=[
     "ObjectConstruct",
     [[["Literal", ["String", "foo"]], [["Key", "bar"]]]],
   ])
@@ -28,7 +28,7 @@ test "parse object with single field" {
 
 ///|
 test "parse object with multiple fields" {
-  @json.inspect(@parser.parse("{a: .x, b: .y}"), content=[
+  json_inspect(@parser.parse("{a: .x, b: .y}"), content=[
     "ObjectConstruct",
     [
       [["Literal", ["String", "a"]], [["Key", "x"]]],

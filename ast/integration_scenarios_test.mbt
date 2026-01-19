@@ -10,7 +10,7 @@ test "integration: filter and transform" {
     #|  ]
     #|}
   // Filter users who are active
-  @json.inspect(jq(".users | .[] | select(.active) | .name", data), content=[
+  json_inspect(jq(".users | .[] | select(.active) | .name", data), content=[
     "Alice", "Charlie",
   ])
 }
@@ -24,7 +24,7 @@ test "integration: recursive descent" {
     #|}
   let results = jq("..", data)
   // Should yield the input object first
-  @json.inspect(results[0], content={ "a": { "b": 1, "c": 2 } })
+  json_inspect(results[0], content={ "a": { "b": 1, "c": 2 } })
 }
 
 ///|
@@ -39,8 +39,8 @@ test "integration: complex nested query" {
     #|    ]
     #|  }
     #|}
-  @json.inspect(jq(".store.books | .[] | .title", data), content=[
+  json_inspect(jq(".store.books | .[] | .title", data), content=[
     "Book A", "Book B",
   ])
-  @json.inspect(jq(".store.books | map(.price)", data), content=[[10, 15]])
+  json_inspect(jq(".store.books | map(.price)", data), content=[[10, 15]])
 }

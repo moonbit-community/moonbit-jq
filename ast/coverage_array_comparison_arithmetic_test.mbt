@@ -1,7 +1,7 @@
 ///|
 test "coverage: array comparisons exercise element and length ordering" {
-  @json.inspect(coverage_eval("[1] < [1, 2]", "null"), content=[true])
-  @json.inspect(coverage_eval("[1, 0] < [1, 2]", "null"), content=[true])
+  json_inspect(coverage_eval("[1] < [1, 2]", "null"), content=[true])
+  json_inspect(coverage_eval("[1, 0] < [1, 2]", "null"), content=[true])
 }
 
 ///|

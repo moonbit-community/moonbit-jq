@@ -1,7 +1,7 @@
 ///|
 /// Test complex expressions
 test "parse complex filter" {
-  @json.inspect(@parser.parse(".[] | select(.age > 18) | .name"), content=[
+  json_inspect(@parser.parse(".[] | select(.age > 18) | .name"), content=[
     "Pipe",
     [
       "Pipe",

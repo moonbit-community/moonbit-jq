@@ -1,7 +1,7 @@
 ///|
 /// Test parsing comparison operators
 test "parse equality" {
-  @json.inspect(@parser.parse(". == 5"), content=[
+  json_inspect(@parser.parse(". == 5"), content=[
     "Operation",
     "Identity",
     "Equal",
@@ -11,7 +11,7 @@ test "parse equality" {
 
 ///|
 test "parse inequality" {
-  @json.inspect(@parser.parse(". != 5"), content=[
+  json_inspect(@parser.parse(". != 5"), content=[
     "Operation",
     "Identity",
     "NotEqual",
@@ -21,7 +21,7 @@ test "parse inequality" {
 
 ///|
 test "parse less than" {
-  @json.inspect(@parser.parse(". < 5"), content=[
+  json_inspect(@parser.parse(". < 5"), content=[
     "Operation",
     "Identity",
     "LessThan",
@@ -31,7 +31,7 @@ test "parse less than" {
 
 ///|
 test "parse greater than" {
-  @json.inspect(@parser.parse(". > 5"), content=[
+  json_inspect(@parser.parse(". > 5"), content=[
     "Operation",
     "Identity",
     "GreaterThan",

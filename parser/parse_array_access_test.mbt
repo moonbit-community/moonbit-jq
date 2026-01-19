@@ -1,7 +1,7 @@
 ///|
 /// Test parsing array operations
 test "parse array index" {
-  @json.inspect(@parser.parse(".[0]"), content=[
+  json_inspect(@parser.parse(".[0]"), content=[
     "Pipe",
     "Identity",
     ["Index", [0]],
@@ -10,7 +10,7 @@ test "parse array index" {
 
 ///|
 test "parse multiple indices" {
-  @json.inspect(@parser.parse(".[0,2,4]"), content=[
+  json_inspect(@parser.parse(".[0,2,4]"), content=[
     "Pipe",
     "Identity",
     ["Index", [0, 2, 4]],
@@ -19,7 +19,7 @@ test "parse multiple indices" {
 
 ///|
 test "parse array iterator" {
-  @json.inspect(@parser.parse(".[]"), content=[
+  json_inspect(@parser.parse(".[]"), content=[
     "Pipe",
     "Identity",
     ["Index", []],
@@ -28,7 +28,7 @@ test "parse array iterator" {
 
 ///|
 test "parse array slice" {
-  @json.inspect(@parser.parse(".[2:4]"), content=[
+  json_inspect(@parser.parse(".[2:4]"), content=[
     "Pipe",
     "Identity",
     ["Slice", [2], [4]],
@@ -37,12 +37,12 @@ test "parse array slice" {
 
 ///|
 test "parse open-ended slices" {
-  @json.inspect(@parser.parse(".[2:]"), content=[
+  json_inspect(@parser.parse(".[2:]"), content=[
     "Pipe",
     "Identity",
     ["Slice", [2], null],
   ])
-  @json.inspect(@parser.parse(".[:4]"), content=[
+  json_inspect(@parser.parse(".[:4]"), content=[
     "Pipe",
     "Identity",
     ["Slice", null, [4]],

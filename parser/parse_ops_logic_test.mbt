@@ -1,7 +1,7 @@
 ///|
 /// Test parsing logical operators
 test "parse and" {
-  @json.inspect(@parser.parse(".a and .b"), content=[
+  json_inspect(@parser.parse(".a and .b"), content=[
     "Operation",
     ["Key", "a"],
     "And",
@@ -11,7 +11,7 @@ test "parse and" {
 
 ///|
 test "parse or" {
-  @json.inspect(@parser.parse(".a or .b"), content=[
+  json_inspect(@parser.parse(".a or .b"), content=[
     "Operation",
     ["Key", "a"],
     "Or",
@@ -21,5 +21,5 @@ test "parse or" {
 
 ///|
 test "parse not" {
-  @json.inspect(@parser.parse("not"), content="Not")
+  json_inspect(@parser.parse("not"), content="Not")
 }

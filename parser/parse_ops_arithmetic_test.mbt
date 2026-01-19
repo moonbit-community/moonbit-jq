@@ -1,7 +1,7 @@
 ///|
 /// Test parsing arithmetic operators
 test "parse addition" {
-  @json.inspect(@parser.parse(". + 1"), content=[
+  json_inspect(@parser.parse(". + 1"), content=[
     "Operation",
     "Identity",
     "Add",
@@ -11,7 +11,7 @@ test "parse addition" {
 
 ///|
 test "parse subtraction" {
-  @json.inspect(@parser.parse(". - 1"), content=[
+  json_inspect(@parser.parse(". - 1"), content=[
     "Operation",
     "Identity",
     "Subtract",
@@ -21,7 +21,7 @@ test "parse subtraction" {
 
 ///|
 test "parse multiplication" {
-  @json.inspect(@parser.parse(". * 2"), content=[
+  json_inspect(@parser.parse(". * 2"), content=[
     "Operation",
     "Identity",
     "Multiply",
@@ -31,7 +31,7 @@ test "parse multiplication" {
 
 ///|
 test "parse division" {
-  @json.inspect(@parser.parse(". / 2"), content=[
+  json_inspect(@parser.parse(". / 2"), content=[
     "Operation",
     "Identity",
     "Divide",
@@ -41,7 +41,7 @@ test "parse division" {
 
 ///|
 test "parse modulo" {
-  @json.inspect(@parser.parse(". % 2"), content=[
+  json_inspect(@parser.parse(". % 2"), content=[
     "Operation",
     "Identity",
     "Modulo",
@@ -52,7 +52,7 @@ test "parse modulo" {
 ///|
 /// Test operator precedence
 test "parse precedence: multiplication before addition" {
-  @json.inspect(@parser.parse("1 + 2 * 3"), content=[
+  json_inspect(@parser.parse("1 + 2 * 3"), content=[
     "Operation",
     ["Literal", ["Number", 1]],
     "Add",
@@ -67,7 +67,7 @@ test "parse precedence: multiplication before addition" {
 
 ///|
 test "parse parentheses override precedence" {
-  @json.inspect(@parser.parse("(1 + 2) * 3"), content=[
+  json_inspect(@parser.parse("(1 + 2) * 3"), content=[
     "Operation",
     ["Operation", ["Literal", ["Number", 1]], "Add", ["Literal", ["Number", 2]]],
     "Multiply",

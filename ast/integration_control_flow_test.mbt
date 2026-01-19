@@ -1,10 +1,10 @@
 ///|
 /// Test control flow
 test "integration: control flow" {
-  @json.inspect(jq("if . > 5 then \"big\" else \"small\" end", "10"), content=[
+  json_inspect(jq("if . > 5 then \"big\" else \"small\" end", "10"), content=[
     "big",
   ])
-  @json.inspect(jq("if . > 5 then \"big\" else \"small\" end", "2"), content=[
+  json_inspect(jq("if . > 5 then \"big\" else \"small\" end", "2"), content=[
     "small",
   ])
 }
@@ -12,16 +12,16 @@ test "integration: control flow" {
 ///|
 /// Test optional operator
 test "integration: optional operator" {
-  @json.inspect(jq(".a.b.c?", "{}"), content=[null])
-  @json.inspect(jq(".x?", "{\"x\": 42}"), content=[42])
+  json_inspect(jq(".a.b.c?", "{}"), content=[null])
+  json_inspect(jq(".x?", "{\"x\": 42}"), content=[42])
 }
 
 ///|
 /// Test alternative operator
 test "integration: alternative operator" {
-  @json.inspect(jq(".a // .b", "{\"a\": null, \"b\": 10}"), content=[10])
-  @json.inspect(jq(".a // .b", "{\"a\": 5, \"b\": 10}"), content=[5])
-  @json.inspect(jq(".missing // \"default\"", "{}"), content=["default"])
+  json_inspect(jq(".a // .b", "{\"a\": null, \"b\": 10}"), content=[10])
+  json_inspect(jq(".a // .b", "{\"a\": 5, \"b\": 10}"), content=[5])
+  json_inspect(jq(".missing // \"default\"", "{}"), content=["default"])
 }
 
 ///|

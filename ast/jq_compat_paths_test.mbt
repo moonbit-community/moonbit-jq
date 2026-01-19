@@ -9,5 +9,5 @@ test "jq compat: paths order matches jq" {
     #|  "b": { "c": 3 }
     #|}
   let results = jq_eval("paths", input)
-  @json.inspect(results, content=[["a"], ["a", 0], ["a", 1], ["b"], ["b", "c"]])
+  json_inspect(results, content=[["a"], ["a", 0], ["a", 1], ["b"], ["b", "c"]])
 }
