@@ -36,11 +36,12 @@ fn eval_repeat(
 ) -> Iter[Json] raise InterpreterError {
   let values = eval_with_env(expr, input, env).collect()
   guard not(values.is_empty()) else { Iter::empty() }
+  let len = values.length()
   let idx : Ref[Int] = Ref::new(0)
   Iter::new(fn() {
     let i = idx.val
     let result = Some(values[i])
-    idx.val = if i + 1 >= values.length() { 0 } else { i + 1 }
+    idx.val = if i + 1 >= len { 0 } else { i + 1 }
     result
   })
 }
