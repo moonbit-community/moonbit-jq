@@ -82,6 +82,19 @@ fn array_contains_all(
 }
 
 ///|
+fn json_contains(
+  container : Json,
+  item : Json,
+) -> Bool {
+  match (container, item) {
+    (String(haystack), String(n)) => haystack.contains(n)
+    (Array(haystack), _) => array_contains_view(haystack[:], item)
+    (Object(haystack), String(key)) => haystack.contains(key)
+    _ => false
+  }
+}
+
+///|
 /// Evaluate contains for strings, arrays, and objects
 fn eval_contains(
   expr : Expr,
@@ -91,17 +104,7 @@ fn eval_contains(
   match eval_with_env(expr, input, env).collect() {
     [] => Iter::singleton(Json::boolean(false))
     [needle, ..] =>
-      match (input, needle) {
-        (String(haystack), String(n)) =>
-          Iter::singleton(Json::boolean(haystack.contains(n)))
-        (Array(haystack), _) =>
-          Iter::singleton(
-            Json::boolean(array_contains_view(haystack[:], needle)),
-          )
-        (Object(haystack), String(key)) =>
-          Iter::singleton(Json::boolean(haystack.contains(key)))
-        _ => Iter::singleton(Json::boolean(false))
-      }
+      Iter::singleton(Json::boolean(json_contains(input, needle)))
   }
 }
 
@@ -116,15 +119,11 @@ fn eval_inside(
     [] => Iter::singleton(Json::boolean(false))
     [container, ..] =>
       match (input, container) {
-        (String(needle), String(haystack)) =>
-          Iter::singleton(Json::boolean(haystack.contains(needle)))
         (Array(needle_arr), Array(haystack)) =>
           Iter::singleton(
             Json::boolean(array_contains_all(haystack[:], needle_arr[:])),
           )
-        (String(key), Object(haystack)) =>
-          Iter::singleton(Json::boolean(haystack.contains(key)))
-        _ => Iter::singleton(Json::boolean(false))
+        _ => Iter::singleton(Json::boolean(json_contains(container, input)))
       }
   }
 }
