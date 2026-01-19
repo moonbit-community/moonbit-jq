@@ -59,7 +59,7 @@ fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
         let len = arr.length()
         indices.iter().map(fn(idx) { array_index_or_null(arr, len, idx) })
       }
-      _ => indices.iter().map(fn(_) { null })
+      _ => Iter::repeat(null).take(indices.length())
     }
   }
 }
