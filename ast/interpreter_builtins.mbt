@@ -19,12 +19,13 @@ fn eval_length(input : Json) -> Iter[Json] raise InterpreterError {
 /// Evaluate keys
 fn eval_keys(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
-    Object(obj) =>
-      Iter::singleton(
-        Json::array(
-          obj.keys().map(fn(k) { Json::string(k) }).to_array(),
-        ),
-      )
+    Object(obj) => {
+      let keys : Array[Json] = []
+      for k, _v in obj {
+        keys.push(Json::string(k))
+      }
+      Iter::singleton(Json::array(keys))
+    }
     Array(arr) => {
       let indices = arr.mapi((i, _) => Json::number(i.to_double()))
       Iter::singleton(Json::array(indices))
@@ -37,10 +38,13 @@ fn eval_keys(input : Json) -> Iter[Json] raise InterpreterError {
 /// Evaluate values
 fn eval_values(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
-    Object(obj) =>
-      Iter::singleton(
-        Json::array(obj.values().to_array()),
-      )
+    Object(obj) => {
+      let values : Array[Json] = []
+      for _k, v in obj {
+        values.push(v)
+      }
+      Iter::singleton(Json::array(values))
+    }
     Array(arr) => Iter::singleton(Json::array(arr))
     _ => raise TypeMismatch("object/array", @ast_internal.json_type_name(input))
   }
