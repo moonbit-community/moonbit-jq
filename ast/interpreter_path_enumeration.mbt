@@ -23,12 +23,14 @@ fn collect_paths_with_filter(
         new_path.push(key)
         collect_paths_with_filter(val, new_path, filter_expr, env, results)
       }
-    Array(arr) =>
-      for i = 0; i < arr.length(); i = i + 1 {
+    Array(arr) => {
+      let len = arr.length()
+      for i in 0..<len {
         let new_path = path.copy()
         new_path.push(i.to_string())
         collect_paths_with_filter(arr[i], new_path, filter_expr, env, results)
       }
+    }
     _ => ()
   }
 }
@@ -45,12 +47,14 @@ fn eval_paths(input : Json) -> Iter[Json] {
           paths_list.push(Json::array(new_path))
           collect_paths(val, new_path)
         }
-      Array(arr) =>
-        for i = 0; i < arr.length(); i = i + 1 {
+      Array(arr) => {
+        let len = arr.length()
+        for i in 0..<len {
           let new_path = path + [Json::number(i.to_double())]
           paths_list.push(Json::array(new_path))
           collect_paths(arr[i], new_path)
         }
+      }
       _ => ()
     }
   }
@@ -77,7 +81,8 @@ fn eval_leaf_paths(input : Json) -> Iter[Json] {
         if arr.is_empty() {
           paths_list.push(Json::array(path))
         } else {
-          for i = 0; i < arr.length(); i = i + 1 {
+          let len = arr.length()
+          for i in 0..<len {
             collect_leaf_paths(arr[i], path + [Json::number(i.to_double())])
           }
         }
