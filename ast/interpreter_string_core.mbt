@@ -49,20 +49,23 @@ fn eval_ends_with(
 
 ///|
 fn string_views_to_json(parts : ArrayView[StringView]) -> Array[Json] {
-  match parts {
-    [] => []
-    [head, .. tail] =>
-      [Json::string(head.to_string())] + string_views_to_json(tail)
+  let results : Array[Json] = []
+  for part in parts {
+    results.push(Json::string(part.to_string()))
   }
+  results
 }
 
 ///|
 fn json_to_strings(parts : ArrayView[Json]) -> Array[String] {
-  match parts {
-    [] => []
-    [String(s), .. tail] => [s] + json_to_strings(tail)
-    [head, .. tail] => [head.to_string()] + json_to_strings(tail)
+  let results : Array[String] = []
+  for part in parts {
+    match part {
+      String(s) => results.push(s)
+      _ => results.push(part.to_string())
+    }
   }
+  results
 }
 
 ///|
