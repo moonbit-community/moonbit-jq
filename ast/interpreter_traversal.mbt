@@ -35,15 +35,8 @@ fn recurse_all(input : Json) -> Iter[Json] {
   match input {
     Array(arr) =>
       Iter::singleton(input).concat(arr.iter().flat_map(recurse_all))
-    Object(obj) => {
-      let values = obj
-        .to_array()
-        .map(fn(pair) {
-          let (_k, v) = pair
-          v
-        })
-      Iter::singleton(input).concat(values.iter().flat_map(recurse_all))
-    }
+    Object(obj) =>
+      Iter::singleton(input).concat(obj.values().flat_map(recurse_all))
     _ => Iter::singleton(input)
   }
 }

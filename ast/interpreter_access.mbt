@@ -18,14 +18,7 @@ fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
     // Empty index means iterate over array/object values
     match input {
       Array(arr) => arr.iter()
-      Object(obj) =>
-        obj
-        .to_array()
-        .map(fn(pair) {
-          let (_k, v) = pair
-          v
-        })
-        .iter()
+      Object(obj) => obj.values()
       _ => Iter::empty()
     }
   } else {

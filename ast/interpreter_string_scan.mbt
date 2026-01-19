@@ -40,7 +40,16 @@ fn eval_scan(
   match input {
     String(s) => {
       let results : Array[Json] = []
-      scan_matches(s, pattern, 0, s.length(), pattern.length(), results)
+      let pattern_view = pattern[:]
+      scan_matches(
+        s,
+        pattern,
+        pattern_view,
+        0,
+        s.length(),
+        pattern.length(),
+        results,
+      )
       results.iter()
     }
     _ => raise TypeMismatch("string", @ast_internal.json_type_name(input))
@@ -51,6 +60,7 @@ fn eval_scan(
 fn scan_matches(
   s : String,
   pattern : String,
+  pattern_view : StringView,
   idx : Int,
   slen : Int,
   plen : Int,
@@ -60,15 +70,15 @@ fn scan_matches(
     return
   }
   let slice_result = s[idx:idx + plen] catch {
-      _ => {
-        scan_matches(s, pattern, idx + 1, slen, plen, results)
-        return
-      }
+    _ => {
+      scan_matches(s, pattern, pattern_view, idx + 1, slen, plen, results)
+      return
     }
-  if slice_result.to_string() == pattern {
+  }
+  if slice_result == pattern_view {
     results.push(Json::string(pattern))
-    scan_matches(s, pattern, idx + plen, slen, plen, results)
+    scan_matches(s, pattern, pattern_view, idx + plen, slen, plen, results)
   } else {
-    scan_matches(s, pattern, idx + 1, slen, plen, results)
+    scan_matches(s, pattern, pattern_view, idx + 1, slen, plen, results)
   }
 }

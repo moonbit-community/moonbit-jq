@@ -51,17 +51,13 @@ fn eval_in(
 /// Evaluate to_entries
 fn eval_to_entries(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
-    Object(obj) =>
-      Iter::singleton(
-        Json::array(
-          obj
-          .to_array()
-          .map(fn(pair) {
-            let (k, v) = pair
-            entry_from_pair(Json::string(k), v)
-          }),
-        ),
-      )
+    Object(obj) => {
+      let entries : Array[Json] = []
+      for k, v in obj {
+        entries.push(entry_from_pair(Json::string(k), v))
+      }
+      Iter::singleton(Json::array(entries))
+    }
     Array(arr) =>
       Iter::singleton(
         Json::array(

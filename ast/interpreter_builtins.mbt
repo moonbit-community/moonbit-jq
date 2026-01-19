@@ -22,12 +22,7 @@ fn eval_keys(input : Json) -> Iter[Json] raise InterpreterError {
     Object(obj) =>
       Iter::singleton(
         Json::array(
-          obj
-          .to_array()
-          .map(fn(pair) {
-            let (k, _v) = pair
-            Json::string(k)
-          }),
+          obj.keys().map(fn(k) { Json::string(k) }).to_array(),
         ),
       )
     Array(arr) => {
@@ -44,14 +39,7 @@ fn eval_values(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Object(obj) =>
       Iter::singleton(
-        Json::array(
-          obj
-          .to_array()
-          .map(fn(pair) {
-            let (_k, v) = pair
-            v
-          }),
-        ),
+        Json::array(obj.values().to_array()),
       )
     Array(arr) => Iter::singleton(Json::array(arr))
     _ => raise TypeMismatch("object/array", @ast_internal.json_type_name(input))
