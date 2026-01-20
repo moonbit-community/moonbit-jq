@@ -122,41 +122,38 @@ fn indices_of_array(
   needle : Json,
   offset : Int,
 ) -> Array[Json] {
-  match arr {
-    [] => []
-    [head, .. tail] =>
-      if head == needle {
-        [Json::number(offset.to_double())] +
-        indices_of_array(tail, needle, offset + 1)
-      } else {
-        indices_of_array(tail, needle, offset + 1)
-      }
+  let result : Array[Json] = []
+  let mut idx = offset
+  for value in arr {
+    if value == needle {
+      result.push(Json::number(idx.to_double()))
+    }
+    idx = idx + 1
   }
+  result
 }
 
 ///|
 fn find_first_index(arr : ArrayView[Json], needle : Json, offset : Int) -> Int? {
-  match arr {
-    [] => None
-    [head, .. tail] =>
-      if head == needle {
-        Some(offset)
-      } else {
-        find_first_index(tail, needle, offset + 1)
-      }
+  let mut idx = offset
+  for value in arr {
+    if value == needle {
+      return Some(idx)
+    }
+    idx = idx + 1
   }
+  None
 }
 
 ///|
 fn find_last_index(arr : ArrayView[Json], needle : Json, offset : Int) -> Int? {
-  match arr {
-    [] => None
-    [head, .. tail] => {
-      let tail_idx = find_last_index(tail, needle, offset + 1)
-      match tail_idx {
-        Some(_) => tail_idx
-        None => if head == needle { Some(offset) } else { None }
-      }
+  let mut idx = offset
+  let mut found : Int? = None
+  for value in arr {
+    if value == needle {
+      found = Some(idx)
     }
+    idx = idx + 1
   }
+  found
 }
