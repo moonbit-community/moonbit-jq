@@ -45,9 +45,8 @@ fn eval_sort_by(
         }
         (elem, sort_key)
       })
-      let sorted_pairs = pairs.copy()
-      sorted_pairs.sort_by(fn(a, b) { compare_json(a.1, b.1) })
-      let sorted = sorted_pairs.map(fn(p) { p.0 })
+      pairs.sort_by(fn(a, b) { compare_json(a.1, b.1) })
+      let sorted = pairs.map(fn(p) { p.0 })
       Iter::singleton(Json::array(sorted))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
@@ -81,10 +80,7 @@ fn eval_group_by(
           }
         })
       }
-      let result : Array[Json] = []
-      for group in groups.values() {
-        result.push(Json::array(group))
-      }
+      let result = groups.values().map(Json::array).collect()
       Iter::singleton(Json::array(result))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))

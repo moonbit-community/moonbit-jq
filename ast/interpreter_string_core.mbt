@@ -63,23 +63,18 @@ fn json_to_strings(parts : ArrayView[Json]) -> Array[String] {
 }
 
 ///|
-fn array_contains_view(haystack : ArrayView[Json], needle : Json) -> Bool {
-  haystack.contains(needle)
-}
-
-///|
 fn array_contains_all(
   haystack : ArrayView[Json],
   needles : ArrayView[Json],
 ) -> Bool {
-  needles.iter().all(needle => array_contains_view(haystack, needle))
+  needles.iter().all(fn(needle) { haystack.contains(needle) })
 }
 
 ///|
 fn json_contains(container : Json, item : Json) -> Bool {
   match (container, item) {
     (String(haystack), String(n)) => haystack.contains(n)
-    (Array(haystack), _) => array_contains_view(haystack[:], item)
+    (Array(haystack), _) => haystack[:].contains(item)
     (Object(haystack), String(key)) => haystack.contains(key)
     _ => false
   }
