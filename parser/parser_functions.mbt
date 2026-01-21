@@ -2,32 +2,22 @@
 /// Parse function definition: def name(params): body;
 fn Parser::parse_function_def(self : Parser) -> @ast.Expr raise ParseError {
   self.expect(TDef)
-  let name = match self.current() {
-    Some(TIdentifier(n)) => {
-      self.advance()
-      n
-    }
-    _ => raise UnexpectedToken("identifier", "function name")
+  guard self.current() is Some(TIdentifier(name)) else {
+    raise UnexpectedToken("identifier", "function name")
   }
+  self.advance()
   let params : Array[String] = []
   // Optional parameters
   if self.consume(TLParen) {
-    if not(self.current() == Some(TRParen)) {
-      match self.current() {
-        Some(TIdentifier(p)) => {
-          self.advance()
-          params.push(p)
-        }
-        _ => raise UnexpectedToken("identifier", "parameter")
-      }
+    if self.current() is Some(TIdentifier(p)) {
+      self.advance()
+      params.push(p)
       while self.consume(TSemicolon) {
-        match self.current() {
-          Some(TIdentifier(p)) => {
-            self.advance()
-            params.push(p)
-          }
-          _ => raise UnexpectedToken("identifier", "parameter")
+        guard self.current() is Some(TIdentifier(p2)) else {
+          raise UnexpectedToken("identifier", "parameter")
         }
+        self.advance()
+        params.push(p2)
       }
     }
     self.expect(TRParen)

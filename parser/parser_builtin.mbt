@@ -10,7 +10,8 @@ fn Parser::parse_builtin(
       if self.current() == Some(TLParen) {
         self.advance()
         let args : Array[@ast.Expr] = []
-        if not(self.current() == Some(TRParen)) {
+        // Check if there's an expression (not just closing paren)
+        if self.current() != Some(TRParen) {
           args.push(self.parse_pipe())
           while self.consume(TSemicolon) {
             args.push(self.parse_pipe())
@@ -25,33 +26,28 @@ fn Parser::parse_builtin(
 }
 
 ///|
-/// Parse built-ins by category
+/// Parse built-ins by category - try each category in order
 fn Parser::parse_builtin_by_name(
   self : Parser,
   name : String,
 ) -> @ast.Expr? raise ParseError {
-  match self.parse_builtin_core(name) {
-    Some(expr) => Some(expr)
-    None =>
-      match self.parse_builtin_numeric(name) {
-        Some(expr) => Some(expr)
-        None =>
-          match self.parse_builtin_array(name) {
-            Some(expr) => Some(expr)
-            None =>
-              match self.parse_builtin_object(name) {
-                Some(expr) => Some(expr)
-                None =>
-                  match self.parse_builtin_string(name) {
-                    Some(expr) => Some(expr)
-                    None =>
-                      match self.parse_builtin_path(name) {
-                        Some(expr) => Some(expr)
-                        None => self.parse_builtin_flow(name)
-                      }
-                  }
-              }
-          }
-      }
+  if self.parse_builtin_core(name) is Some(expr) {
+    return Some(expr)
   }
+  if self.parse_builtin_numeric(name) is Some(expr) {
+    return Some(expr)
+  }
+  if self.parse_builtin_array(name) is Some(expr) {
+    return Some(expr)
+  }
+  if self.parse_builtin_object(name) is Some(expr) {
+    return Some(expr)
+  }
+  if self.parse_builtin_string(name) is Some(expr) {
+    return Some(expr)
+  }
+  if self.parse_builtin_path(name) is Some(expr) {
+    return Some(expr)
+  }
+  self.parse_builtin_flow(name)
 }

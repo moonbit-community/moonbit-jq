@@ -44,15 +44,13 @@ fn eval_index_of(
           }
         String(s) =>
           match needle {
+            String(substr) if substr.is_empty() => Iter::singleton(null)
             String(substr) =>
-              if substr.length() == 0 {
-                Iter::singleton(null)
-              } else {
-                match s.find(substr) {
-                  Some(pos) => Iter::singleton(Json::number(pos.to_double()))
-                  None => Iter::singleton(null)
-                }
-              }
+              Iter::singleton(
+                s.find(substr).map(fn(pos) { Json::number(pos.to_double()) }).unwrap_or(
+                  null,
+                ),
+              )
             _ => Iter::singleton(null)
           }
         _ =>
@@ -136,13 +134,12 @@ fn find_first_index(arr : ArrayView[Json], needle : Json) -> Int? {
 
 ///|
 fn find_last_index(arr : ArrayView[Json], needle : Json) -> Int? {
-  let mut found : Int? = None
-  for i in 0..<arr.length() {
+  for i in (arr.length() - 1)>=..0 {
     if arr[i] == needle {
-      found = Some(i)
+      return Some(i)
     }
   }
-  found
+  None
 }
 
 ///|

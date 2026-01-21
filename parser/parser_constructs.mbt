@@ -71,18 +71,14 @@ fn Parser::parse_try(self : Parser) -> @ast.Expr raise ParseError {
 fn Parser::parse_reduce(self : Parser) -> @ast.Expr raise ParseError {
   self.advance() // consume 'reduce'
   let gen_expr = self.parse_postfix() // generator expression
-  // Expect 'as'
-  if not(self.consume(TAs)) {
+  // Expect 'as $var'
+  guard self.consume(TAs) else {
     raise InvalidSyntax("reduce expects 'as' after expression")
   }
-  // Expect variable
-  let var_name = match self.current() {
-    Some(TVariable(name)) => {
-      self.advance()
-      name
-    }
-    _ => raise InvalidSyntax("reduce expects variable after as")
+  guard self.current() is Some(TVariable(var_name)) else {
+    raise InvalidSyntax("reduce expects variable after as")
   }
+  self.advance()
   // Expect (INIT; UPDATE)
   self.expect(TLParen)
   let init_expr = self.parse_pipe()
@@ -97,18 +93,14 @@ fn Parser::parse_reduce(self : Parser) -> @ast.Expr raise ParseError {
 fn Parser::parse_foreach(self : Parser) -> @ast.Expr raise ParseError {
   self.advance() // consume 'foreach'
   let gen_expr = self.parse_postfix() // generator expression
-  // Expect 'as'
-  if not(self.consume(TAs)) {
+  // Expect 'as $var'
+  guard self.consume(TAs) else {
     raise InvalidSyntax("foreach expects 'as' after expression")
   }
-  // Expect variable
-  let var_name = match self.current() {
-    Some(TVariable(name)) => {
-      self.advance()
-      name
-    }
-    _ => raise InvalidSyntax("foreach expects variable after as")
+  guard self.current() is Some(TVariable(var_name)) else {
+    raise InvalidSyntax("foreach expects variable after as")
   }
+  self.advance()
   // Expect (INIT; UPDATE) or (INIT; UPDATE; EXTRACT)
   self.expect(TLParen)
   let init_expr = self.parse_pipe()
