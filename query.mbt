@@ -21,7 +21,7 @@ pub fn Query::eval_logs(self : Query, logs : String) -> Iter[Json] raise {
   let aggregated : Array[Json] = []
   for raw_line in logs.split("\n") {
     let line = raw_line.strip_suffix("\r").unwrap_or(raw_line)
-    if line == "" {
+    if line.is_empty() {
       continue
     }
     let json_value = @json.parse(line) catch { _ => continue }
