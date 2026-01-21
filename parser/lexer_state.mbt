@@ -3,7 +3,7 @@
 priv struct Lexer {
   input : String
   mut pos : Int
-  mut tokens : Array[Token]
+  tokens : Array[Token]
 }
 
 ///|
@@ -35,13 +35,13 @@ fn Lexer::peek(self : Lexer) -> Char? {
 ///|
 /// Advance position
 fn Lexer::advance(self : Lexer) -> Unit {
-  self.pos = self.pos + 1
+  self.pos += 1
 }
 
 ///|
 /// Add a token
 fn Lexer::add_token(self : Lexer, token : Token) -> Unit {
-  self.tokens = self.tokens + [token]
+  self.tokens.push(token)
 }
 
 ///|

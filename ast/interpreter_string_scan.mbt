@@ -55,15 +55,15 @@ fn scan_matches(
   while pos <= last {
     let slice_result = s[pos:pos + plen] catch {
         _ => {
-          pos = pos + 1
+          pos += 1
           continue
         }
       }
     if slice_result == pattern {
       results.push(Json::string(pattern))
-      pos = pos + plen
+      pos += plen
     } else {
-      pos = pos + 1
+      pos += 1
     }
   }
 }
