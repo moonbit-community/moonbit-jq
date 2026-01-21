@@ -37,7 +37,7 @@ fn eval_ascii_upcase(input : Json) -> Iter[Json] raise InterpreterError {
     String(s) => {
       let result = @buffer.new()
       for ch in s {
-        if ch >= 'a' && ch <= 'z' {
+        if ch is ('a'..='z') {
           result.write_char(Int::unsafe_to_char(ch.to_int() - 32))
         } else {
           result.write_char(ch)
@@ -56,7 +56,7 @@ fn eval_ascii_downcase(input : Json) -> Iter[Json] raise InterpreterError {
     String(s) => {
       let result = @buffer.new()
       for ch in s {
-        if ch >= 'A' && ch <= 'Z' {
+        if ch is ('A'..='Z') {
           result.write_char(Int::unsafe_to_char(ch.to_int() + 32))
         } else {
           result.write_char(ch)
