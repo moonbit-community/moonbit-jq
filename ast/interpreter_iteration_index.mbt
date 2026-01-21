@@ -100,7 +100,7 @@ fn eval_rindex(
         String(s) =>
           match needle {
             String(substr) =>
-              match s.rev_find(substr[:]) {
+              match s.rev_find(substr) {
                 Some(pos) => Iter::singleton(Json::number(pos.to_double()))
                 None => Iter::singleton(null)
               }

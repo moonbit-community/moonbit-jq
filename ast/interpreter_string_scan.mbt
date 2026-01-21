@@ -23,7 +23,7 @@ fn eval_implode(input : Json) -> Iter[Json] raise InterpreterError {
       _ => None
     }
   })
-  let result = String::from_array(chars[:])
+  let result = String::from_array(chars)
   Iter::singleton(Json::string(result))
 }
 
@@ -37,16 +37,7 @@ fn eval_scan(
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
   let results : Array[Json] = []
-  let pattern_view = pattern[:]
-  scan_matches(
-    s,
-    pattern,
-    pattern_view,
-    0,
-    s.length(),
-    pattern.length(),
-    results,
-  )
+  scan_matches(s, pattern, 0, s.length(), pattern.length(), results)
   results.iter()
 }
 
@@ -54,7 +45,6 @@ fn eval_scan(
 fn scan_matches(
   s : String,
   pattern : String,
-  pattern_view : StringView,
   idx : Int,
   slen : Int,
   plen : Int,
@@ -69,7 +59,7 @@ fn scan_matches(
           continue
         }
       }
-    if slice_result == pattern_view {
+    if slice_result == pattern {
       results.push(Json::string(pattern))
       pos = pos + plen
     } else {

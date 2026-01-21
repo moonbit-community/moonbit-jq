@@ -71,7 +71,7 @@ fn eval_sub(
   guard input is String(s) else {
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(Json::string(s.replace(old=pattern[:], new=replacement[:])))
+  Iter::singleton(Json::string(s.replace(old=pattern, new=replacement)))
 }
 
 ///|
@@ -84,7 +84,5 @@ fn eval_gsub(
   guard input is String(s) else {
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(
-    Json::string(s.replace_all(old=pattern[:], new=replacement[:])),
-  )
+  Iter::singleton(Json::string(s.replace_all(old=pattern, new=replacement)))
 }
