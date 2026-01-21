@@ -7,7 +7,7 @@ fn eval_get_path(
 ) -> Iter[Json] raise InterpreterError {
   match eval_with_env(path_expr, input, env).collect() {
     [Array(path_arr), ..] =>
-      match get_at_path(input, path_arr[:]) {
+      match get_at_path(input, path_arr) {
         Some(value) => Iter::singleton(value)
         None => Iter::singleton(null)
       }

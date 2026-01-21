@@ -5,7 +5,7 @@ fn eval_split(sep : String, input : Json) -> Iter[Json] raise InterpreterError {
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
   let parts = s.split(sep).collect()
-  let json_parts = string_views_to_json(parts[:])
+  let json_parts = string_views_to_json(parts)
   Iter::singleton(Json::array(json_parts))
 }
 
@@ -15,7 +15,7 @@ fn eval_join(sep : String, input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  let parts = json_to_strings(arr[:])
+  let parts = json_to_strings(arr)
   Iter::singleton(Json::string(parts.join(sep)))
 }
 
@@ -70,7 +70,7 @@ fn array_contains_all(
 fn json_contains(container : Json, item : Json) -> Bool {
   match (container, item) {
     (String(haystack), String(n)) => haystack.contains(n)
-    (Array(haystack), _) => haystack[:].contains(item)
+    (Array(haystack), _) => haystack.contains(item)
     (Object(haystack), String(key)) => haystack.contains(key)
     _ => false
   }
@@ -102,7 +102,7 @@ fn eval_inside(
       match (input, container) {
         (Array(needle_arr), Array(haystack)) =>
           Iter::singleton(
-            Json::boolean(array_contains_all(haystack[:], needle_arr[:])),
+            Json::boolean(array_contains_all(haystack, needle_arr)),
           )
         _ => Iter::singleton(Json::boolean(json_contains(container, input)))
       }

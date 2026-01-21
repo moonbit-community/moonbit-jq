@@ -104,7 +104,7 @@ fn eval_set_path(
     ([Array(path_arr), ..], [value, ..]) =>
       match path_arr[:] {
         [] => Iter::singleton(value)
-        path => Iter::singleton(set_at_path(input, path, value))
+        _ => Iter::singleton(set_at_path(input, path_arr, value))
       }
     _ => Iter::singleton(input)
   }
@@ -122,7 +122,7 @@ fn eval_del_paths(
       Iter::singleton(
         paths_arr.fold(init=input, fn(acc, path_json) {
           match path_json {
-            Array(path) => delete_at_path(acc, path[:])
+            Array(path) => delete_at_path(acc, path)
             _ => acc
           }
         }),

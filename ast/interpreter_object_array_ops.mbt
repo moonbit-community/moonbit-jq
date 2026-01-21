@@ -70,7 +70,7 @@ fn eval_from_entries(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) =>
       Iter::singleton(
-        Json::object(Map::from_array(arr.filter_map(entry_to_pair)[:])),
+        Json::object(Map::from_array(arr.filter_map(entry_to_pair))),
       )
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }

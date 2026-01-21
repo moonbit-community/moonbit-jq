@@ -10,7 +10,7 @@ fn eval_indices_of(
     [needle, ..] =>
       match input {
         Array(arr) =>
-          Iter::singleton(Json::array(indices_of_array(arr[:], needle)))
+          Iter::singleton(Json::array(indices_of_array(arr, needle)))
         String(s) =>
           match needle {
             String(substr) => {
@@ -43,7 +43,7 @@ fn eval_index_of(
     [needle, ..] =>
       match input {
         Array(arr) =>
-          match find_first_index(arr[:], needle) {
+          match find_first_index(arr, needle) {
             Some(idx) => Iter::singleton(Json::number(idx.to_double()))
             None => Iter::singleton(null)
           }
@@ -93,7 +93,7 @@ fn eval_rindex(
     [needle, ..] =>
       match input {
         Array(arr) =>
-          match find_last_index(arr[:], needle) {
+          match find_last_index(arr, needle) {
             Some(idx) => Iter::singleton(Json::number(idx.to_double()))
             None => Iter::singleton(null)
           }

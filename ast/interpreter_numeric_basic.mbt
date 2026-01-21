@@ -4,7 +4,7 @@ fn eval_add(input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(Json::number(sum_numbers(arr[:])))
+  Iter::singleton(Json::number(sum_numbers(arr)))
 }
 
 ///|
@@ -31,7 +31,7 @@ fn eval_min(input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(min_in_view(arr[:]).unwrap_or(null))
+  Iter::singleton(min_in_view(arr).unwrap_or(null))
 }
 
 ///|
@@ -40,7 +40,7 @@ fn eval_max(input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(max_in_view(arr[:]).unwrap_or(null))
+  Iter::singleton(max_in_view(arr).unwrap_or(null))
 }
 
 ///|

@@ -35,7 +35,7 @@ fn eval_min_by(
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(pick_min_by(expr, env, arr[:]).unwrap_or(null))
+  Iter::singleton(pick_min_by(expr, env, arr).unwrap_or(null))
 }
 
 ///|
@@ -48,7 +48,7 @@ fn eval_max_by(
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(pick_max_by(expr, env, arr[:]).unwrap_or(null))
+  Iter::singleton(pick_max_by(expr, env, arr).unwrap_or(null))
 }
 
 ///|

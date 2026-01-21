@@ -3,12 +3,12 @@
 fn eval_combinations(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) =>
-      match collect_arrays(arr[:]) {
+      match collect_arrays(arr) {
         None => Iter::empty()
         Some(arrays) =>
           match arrays[:] {
             [] => Iter::empty()
-            _ => cartesian_product(arrays[:]).iter().map(Json::array)
+            _ => cartesian_product(arrays).iter().map(Json::array)
           }
       }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
@@ -20,8 +20,8 @@ fn eval_combinations(input : Json) -> Iter[Json] raise InterpreterError {
 fn eval_transpose(input : Json) -> Iter[Json] raise InterpreterError {
   match input {
     Array(arr) => {
-      let max_len = max_row_len(arr[:])
-      let rows = build_columns(arr[:], max_len)
+      let max_len = max_row_len(arr)
+      let rows = build_columns(arr, max_len)
       Iter::singleton(Json::array(rows.map(Json::array)))
     }
     _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))

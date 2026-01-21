@@ -7,9 +7,7 @@ fn eval_any_gen(
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
   let gen_results = eval_with_env(gen_expr, input, env).collect()
-  Iter::singleton(
-    Json::boolean(any_gen_results(gen_results[:], cond_expr, env)),
-  )
+  Iter::singleton(Json::boolean(any_gen_results(gen_results, cond_expr, env)))
 }
 
 ///|
@@ -21,9 +19,7 @@ fn eval_all_gen(
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
   let gen_results = eval_with_env(gen_expr, input, env).collect()
-  Iter::singleton(
-    Json::boolean(all_gen_results(gen_results[:], cond_expr, env)),
-  )
+  Iter::singleton(Json::boolean(all_gen_results(gen_results, cond_expr, env)))
 }
 
 ///|

@@ -31,7 +31,7 @@ fn eval_function_call(
             [first, ..] => first
           }
         })
-        let new_env = bind_params(env, params[:], arg_values[:])
+        let new_env = bind_params(env, params, arg_values)
         eval_with_env(body, input, new_env)
       }
     None => raise EvalError("Undefined function: \{name}")

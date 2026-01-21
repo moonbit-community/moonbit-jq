@@ -11,7 +11,7 @@ fn compare_json(a : Json, b : Json) -> Int {
     (True, True) => 0
     (Number(x, ..), Number(y, ..)) => x.compare(y)
     (String(x), String(y)) => x.compare(y)
-    (Array(x), Array(y)) => compare_array_view(x[:], y[:])
+    (Array(x), Array(y)) => compare_array_view(x, y)
     // Type ordering: null < bool < number < string < array < object
     (False | True, Number(_)) => -1
     (Number(_), False | True) => 1

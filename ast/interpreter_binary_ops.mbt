@@ -46,7 +46,7 @@ fn json_add(left : Json, right : Json) -> Json raise InterpreterError {
 fn json_subtract(left : Json, right : Json) -> Json raise InterpreterError {
   match (left, right) {
     (Number(a, ..), Number(b, ..)) => Json::number(a - b)
-    (Array(a), Array(b)) => Json::array(array_without(a[:], b[:]))
+    (Array(a), Array(b)) => Json::array(array_without(a, b))
     _ =>
       raise InvalidOperation(
         "Cannot subtract \{@ast_internal.json_type_name(right)} from \{@ast_internal.json_type_name(left)}",
