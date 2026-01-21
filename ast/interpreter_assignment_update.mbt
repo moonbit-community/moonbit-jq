@@ -12,55 +12,41 @@ fn eval_update(
     upd : Expr,
   ) -> Json raise InterpreterError {
     match p {
-      Identity => {
-        let results = eval_with_env(upd, obj, env).collect()
-        if results.is_empty() {
-          obj
-        } else {
-          results[0]
+      Identity =>
+        match eval_with_env(upd, obj, env).collect() {
+          [first, ..] => first
+          [] => obj
         }
-      }
       Key(key) =>
         match obj {
           Object(map) => {
-            let current = match map.get(key) {
-              Some(v) => v
-              None => null
-            }
-            let upd_results = eval_with_env(upd, current, env).collect()
-            if upd_results.is_empty() {
-              obj
-            } else {
-              let new_map : Map[String, Json] = {}
-              for k, v in map {
-                new_map[k] = v
+            let current = map.get(key).unwrap_or(null)
+            match eval_with_env(upd, current, env).collect() {
+              [updated, ..] => {
+                let new_map = map.copy()
+                new_map[key] = updated
+                Json::object(new_map)
               }
-              new_map[key] = upd_results[0]
-              Json::object(new_map)
+              [] => obj
             }
           }
           _ => obj
         }
       Index(indices) =>
-        match obj {
-          Array(arr) => {
-            if indices.is_empty() || indices.length() != 1 {
-              return obj
-            }
-            let idx = indices[0]
+        match (obj, indices[:]) {
+          (Array(arr), [idx]) =>
             if idx < 0 || idx >= arr.length() {
-              return obj
-            }
-            let current = arr[idx]
-            let upd_results = eval_with_env(upd, current, env).collect()
-            if upd_results.is_empty() {
               obj
             } else {
-              let new_arr = arr.copy()
-              new_arr[idx] = upd_results[0]
-              Json::array(new_arr)
+              match eval_with_env(upd, arr[idx], env).collect() {
+                [updated, ..] => {
+                  let new_arr = arr.copy()
+                  new_arr[idx] = updated
+                  Json::array(new_arr)
+                }
+                [] => obj
+              }
             }
-          }
           _ => obj
         }
       Pipe(left, right) =>
@@ -69,59 +55,42 @@ fn eval_update(
           Key(key) =>
             match obj {
               Object(map) => {
-                let current = match map.get(key) {
-                  Some(v) => v
-                  None => null
-                }
+                let current = map.get(key).unwrap_or(null)
                 let updated = apply_update(current, right, upd)
-                let new_map : Map[String, Json] = {}
-                for k, v in map {
-                  new_map[k] = v
-                }
+                let new_map = map.copy()
                 new_map[key] = updated
                 Json::object(new_map)
               }
               _ => obj
             }
           Index(indices) =>
-            match obj {
-              Array(arr) => {
-                if indices.is_empty() || indices.length() != 1 {
-                  return obj
-                }
-                let idx = indices[0]
+            match (obj, indices[:]) {
+              (Array(arr), [idx]) =>
                 if idx < 0 || idx >= arr.length() {
-                  return obj
+                  obj
+                } else {
+                  let updated = apply_update(arr[idx], right, upd)
+                  let new_arr = arr.copy()
+                  new_arr[idx] = updated
+                  Json::array(new_arr)
                 }
-                let current = arr[idx]
-                let updated = apply_update(current, right, upd)
-                let new_arr = arr.copy()
-                new_arr[idx] = updated
-                Json::array(new_arr)
-              }
               _ => obj
             }
-          _ => {
-            let navigated = eval_with_env(left, obj, env).collect()
-            if navigated.is_empty() {
-              return obj
+          _ =>
+            match eval_with_env(left, obj, env).collect() {
+              [navigated, ..] => apply_update(navigated, right, upd)
+              [] => obj
             }
-            apply_update(navigated[0], right, upd)
-          }
         }
-      _ => {
-        let current_results = eval_with_env(p, obj, env).collect()
-        if current_results.is_empty() {
-          return obj
+      _ =>
+        match eval_with_env(p, obj, env).collect() {
+          [current, ..] =>
+            match eval_with_env(upd, current, env).collect() {
+              [updated, ..] => updated
+              [] => obj
+            }
+          [] => obj
         }
-        let current = current_results[0]
-        let updated_results = eval_with_env(upd, current, env).collect()
-        if updated_results.is_empty() {
-          obj
-        } else {
-          updated_results[0]
-        }
-      }
     }
   }
 
