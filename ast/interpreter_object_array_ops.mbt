@@ -84,19 +84,17 @@ fn entry_from_pair(key : Json, value : Json) -> Json {
 
 ///|
 fn entry_to_pair(entry : Json) -> (String, Json)? {
-  match entry {
-    Object(obj) => {
-      let key_opt : Json? = match obj.get("key") {
-        Some(k) => Some(k)
-        None => obj.get("name")
-      }
-      match (key_opt, obj.get("value")) {
-        (Some(String(key_str)), Some(v)) => Some((key_str, v))
-        (Some(Number(n, ..)), Some(v)) => Some((n.to_int().to_string(), v))
+  guard entry is Object(obj) else { return None }
+  guard obj.get("value") is Some(value) else { return None }
+  match obj.get("key") {
+    Some(String(key_str)) => Some((key_str, value))
+    Some(Number(n, ..)) => Some((n.to_int().to_string(), value))
+    _ =>
+      match obj.get("name") {
+        Some(String(key_str)) => Some((key_str, value))
+        Some(Number(n, ..)) => Some((n.to_int().to_string(), value))
         _ => None
       }
-    }
-    _ => None
   }
 }
 

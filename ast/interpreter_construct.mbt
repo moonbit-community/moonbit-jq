@@ -38,11 +38,7 @@ fn eval_object_construct(
           None =>
             // Shorthand: {foo} means {foo: .foo}
             match input {
-              Object(input_obj) =>
-                match input_obj.get(key_str) {
-                  Some(v) => v
-                  None => null
-                }
+              Object(input_obj) => input_obj.get(key_str).unwrap_or(null)
               _ => null
             }
         }

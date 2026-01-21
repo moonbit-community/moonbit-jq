@@ -37,11 +37,7 @@ fn array_index_or_null(arr : Array[Json], len : Int, idx : Int) -> Json {
 /// Evaluate field access against input JSON
 fn eval_key_access(key : String, input : Json) -> Iter[Json] {
   match input {
-    Object(obj) =>
-      match obj.get(key) {
-        Some(v) => Iter::singleton(v)
-        None => Iter::singleton(null)
-      }
+    Object(obj) => Iter::singleton(obj.get(key).unwrap_or(null))
     _ => Iter::singleton(null)
   }
 }
@@ -49,22 +45,23 @@ fn eval_key_access(key : String, input : Json) -> Iter[Json] {
 ///|
 /// Evaluate array indexing and iteration
 fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
-  if indices.is_empty() {
-    // Empty index means iterate over array/object values
-    match input {
-      Array(arr) => arr.iter()
-      Object(obj) => obj.values()
-      _ => Iter::empty()
-    }
-  } else {
-    // Multiple indices produce multiple results
-    match input {
-      Array(arr) => {
-        let len = arr.length()
-        indices.iter().map(fn(idx) { array_index_or_null(arr, len, idx) })
+  match indices[:] {
+    [] =>
+      // Empty index means iterate over array/object values
+      match input {
+        Array(arr) => arr.iter()
+        Object(obj) => obj.values()
+        _ => Iter::empty()
       }
-      _ => Iter::repeat(null).take(indices.length())
-    }
+    _ =>
+      // Multiple indices produce multiple results
+      match input {
+        Array(arr) => {
+          let len = arr.length()
+          indices.iter().map(fn(idx) { array_index_or_null(arr, len, idx) })
+        }
+        _ => Iter::repeat(null).take(indices.length())
+      }
   }
 }
 

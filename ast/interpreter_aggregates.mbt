@@ -35,22 +35,20 @@ fn eval_sort_by(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match input {
-    Array(arr) => {
-      let pairs = arr.map(fn(elem) {
-        let keys = eval_with_env(expr, elem, env).collect()
-        let sort_key = match keys {
-          [] => null
-          [first, ..] => first
-        }
-        (elem, sort_key)
-      })
-      pairs.sort_by(fn(a, b) { compare_json(a.1, b.1) })
-      let sorted = pairs.map(fn(p) { p.0 })
-      Iter::singleton(Json::array(sorted))
-    }
-    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  guard input is Array(arr) else {
+    raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
+  let pairs = arr.map(fn(elem) {
+    let keys = eval_with_env(expr, elem, env).collect()
+    let sort_key = match keys {
+      [] => null
+      [first, ..] => first
+    }
+    (elem, sort_key)
+  })
+  pairs.sort_by(fn(a, b) { compare_json(a.1, b.1) })
+  let sorted = pairs.map(fn(p) { p.0 })
+  Iter::singleton(Json::array(sorted))
 }
 
 ///|
@@ -60,49 +58,45 @@ fn eval_group_by(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match input {
-    Array(arr) => {
-      let groups : Map[String, Array[Json]] = {}
-      for elem in arr {
-        let keys = eval_with_env(expr, elem, env).collect()
-        let key_json = match keys {
-          [] => null
-          [first, ..] => first
-        }
-        let key_str = key_json.to_string()
-        groups.update(key_str, fn(existing) {
-          match existing {
-            Some(group) => {
-              group.push(elem)
-              Some(group)
-            }
-            None => Some([elem])
-          }
-        })
-      }
-      let result = groups.values().map(Json::array).collect()
-      Iter::singleton(Json::array(result))
-    }
-    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  guard input is Array(arr) else {
+    raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
+  let groups : Map[String, Array[Json]] = {}
+  for elem in arr {
+    let keys = eval_with_env(expr, elem, env).collect()
+    let key_json = match keys {
+      [] => null
+      [first, ..] => first
+    }
+    let key_str = key_json.to_string()
+    groups.update(key_str, fn(existing) {
+      match existing {
+        Some(group) => {
+          group.push(elem)
+          Some(group)
+        }
+        None => Some([elem])
+      }
+    })
+  }
+  let result = groups.values().map(Json::array).collect()
+  Iter::singleton(Json::array(result))
 }
 
 ///|
 /// Evaluate Any
 fn eval_any(input : Json) -> Iter[Json] raise InterpreterError {
-  match input {
-    Array(arr) =>
-      Iter::singleton(Json::boolean(arr.any(@ast_internal.is_truthy)))
-    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  guard input is Array(arr) else {
+    raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
+  Iter::singleton(Json::boolean(arr.any(@ast_internal.is_truthy)))
 }
 
 ///|
 /// Evaluate All
 fn eval_all(input : Json) -> Iter[Json] raise InterpreterError {
-  match input {
-    Array(arr) =>
-      Iter::singleton(Json::boolean(arr.all(@ast_internal.is_truthy)))
-    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  guard input is Array(arr) else {
+    raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
+  Iter::singleton(Json::boolean(arr.all(@ast_internal.is_truthy)))
 }
