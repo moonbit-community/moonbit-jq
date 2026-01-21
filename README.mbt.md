@@ -256,38 +256,35 @@ See [LICENSE](LICENSE).
 ## Acknowledgments
 
 - Inspired by [jq](https://jqlang.github.io/jq/) by Stephen Dolan
-- Built with [MoonBit](https://www.moonbitlang.com/)evel": "error", "message": "disk full" },
-    #|    { "level": "error", "message": "timeout" }
-    #|  ]
-    #|}
-  inspect(
-    jq(query, input),
-    content=(
-      #|String("disk full")
-      #|String("timeout")
-    ),
-  )
-}
-```
+- Built with [MoonBit](https://www.moonbitlang.com/)
 
-## Building and testing
+## Public API Reference
 
-This repo is a MoonBit module with multiple packages; run commands against specific package paths:
+The `@moonjq` package exposes a simple, high-level API:
 
-```bash
-# Type-check a package (and its deps)
-moon check --package-path parser
-moon check --package-path ast
+### Types
 
-# Run tests
-moon test -p ast -p json -p parser
+| Type | Description |
+|------|-------------|
+| `Query` | A compiled jq query that can be evaluated multiple times |
 
-# Update snapshots (expect tests)
-moon test -p ast -p json -p parser --update
+### Functions
 
-# Generate/update public interfaces (.mbti)
-moon info
-```
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `parse` | `(String) -> Query raise` | Compile a jq query string into a reusable Query |
+| `eval` | `(Query, Json) -> Iter[Json] raise` | Evaluate a query, streaming results lazily |
+| `eval_all` | `(Query, Json) -> Array[Json] raise` | Evaluate a query, collecting all results |
+| `run` | `(String, String) -> Array[Json] raise` | Parse and evaluate in one step |
+| `run_json` | `(Query, Json) -> Array[Json] raise` | Evaluate against already-parsed JSON |
+
+### Query Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `Query::eval` | `(Query, Json) -> Iter[Json] raise` | Stream evaluation results |
+| `Query::eval_all` | `(Query, Json) -> Array[Json] raise` | Collect all results |
+| `Query::eval_logs` | `(Query, String) -> Iter[Json] raise` | Process NDJSON logs |
 
 ## License
 
