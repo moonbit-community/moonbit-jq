@@ -24,7 +24,7 @@ test "coverage: walk empty results and recurse safety" {
   json_inspect(coverage_eval("walk(empty)", "{\"a\": 1}"), content=[{ "a": 1 }])
   json_inspect(coverage_eval("walk(empty)", "1"), content=[1])
   let nums : Array[String] = []
-  for i = 0; i <= 100; i = i + 1 {
+  for i in 0..<101 {
     nums.push(i.to_string())
   }
   let sep = ","

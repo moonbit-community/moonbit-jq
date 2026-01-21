@@ -19,7 +19,7 @@ test "coverage: string escape sequences" {
     "\"\\n\"", "\"\\r\"", "\"\\t\"", "\"\\b\"", "\"\\/\"", "\"\\\"\"", "\"\\\\\"",
   ]
   let expected : Array[String] = ["\n", "\r", "\t", "\b", "/", "\"", "\\"]
-  for i = 0; i < query.length(); i = i + 1 {
+  for i in 0..<query.length() {
     let tokens = @parser.lex(query[i])
     match tokens[0] {
       TString(s) => assert_true(s == expected[i])
