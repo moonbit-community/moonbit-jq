@@ -37,9 +37,24 @@ test "coverage: interpolation lexer handles nested parens and strings" {
   match tokens[0] {
     TStringInterpolation(parts) => {
       debug_inspect(parts.length(), content="3")
-      debug_inspect(parts[0].0, content="x ")
-      debug_inspect(parts[1].1.unwrap(), content="(1 + (2)) | \"a\\\"b\"")
-      debug_inspect(parts[2].0, content=" y")
+      debug_inspect(
+        parts[0].0,
+        content=(
+          #|"x "
+        ),
+      )
+      debug_inspect(
+        parts[1].1.unwrap(),
+        content=(
+          #|"(1 + (2)) | \"a\\\"b\""
+        ),
+      )
+      debug_inspect(
+        parts[2].0,
+        content=(
+          #|" y"
+        ),
+      )
     }
     _ => debug_inspect(false, content="expected TStringInterpolation")
   }

@@ -6,20 +6,27 @@ test "corner: error in pipeline stops execution" {
   debug_inspect(
     test_query(".x | . * 2", "{}"),
     content=(
-      #|EvalError: InvalidOperation("Cannot multiply null and number")
+      #|"EvalError: InvalidOperation(\"Cannot multiply null and number\")"
     ),
   )
 }
 
 ///|
 test "corner: try catches errors" {
-  debug_inspect(test_query("try .x catch \"error\"", "{}"), content="Null")
+  debug_inspect(
+    test_query("try .x catch \"error\"", "{}"),
+    content=(
+      #|"Null"
+    ),
+  )
 }
 
 ///|
 test "corner: try with successful operation" {
   debug_inspect(
     test_query("try .x catch \"error\"", "{\"x\":42}"),
-    content="Number(42)",
+    content=(
+      #|"Number(42)"
+    ),
   )
 }

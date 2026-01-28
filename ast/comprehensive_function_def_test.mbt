@@ -9,7 +9,9 @@
 test "def: simple function no params" {
   debug_inspect(
     test_query("def double: . * 2; double", "5"),
-    content="Number(10)",
+    content=(
+      #|"Number(10)"
+    ),
   )
 }
 
@@ -18,7 +20,7 @@ test "def: function with parameter" {
   debug_inspect(
     test_query("def add(x): . + x; add(10)", "5"),
     content=(
-      #|EvalError: TypeMismatch("array", "number")
+      #|"EvalError: TypeMismatch(\"array\", \"number\")"
     ),
   )
 }
@@ -28,7 +30,7 @@ test "def: multiple parameters" {
   debug_inspect(
     test_query("def multiply(x; y): . * x * y; multiply(3; 4)", "2"),
     content=(
-      #|EvalError: EvalError("Undefined function: x")
+      #|"EvalError: EvalError(\"Undefined function: x\")"
     ),
   )
 }
@@ -40,7 +42,9 @@ test "def: recursive function" {
       "def factorial: if . <= 1 then 1 else . * ((. - 1) | factorial) end; factorial",
       "5",
     ),
-    content="Number(120)",
+    content=(
+      #|"Number(120)"
+    ),
   )
 }
 
@@ -51,7 +55,9 @@ test "def: fibonacci" {
       "def fib: if . <= 1 then . else ((. - 1) | fib) + ((. - 2) | fib) end; fib",
       "10",
     ),
-    content="Number(55)",
+    content=(
+      #|"Number(55)"
+    ),
   )
 }
 
@@ -63,7 +69,7 @@ test "def: function calling another function" {
       "3",
     ),
     content=(
-      #|EvalError: EvalError("Undefined function: x")
+      #|"EvalError: EvalError(\"Undefined function: x\")"
     ),
   )
 }
@@ -72,7 +78,9 @@ test "def: function calling another function" {
 test "def: function with array manipulation" {
   debug_inspect(
     test_query("def first_two: [.[0], .[1]]; first_two", "[1,2,3,4,5]"),
-    content="Array([Number(1), Number(2)])",
+    content=(
+      #|"Array([Number(1), Number(2)])"
+    ),
   )
 }
 
@@ -88,7 +96,7 @@ test "complex: nested function with interpolation" {
       "25",
     ),
     content=(
-      #|EvalError: EvalError("Undefined function: name")
+      #|"EvalError: EvalError(\"Undefined function: name\")"
     ),
   )
 }
@@ -97,7 +105,9 @@ test "complex: nested function with interpolation" {
 test "complex: array transformation with custom function" {
   debug_inspect(
     test_query("def double: . * 2; [.[] | double]", "[1,2,3,4,5]"),
-    content="Array([Number(2), Number(4), Number(6), Number(8), Number(10)])",
+    content=(
+      #|"Array([Number(2), Number(4), Number(6), Number(8), Number(10)])"
+    ),
   )
 }
 
@@ -109,7 +119,7 @@ test "complex: recursive tree walk" {
       "[1,[2,3],[4,[5,6]]]",
     ),
     content=(
-      #|ParseError: UnexpectedToken("TElif", "TElse")
+      #|"ParseError: UnexpectedToken(\"TElif\", \"TElse\")"
     ),
   )
 }

@@ -3,8 +3,7 @@ test "missing: limit(n; expr)" {
   debug_inspect(
     test_feature("limit(2; .[])", "[1,2,3,4,5]"),
     content=(
-      #|Number(1)
-      #|Number(2)
+      #|"Number(1)\nNumber(2)"
     ),
   )
 }
@@ -34,7 +33,7 @@ test "missing: walk function" {
       "walk(if type == \"number\" then . * 2 else . end)", "{\"a\":1,\"b\":[2,3]}",
     ),
     content=(
-      #|Object({"a": Number(2), "b": Array([Number(4), Number(6)])})
+      #|"Object({\"a\": Number(2), \"b\": Array([Number(4), Number(6)])})"
     ),
   )
 }
@@ -43,13 +42,20 @@ test "missing: walk function" {
 test "missing: update operator |=" {
   debug_inspect(
     test_feature(".a |= . + 1", "{\"a\":5}"),
-    content="Object({\"a\": Number(6)})",
+    content=(
+      #|"Object({\"a\": Number(6)})"
+    ),
   )
 }
 
 ///|
 test "missing: assignment operator =" {
-  debug_inspect(test_feature(".a = 10", "{\"a\":5}"), content="Number(10)")
+  debug_inspect(
+    test_feature(".a = 10", "{\"a\":5}"),
+    content=(
+      #|"Number(10)"
+    ),
+  )
 }
 
 ///|
@@ -57,7 +63,7 @@ test "missing: alternative operator //" {
   debug_inspect(
     test_feature(".missing // \"default\"", "{}"),
     content=(
-      #|String("default")
+      #|"String(\"default\")"
     ),
   )
 }
@@ -66,7 +72,9 @@ test "missing: alternative operator //" {
 test "missing: += operator" {
   debug_inspect(
     test_feature(".a += 3", "{\"a\":5}"),
-    content="Object({\"a\": Number(8)})",
+    content=(
+      #|"Object({\"a\": Number(8)})"
+    ),
   )
 }
 
@@ -74,7 +82,9 @@ test "missing: += operator" {
 test "missing: -= operator" {
   debug_inspect(
     test_feature(".a -= 3", "{\"a\":5}"),
-    content="Object({\"a\": Number(2)})",
+    content=(
+      #|"Object({\"a\": Number(2)})"
+    ),
   )
 }
 
@@ -82,7 +92,9 @@ test "missing: -= operator" {
 test "missing: *= operator" {
   debug_inspect(
     test_feature(".a *= 3", "{\"a\":5}"),
-    content="Object({\"a\": Number(15)})",
+    content=(
+      #|"Object({\"a\": Number(15)})"
+    ),
   )
 }
 
@@ -90,7 +102,9 @@ test "missing: *= operator" {
 test "missing: /= operator" {
   debug_inspect(
     test_feature(".a /= 2", "{\"a\":5}"),
-    content="Object({\"a\": Number(2.5)})",
+    content=(
+      #|"Object({\"a\": Number(2.5)})"
+    ),
   )
 }
 
@@ -98,7 +112,9 @@ test "missing: /= operator" {
 test "missing: %= operator" {
   debug_inspect(
     test_feature(".a %= 2", "{\"a\":5}"),
-    content="Object({\"a\": Number(1)})",
+    content=(
+      #|"Object({\"a\": Number(1)})"
+    ),
   )
 }
 
@@ -106,6 +122,8 @@ test "missing: %= operator" {
 test "missing: //= operator" {
   debug_inspect(
     test_feature(".a //= 10", "{\"a\":5}"),
-    content="Object({\"a\": Number(5)})",
+    content=(
+      #|"Object({\"a\": Number(5)})"
+    ),
   )
 }

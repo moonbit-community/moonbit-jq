@@ -5,7 +5,9 @@
 test "corner: explode converts string to codepoints" {
   debug_inspect(
     test_query("explode", "\"Hello\""),
-    content="Array([Number(72), Number(101), Number(108), Number(108), Number(111)])",
+    content=(
+      #|"Array([Number(72), Number(101), Number(108), Number(108), Number(111)])"
+    ),
   )
 }
 
@@ -13,7 +15,9 @@ test "corner: explode converts string to codepoints" {
 test "corner: implode converts codepoints to string" {
   debug_inspect(
     test_query("implode", "[72,101,108,108,111]"),
-    content="String(\"Hello\")",
+    content=(
+      #|"String(\"Hello\")"
+    ),
   )
 }
 
@@ -21,7 +25,9 @@ test "corner: implode converts codepoints to string" {
 test "corner: explode with unicode" {
   debug_inspect(
     test_query("explode", "\"世界\""),
-    content="Array([Number(19990), Number(30028)])",
+    content=(
+      #|"Array([Number(19990), Number(30028)])"
+    ),
   )
 }
 
@@ -29,6 +35,8 @@ test "corner: explode with unicode" {
 test "corner: implode with unicode codepoints" {
   debug_inspect(
     test_query("implode", "[19990,30028]"),
-    content="String(\"世界\")",
+    content=(
+      #|"String(\"世界\")"
+    ),
   )
 }

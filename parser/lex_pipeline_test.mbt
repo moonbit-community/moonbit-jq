@@ -5,7 +5,24 @@ test "lex: complex expression" {
   debug_inspect(
     tokens,
     content=(
-      #|[TDot, TIdentifier("foo"), TPipe, TIdentifier("map"), TLParen, TDot, TIdentifier("bar"), TRParen, TPipe, TIdentifier("select"), TLParen, TDot, TGt, TNumber(10), TRParen, TEof]
+      #|[
+      #|  TDot,
+      #|  TIdentifier("foo"),
+      #|  TPipe,
+      #|  TIdentifier("map"),
+      #|  TLParen,
+      #|  TDot,
+      #|  TIdentifier("bar"),
+      #|  TRParen,
+      #|  TPipe,
+      #|  TIdentifier("select"),
+      #|  TLParen,
+      #|  TDot,
+      #|  TGt,
+      #|  TNumber(10),
+      #|  TRParen,
+      #|  TEof,
+      #|]
     ),
   )
 }

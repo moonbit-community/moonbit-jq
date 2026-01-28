@@ -5,7 +5,16 @@ test "lex: as expression" {
   debug_inspect(
     tokens,
     content=(
-      #|[TDot, TAs, TVariable("x"), TPipe, TVariable("x"), TPlus, TNumber(1), TEof]
+      #|[
+      #|  TDot,
+      #|  TAs,
+      #|  TVariable("x"),
+      #|  TPipe,
+      #|  TVariable("x"),
+      #|  TPlus,
+      #|  TNumber(1),
+      #|  TEof,
+      #|]
     ),
   )
 }
@@ -16,7 +25,22 @@ test "lex: reduce expression" {
   debug_inspect(
     tokens,
     content=(
-      #|[TReduce, TDot, TLBracket, TRBracket, TAs, TVariable("x"), TLParen, TNumber(0), TSemicolon, TDot, TPlus, TVariable("x"), TRParen, TEof]
+      #|[
+      #|  TReduce,
+      #|  TDot,
+      #|  TLBracket,
+      #|  TRBracket,
+      #|  TAs,
+      #|  TVariable("x"),
+      #|  TLParen,
+      #|  TNumber(0),
+      #|  TSemicolon,
+      #|  TDot,
+      #|  TPlus,
+      #|  TVariable("x"),
+      #|  TRParen,
+      #|  TEof,
+      #|]
     ),
   )
 }

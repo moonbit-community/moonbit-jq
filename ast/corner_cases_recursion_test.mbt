@@ -7,7 +7,9 @@ test "corner: recursive function with base case" {
     test_query(
       "def sum: if length == 0 then 0 else .[0] + (.[1:] | sum) end; sum", "[1,2,3,4,5]",
     ),
-    content="Number(15)",
+    content=(
+      #|"Number(15)"
+    ),
   )
 }
 
@@ -19,7 +21,7 @@ test "corner: mutually recursive functions" {
       "6",
     ),
     content=(
-      #|ParseError: UnexpectedToken("TElif", "TElse")
+      #|"ParseError: UnexpectedToken(\"TElif\", \"TElse\")"
     ),
   )
 }

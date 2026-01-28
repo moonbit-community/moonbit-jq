@@ -10,3 +10,30 @@ fn test_query(query : String, input : String) -> String {
   }
   outputs.join(", ")
 }
+
+///|
+struct InputQuery {
+  query : String
+  input : String
+
+  fn new(query~ : String, input~ : String) -> InputQuery
+}
+
+///|
+fn InputQuery::new(query~ : String, input~ : String) -> InputQuery {
+  InputQuery::{ query, input }
+}
+
+///|
+// FIXME: ArgsLoc can not be passed done due to arity 
+// mismatch in macro expansion. 4 happesn to work
+#callsite(autofill(args_loc, loc))
+fn debug_query(
+  iq : InputQuery,
+  content? : String,
+  loc~ : SourceLoc,
+  args_loc~ : ArgsLoc,
+) -> Unit raise {
+  let output = test_query(iq.query, iq.input)
+  inspect(output, content?, loc~, args_loc~)
+}

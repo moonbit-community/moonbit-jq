@@ -5,7 +5,20 @@ test "lex: if-then-else" {
   debug_inspect(
     tokens,
     content=(
-      #|[TIf, TDot, TIdentifier("x"), TGt, TNumber(0), TThen, TDot, TIdentifier("x"), TElse, TNumber(0), TEnd, TEof]
+      #|[
+      #|  TIf,
+      #|  TDot,
+      #|  TIdentifier("x"),
+      #|  TGt,
+      #|  TNumber(0),
+      #|  TThen,
+      #|  TDot,
+      #|  TIdentifier("x"),
+      #|  TElse,
+      #|  TNumber(0),
+      #|  TEnd,
+      #|  TEof,
+      #|]
     ),
   )
 }
@@ -15,6 +28,15 @@ test "lex: try-catch" {
   let tokens = @parser.lex("try .foo catch \"error\"")
   debug_inspect(
     tokens,
-    content="[TTry, TDot, TIdentifier(\"foo\"), TCatch, TString(\"error\"), TEof]",
+    content=(
+      #|[
+      #|  TTry,
+      #|  TDot,
+      #|  TIdentifier("foo"),
+      #|  TCatch,
+      #|  TString("error"),
+      #|  TEof,
+      #|]
+    ),
   )
 }

@@ -4,7 +4,16 @@ test "lex: pipe operator" {
   let tokens = @parser.lex(".foo | .bar")
   debug_inspect(
     tokens,
-    content="[TDot, TIdentifier(\"foo\"), TPipe, TDot, TIdentifier(\"bar\"), TEof]",
+    content=(
+      #|[
+      #|  TDot,
+      #|  TIdentifier("foo"),
+      #|  TPipe,
+      #|  TDot,
+      #|  TIdentifier("bar"),
+      #|  TEof,
+      #|]
+    ),
   )
 }
 
@@ -13,14 +22,36 @@ test "lex: arithmetic operators" {
   let tokens = @parser.lex("+ - * / %")
   debug_inspect(
     tokens,
-    content="[TPlus, TMinus, TStar, TSlash, TPercent, TEof]",
+    content=(
+      #|[
+      #|  TPlus,
+      #|  TMinus,
+      #|  TStar,
+      #|  TSlash,
+      #|  TPercent,
+      #|  TEof,
+      #|]
+    ),
   )
 }
 
 ///|
 test "lex: comparison operators" {
   let tokens = @parser.lex("== != < <= > >=")
-  debug_inspect(tokens, content="[TEq, TNeq, TLt, TLe, TGt, TGe, TEof]")
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  TEq,
+      #|  TNeq,
+      #|  TLt,
+      #|  TLe,
+      #|  TGt,
+      #|  TGe,
+      #|  TEof,
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -34,14 +65,34 @@ test "lex: brackets and braces" {
   let tokens = @parser.lex("( ) [ ] { }")
   debug_inspect(
     tokens,
-    content="[TLParen, TRParen, TLBracket, TRBracket, TLBrace, TRBrace, TEof]",
+    content=(
+      #|[
+      #|  TLParen,
+      #|  TRParen,
+      #|  TLBracket,
+      #|  TRBracket,
+      #|  TLBrace,
+      #|  TRBrace,
+      #|  TEof,
+      #|]
+    ),
   )
 }
 
 ///|
 test "lex: assignment operators" {
   let tokens = @parser.lex("= |= //")
-  debug_inspect(tokens, content="[TAssign, TUpdate, TAlternative, TEof]")
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  TAssign,
+      #|  TUpdate,
+      #|  TAlternative,
+      #|  TEof,
+      #|]
+    ),
+  )
 }
 
 ///|
@@ -53,5 +104,15 @@ test "lex: dot dot" {
 ///|
 test "lex: optional operator" {
   let tokens = @parser.lex(".foo?")
-  debug_inspect(tokens, content="[TDot, TIdentifier(\"foo\"), TQuestion, TEof]")
+  debug_inspect(
+    tokens,
+    content=(
+      #|[
+      #|  TDot,
+      #|  TIdentifier("foo"),
+      #|  TQuestion,
+      #|  TEof,
+      #|]
+    ),
+  )
 }
