@@ -9,7 +9,6 @@ enum InputSource {
 struct CliOptions {
   query : String
   input : InputSource
-  logs : Bool
 }
 
 ///|
@@ -22,37 +21,32 @@ enum CliParseResult {
 ///|
 fn help_message() -> String {
   let message =
-    #|Usage: moon run cmd/jq -- [options] <query> [input]
+    #|Usage: moon run cmd/jqlog -- [options] <query> [input]
     #|
     #|Options:
-    #|  -f, --file <path>   Read input JSON from a file.
-    #|  -l, --logs          Treat input as newline-delimited JSON logs.
+    #|  -f, --file <path>   Read input text from a file.
     #|  -h, --help          Show this help message.
     #|
-    #|If [input] is omitted, stdin is used.
-    #|If [input] is provided without --file, it is treated as a JSON string.
+    #|Notes:
+    #|  - Input is treated as JSONL/NDJSON with possible non-JSON lines.
+    #|  - Non-JSON lines are skipped.
+    #|  - If [input] is omitted, stdin is used.
+    #|  - If [input] is provided without --file, it is treated as raw text.
     #|
     #|Examples:
-    #|  moon run cmd/jq -- '.foo' '{"foo": 1}'
-    #|  moon run cmd/jq -- -f data.json '.items[]'
-    #|  cat logs.ndjson | moon run cmd/jq -- --logs '.message'
+    #|  cat logs.ndjson | moon run cmd/jqlog -- '.message'
+    #|  moon run cmd/jqlog -- -f output.txt '.a'
   message
 }
 
 ///|
 fn parse_cli(args : ArrayView[String]) -> CliParseResult {
-  let mut logs = false
   let mut input_opt : InputSource? = None
   let mut index = 0
   while index < args.length() {
     let arg = args[index]
     if arg == "-h" || arg == "--help" {
       return CliParseResult::Help
-    }
-    if arg == "-l" || arg == "--logs" {
-      logs = true
-      index = index + 1
-      continue
     }
     if arg == "-f" || arg == "--file" {
       if index + 1 >= args.length() {
@@ -98,7 +92,7 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
     Some(source) => source
     None => InputSource::Stdin
   }
-  CliParseResult::Run({ query, input, logs })
+  CliParseResult::Run({ query, input })
 }
 
 ///|
@@ -107,15 +101,6 @@ async fn read_input(source : InputSource) -> String raise {
     Stdin => @stdio.stdin.read_all().text()
     File(path) => @fs.read_file_to_string(path)
     Inline(text) => text
-  }
-}
-
-///|
-fn run_query(query : String, input : String, logs : Bool) -> Iter[Json] raise {
-  if logs {
-    @moonjq.parse(query).eval_logs(input)
-  } else {
-    @moonjq.run(query, input).iter()
   }
 }
 
@@ -151,7 +136,8 @@ async fn main {
     Run(options) => {
       try {
         let input = read_input(options.input)
-        let results = run_query(options.query, input, options.logs)
+        let query = @moonjq.parse(options.query)
+        let results = query.eval_logs(input)
         write_results(results)
       } catch {
         err => {
