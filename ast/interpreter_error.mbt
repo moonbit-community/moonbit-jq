@@ -8,4 +8,9 @@ pub(all) suberror InterpreterError {
   DivisionByZero
   TypeError(String)
   EvalError(String)
-} derive(Eq, Debug, Show)
+} derive(Eq, Debug)
+
+///|
+pub impl Show for InterpreterError with output(self, logger) {
+  logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
+}

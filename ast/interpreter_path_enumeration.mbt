@@ -74,7 +74,7 @@ fn iter_paths(
     if root_pending.val {
       root_pending.val = false
       let root_has_children = push_container_frame(stack_ref.val, input, false)
-      if leaf_only && not(root_has_children) {
+      if leaf_only && !root_has_children {
         return Some(Json::array(path.copy()))
       }
     }
@@ -98,7 +98,7 @@ fn iter_paths(
                     return Some(result)
                   }
                   let result = Json::array(path.copy())
-                  if not(pushed) {
+                  if !pushed {
                     ignore(path.pop())
                   }
                   return Some(result)
@@ -130,14 +130,14 @@ fn iter_paths(
                   return Some(result)
                 }
                 let result = Json::array(path.copy())
-                if not(pushed) {
+                if !pushed {
                   ignore(path.pop())
                 }
                 return Some(result)
               }
           }
       }
-    } else {
+    } nobreak {
       None
     }
   })
@@ -178,7 +178,7 @@ fn iter_paths_with_filter(
         Some(_) => ()
       }
       let root_has_children = push_container_frame(stack_ref.val, input, false)
-      if not(root_has_children) {
+      if !root_has_children {
         done.val = true
         return None
       }
@@ -206,12 +206,12 @@ fn iter_paths_with_filter(
                       )
                       if matches {
                         let result = Json::array(path.copy())
-                        if not(pushed) {
+                        if !pushed {
                           ignore(path.pop())
                         }
                         return Some(result)
                       }
-                      if not(pushed) {
+                      if !pushed {
                         ignore(path.pop())
                       }
                       continue
@@ -248,12 +248,12 @@ fn iter_paths_with_filter(
                     )
                     if matches {
                       let result = Json::array(path.copy())
-                      if not(pushed) {
+                      if !pushed {
                         ignore(path.pop())
                       }
                       return Some(result)
                     }
-                    if not(pushed) {
+                    if !pushed {
                       ignore(path.pop())
                     }
                     continue
@@ -262,7 +262,7 @@ fn iter_paths_with_filter(
               }
           }
       }
-    } else {
+    } nobreak {
       None
     }
   })

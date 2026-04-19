@@ -94,7 +94,7 @@ fn array_without(
 ) -> Array[Json] {
   source
   .iter()
-  .filter(fn(value) { not(array_contains_compare(remove, value)) })
+  .filter(fn(value) { !array_contains_compare(remove, value) })
   .collect()
 }
 

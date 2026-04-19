@@ -107,7 +107,7 @@ fn eval_while(
       match cond_results {
         [] => results
         [first, ..] =>
-          if not(@ast_internal.is_truthy(first)) {
+          if !(@ast_internal.is_truthy(first)) {
             results
           } else {
             results.push(current)

@@ -14,7 +14,7 @@ fn eval_unique_by(
     match eval_with_env(expr, elem, env).collect() {
       [first, ..] => {
         let key = first.to_string()
-        if not(seen.contains(key)) {
+        if !seen.contains(key) {
           seen[key] = true
           results.push(elem)
         }

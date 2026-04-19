@@ -4,7 +4,7 @@ fn eval_has(key : String, input : Json) -> Iter[Json] {
   match input {
     Object(obj) => Iter::singleton(Json::boolean(obj.contains(key)))
     Array(arr) => {
-      let idx_result = @strconv.parse_int(key) catch {
+      let idx_result = @string.parse_int(key) catch {
         _ => return Iter::singleton(Json::boolean(false))
       }
       let len = arr.length()
