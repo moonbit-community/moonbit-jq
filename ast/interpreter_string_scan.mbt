@@ -53,12 +53,7 @@ fn scan_matches(
   let mut pos = idx
   let last = slen - plen
   while pos <= last {
-    let slice_result = s[pos:pos + plen] catch {
-        _ => {
-          pos += 1
-          continue
-        }
-      }
+    let slice_result = s[pos:pos + plen].to_string()
     if slice_result == pattern {
       results.push(Json::string(pattern))
       pos += plen

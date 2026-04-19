@@ -151,7 +151,7 @@ fn indices_of_string(s : String, substr : String) -> Array[Json] {
   guard substr_len > 0 else { return result }
   let mut pos = 0
   while pos <= slen - substr_len {
-    let slice = s[pos:].to_string() catch { _ => break }
+    let slice = s[pos:].to_string()
     match slice.find(substr) {
       Some(idx) => {
         let actual_idx = pos + idx
