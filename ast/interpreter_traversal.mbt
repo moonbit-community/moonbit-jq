@@ -49,7 +49,7 @@ fn eval_recurse_with(
 ) -> Iter[Json] raise InterpreterError {
   let results : Array[Json] = [input]
   let to_process_ref : Ref[Array[Json]] = Ref::new([input])
-  while not(to_process_ref.val.is_empty()) {
+  while !to_process_ref.val.is_empty() {
     let next_batch : Array[Json] = []
     for item in to_process_ref.val {
       for result in eval_with_env(f, item, env) {

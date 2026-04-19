@@ -38,7 +38,7 @@ fn eval_sort_by(
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  let pairs = arr.map(fn(elem) {
+  let pairs = arr.map(elem => {
     let keys = eval_with_env(expr, elem, env).collect()
     let sort_key = match keys {
       [] => null

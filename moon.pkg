@@ -4,8 +4,8 @@ import {
   "moonbitlang/core/json",
 }
 
-import "test" {
-  "moonbitlang/core/encoding/utf8" as @encoding/utf8,
+import {
+  "moonbitlang/core/encoding/utf8" @encoding/utf8,
   "moonbitlang/core/list",
   "moonbitlang/core/strconv",
-}
+} for "test"

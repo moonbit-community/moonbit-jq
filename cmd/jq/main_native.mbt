@@ -102,7 +102,7 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
 }
 
 ///|
-async fn read_input(source : InputSource) -> String raise {
+async fn read_input(source : InputSource) -> String {
   match source {
     Stdin => @stdio.stdin.read_all().text()
     File(path) => @fs.read_file_to_string(path)
@@ -148,7 +148,7 @@ async fn main {
       @stdio.stderr.write(help_message())
       return
     }
-    Run(options) => {
+    Run(options) =>
       try {
         let input = read_input(options.input)
         let results = run_query(options.query, input, options.logs)
@@ -159,6 +159,5 @@ async fn main {
           return
         }
       }
-    }
   }
 }

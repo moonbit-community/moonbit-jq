@@ -14,4 +14,9 @@ pub(all) enum BinaryOp {
   GreaterEq // >=
   And // and
   Or // or
-} derive(Eq, ToJson, Debug, Show)
+} derive(Eq, ToJson, Debug)
+
+///|
+pub impl Show for BinaryOp with output(self, logger) {
+  logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
+}

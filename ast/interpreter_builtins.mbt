@@ -59,5 +59,5 @@ fn eval_empty() -> Iter[Json] {
 ///|
 /// Evaluate logical not
 fn eval_not(input : Json) -> Iter[Json] {
-  Iter::singleton(Json::boolean(not(@ast_internal.is_truthy(input))))
+  Iter::singleton(Json::boolean(!@ast_internal.is_truthy(input)))
 }

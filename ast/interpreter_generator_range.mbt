@@ -50,9 +50,9 @@ fn eval_range_with_step(
       if count <= 0 {
         [].iter()
       } else {
-        Array::makei(count, i => Json::number(
-          (from_int + i * step_int).to_double(),
-        )).iter()
+        Array::makei(count, i => {
+          Json::number((from_int + i * step_int).to_double())
+        }).iter()
       }
     }
     _ => raise TypeMismatch("numbers", "non-numbers")
