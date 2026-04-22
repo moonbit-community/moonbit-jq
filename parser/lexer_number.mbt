@@ -12,7 +12,7 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
         self.advance()
         continue
       }
-      Some('.') if not(has_dot) && self.peek().map(is_digit).unwrap_or(false) => {
+      Some('.') if !has_dot && self.peek().map(is_digit).unwrap_or(false) => {
         self.advance()
         has_dot = true
         continue
@@ -21,7 +21,7 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
     }
   }
   let text = self.input[start:self.pos].to_string()
-  let n = @strconv.parse_double(text) catch {
+  let n = @string.parse_double(text) catch {
     _ => raise InvalidNumber(start, text)
   }
   self.add_token(TNumber(n))
