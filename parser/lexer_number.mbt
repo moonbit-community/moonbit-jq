@@ -20,9 +20,7 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
       _ => break
     }
   }
-  let text = self.input[start:self.pos].to_string() catch {
-    _ => raise InvalidNumber(start, "invalid slice")
-  }
+  let text = self.input[start:self.pos].to_string()
   let n = @strconv.parse_double(text) catch {
     _ => raise InvalidNumber(start, text)
   }
