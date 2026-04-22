@@ -17,10 +17,8 @@ pub(all) suberror InterpreterError {
   DivisionByZero
   TypeError(String)
   EvalError(String)
-}
-pub impl Eq for InterpreterError
+} derive(Eq, @debug.Debug)
 pub impl Show for InterpreterError
-pub impl @debug.Debug for InterpreterError
 
 // Types and methods
 pub(all) enum BinaryOp {
@@ -37,11 +35,8 @@ pub(all) enum BinaryOp {
   GreaterEq
   And
   Or
-}
-pub impl Eq for BinaryOp
+} derive(Eq, ToJson, @debug.Debug)
 pub impl Show for BinaryOp
-pub impl ToJson for BinaryOp
-pub impl @debug.Debug for BinaryOp
 
 pub(all) enum Expr {
   Identity
@@ -166,22 +161,16 @@ pub(all) enum Expr {
   Splits(String)
   Sub(String, String)
   GSub(String, String)
-}
-pub impl Eq for Expr
+} derive(Eq, ToJson, @debug.Debug)
 pub impl Show for Expr
-pub impl ToJson for Expr
-pub impl @debug.Debug for Expr
 
 pub(all) enum Literal {
   Null
   Bool(Bool)
   Number(Double)
   String(String)
-}
-pub impl Eq for Literal
+} derive(Eq, ToJson, @debug.Debug)
 pub impl Show for Literal
-pub impl ToJson for Literal
-pub impl @debug.Debug for Literal
 
 // Type aliases
 

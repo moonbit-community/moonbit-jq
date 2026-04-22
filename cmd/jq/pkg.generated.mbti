@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/moonjq/cmd/jq"
+
+// Values
+
+// Errors
+
+// Types and methods
+type CliOptions
+
+type CliParseResult
+
+type InputSource
+
+// Type aliases
+
+// Traits
+
