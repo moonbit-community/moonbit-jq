@@ -3,6 +3,7 @@ target/
 .moonagent/
 references
 _build
+_build/
 target
 # installed repos for AI learning
 .repos/
