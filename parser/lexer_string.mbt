@@ -35,7 +35,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
                 Some(')') => {
                   paren_depth -= 1
                   if paren_depth == 0 {
-                    let expr_text = try! self.input[expr_start:self.pos].to_string()
+                    let expr_text = self.input[expr_start:self.pos].to_string()
                     parts.push(("", Some(expr_text)))
                     self.advance()
                     break
