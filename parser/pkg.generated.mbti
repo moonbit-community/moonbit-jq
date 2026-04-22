@@ -17,20 +17,16 @@ pub suberror LexError {
   UnterminatedString(Int)
   InvalidNumber(Int, String)
   InvalidEscape(Int, Char)
-}
-pub impl Eq for LexError
+} derive(Eq, @debug.Debug)
 pub impl Show for LexError
-pub impl @debug.Debug for LexError
 
 pub(all) suberror ParseError {
   UnexpectedToken(String, String)
   UnexpectedEnd(String)
   InvalidSyntax(String)
   InvalidExpression(String)
-}
-pub impl Eq for ParseError
+} derive(Eq, @debug.Debug)
 pub impl Show for ParseError
-pub impl @debug.Debug for ParseError
 
 // Types and methods
 pub(all) enum Token {
@@ -91,10 +87,8 @@ pub(all) enum Token {
   TCatch
   TDef
   TEof
-}
-pub impl Eq for Token
+} derive(Eq, @debug.Debug)
 pub impl Show for Token
-pub impl @debug.Debug for Token
 
 // Type aliases
 
