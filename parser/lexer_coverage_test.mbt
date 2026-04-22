@@ -76,6 +76,6 @@ test "coverage: unterminated strings" {
 ///|
 test "coverage: unterminated escape at end" {
   let sb = StringBuilder::new()
-  sb..write_char('"')..write_char('\\')
+  sb..write_char('"').write_char('\\')
   assert_true(lex_err(sb.to_string()))
 }

@@ -1,31 +1,25 @@
 ///|
 /// Parse logical or
 fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
-  loop self.parse_and() {
-    expr =>
-      if self.consume(TOr) {
-        continue @ast.Expr::Operation(expr, @ast.BinaryOp::Or, self.parse_and())
-      } else {
-        expr
-      }
+  let mut expr = self.parse_and()
+  while self.consume(TOr) {
+    expr = @ast.Expr::Operation(expr, @ast.BinaryOp::Or, self.parse_and())
   }
+  expr
 }
 
 ///|
 /// Parse logical and
 fn Parser::parse_and(self : Parser) -> @ast.Expr raise ParseError {
-  loop self.parse_comparison() {
-    expr =>
-      if self.consume(TAnd) {
-        continue @ast.Expr::Operation(
-            expr,
-            @ast.BinaryOp::And,
-            self.parse_comparison(),
-          )
-      } else {
-        expr
-      }
+  let mut expr = self.parse_comparison()
+  while self.consume(TAnd) {
+    expr = @ast.Expr::Operation(
+      expr,
+      @ast.BinaryOp::And,
+      self.parse_comparison(),
+    )
   }
+  expr
 }
 
 ///|
