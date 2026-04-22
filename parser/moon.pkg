@@ -3,5 +3,4 @@ import {
   "moonbitlang/core/buffer",
   "moonbitlang/core/debug",
   "moonbitlang/core/string",
-  "moonbitlang/core/strconv",
 }
