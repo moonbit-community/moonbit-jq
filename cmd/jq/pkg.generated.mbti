@@ -6,11 +6,6 @@ package "bobzhang/moonjq/cmd/jq"
 // Errors
 
 // Types and methods
-type CliOptions
-
-type CliParseResult
-
-type InputSource
 
 // Type aliases
 
