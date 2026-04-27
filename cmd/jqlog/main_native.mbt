@@ -1,18 +1,18 @@
 ///|
-enum InputSource {
+priv enum InputSource {
   Stdin
   File(String)
   Inline(String)
 }
 
 ///|
-struct CliOptions {
+priv struct CliOptions {
   query : String
   input : InputSource
 }
 
 ///|
-enum CliParseResult {
+priv enum CliParseResult {
   Help
   Error(String)
   Run(CliOptions)

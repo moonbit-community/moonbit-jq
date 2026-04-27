@@ -39,7 +39,7 @@ fn foreach_tokens(with_extract : Bool) -> Array[Token] {
 test "wb: parser none branches" {
   let parser = Parser::new([])
   assert_true(parser.current() is None)
-  assert_true(not(parser.check(TDot)))
+  assert_true(!parser.check(TDot))
   assert_true((try? parser.expect(TDot)) is Err(_))
   assert_true((try? parser.parse_primary()) is Err(_))
 }

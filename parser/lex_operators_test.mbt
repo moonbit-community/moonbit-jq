@@ -5,14 +5,7 @@ test "lex: pipe operator" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TPipe,
-      #|  TDot,
-      #|  TIdentifier("bar"),
-      #|  TEof,
-      #|]
+      #|[TDot, TIdentifier("foo"), TPipe, TDot, TIdentifier("bar"), TEof]
     ),
   )
 }
@@ -23,14 +16,7 @@ test "lex: arithmetic operators" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TPlus,
-      #|  TMinus,
-      #|  TStar,
-      #|  TSlash,
-      #|  TPercent,
-      #|  TEof,
-      #|]
+      #|[TPlus, TMinus, TStar, TSlash, TPercent, TEof]
     ),
   )
 }
@@ -41,15 +27,7 @@ test "lex: comparison operators" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TEq,
-      #|  TNeq,
-      #|  TLt,
-      #|  TLe,
-      #|  TGt,
-      #|  TGe,
-      #|  TEof,
-      #|]
+      #|[TEq, TNeq, TLt, TLe, TGt, TGe, TEof]
     ),
   )
 }
@@ -66,15 +44,7 @@ test "lex: brackets and braces" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TLParen,
-      #|  TRParen,
-      #|  TLBracket,
-      #|  TRBracket,
-      #|  TLBrace,
-      #|  TRBrace,
-      #|  TEof,
-      #|]
+      #|[TLParen, TRParen, TLBracket, TRBracket, TLBrace, TRBrace, TEof]
     ),
   )
 }
@@ -85,12 +55,7 @@ test "lex: assignment operators" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TAssign,
-      #|  TUpdate,
-      #|  TAlternative,
-      #|  TEof,
-      #|]
+      #|[TAssign, TUpdate, TAlternative, TEof]
     ),
   )
 }
@@ -107,12 +72,7 @@ test "lex: optional operator" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TQuestion,
-      #|  TEof,
-      #|]
+      #|[TDot, TIdentifier("foo"), TQuestion, TEof]
     ),
   )
 }

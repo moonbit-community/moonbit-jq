@@ -5,11 +5,7 @@ test "lex: comment" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TEof,
-      #|]
+      #|[TDot, TIdentifier("foo"), TEof]
     ),
   )
 }
@@ -20,14 +16,7 @@ test "lex: whitespace handling" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TPipe,
-      #|  TDot,
-      #|  TIdentifier("bar"),
-      #|  TEof,
-      #|]
+      #|[TDot, TIdentifier("foo"), TPipe, TDot, TIdentifier("bar"), TEof]
     ),
   )
 }

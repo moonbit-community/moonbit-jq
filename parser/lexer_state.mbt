@@ -4,7 +4,7 @@ priv struct Lexer {
   input : String
   mut pos : Int
   tokens : Array[Token]
-} derive(Debug)
+}
 
 ///|
 /// Create a new lexer
@@ -47,29 +47,27 @@ fn Lexer::add_token(self : Lexer, token : Token) -> Unit {
 ///|
 /// Skip whitespace
 fn Lexer::skip_whitespace(self : Lexer) -> Unit {
-  let _ = loop () {
-    _ =>
-      match self.current() {
-        Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
-          self.advance()
-          continue ()
-        }
-        _ => ()
+  while true {
+    match self.current() {
+      Some(' ') | Some('\n') | Some('\r') | Some('\t') => {
+        self.advance()
+        continue
       }
+      _ => break
+    }
   }
 }
 
 ///|
 /// Skip comment (# to end of line)
 fn Lexer::skip_comment(self : Lexer) -> Unit {
-  let _ = loop () {
-    _ =>
-      match self.current() {
-        Some('\n') | None => ()
-        _ => {
-          self.advance()
-          continue ()
-        }
+  while true {
+    match self.current() {
+      Some('\n') | None => break
+      _ => {
+        self.advance()
+        continue
       }
+    }
   }
 }

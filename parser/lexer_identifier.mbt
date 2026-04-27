@@ -5,7 +5,7 @@ fn Lexer::lex_identifier(self : Lexer) -> Unit {
   while self.current().map(is_alnum).unwrap_or(false) {
     self.advance()
   }
-  let text = try! self.input[start:self.pos].to_string()
+  let text = self.input[start:self.pos].to_string()
   match text {
     "true" => self.add_token(TTrue)
     "false" => self.add_token(TFalse)
@@ -36,7 +36,7 @@ fn Lexer::lex_variable(self : Lexer) -> Unit {
   while self.current().map(is_alnum).unwrap_or(false) {
     self.advance()
   }
-  let name = try! self.input[start:self.pos].to_string()
+  let name = self.input[start:self.pos].to_string()
   self.add_token(TVariable(name))
 }
 
@@ -48,6 +48,6 @@ fn Lexer::lex_format(self : Lexer) -> Unit {
   while self.current().map(is_alnum).unwrap_or(false) {
     self.advance()
   }
-  let name = try! self.input[start:self.pos].to_string()
+  let name = self.input[start:self.pos].to_string()
   self.add_token(TFormat(name))
 }

@@ -74,18 +74,16 @@ fn eval_until(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let result = loop input {
-    current => {
-      let cond_results = eval_with_env(cond_expr, current, env).collect()
-      match cond_results {
-        [] => current
-        [True, ..] => current
-        _ => {
-          let update_results = eval_with_env(update_expr, current, env).collect()
-          match update_results {
-            [] => current
-            [next, ..] => continue next
-          }
+  let result = for current = input {
+    let cond_results = eval_with_env(cond_expr, current, env).collect()
+    match cond_results {
+      [] => break current
+      [True, ..] => break current
+      _ => {
+        let update_results = eval_with_env(update_expr, current, env).collect()
+        match update_results {
+          [] => break current
+          [next, ..] => continue next
         }
       }
     }
@@ -101,23 +99,23 @@ fn eval_while(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let results : Array[Json] = loop (input, []) {
-    (current, results) => {
-      let cond_results = eval_with_env(cond_expr, current, env).collect()
-      match cond_results {
-        [] => results
-        [first, ..] =>
-          if !(@ast_internal.is_truthy(first)) {
-            results
-          } else {
-            results.push(current)
-            let update_results = eval_with_env(update_expr, current, env).collect()
-            match update_results {
-              [] => results
-              [next, ..] => continue (next, results)
-            }
+  let results : Array[Json] = []
+  let mut current = input
+  while true {
+    let cond_results = eval_with_env(cond_expr, current, env).collect()
+    match cond_results {
+      [] => break
+      [first, ..] =>
+        if !@ast_internal.is_truthy(first) {
+          break
+        } else {
+          results.push(current)
+          let update_results = eval_with_env(update_expr, current, env).collect()
+          match update_results {
+            [] => break
+            [next, ..] => current = next
           }
-      }
+        }
     }
   }
   results.iter()
