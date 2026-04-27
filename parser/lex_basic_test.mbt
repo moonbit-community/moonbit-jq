@@ -17,11 +17,7 @@ test "lex: field access" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TEof,
-      #|]
+      #|[TDot, TIdentifier("foo"), TEof]
     ),
   )
 }
@@ -32,13 +28,7 @@ test "lex: array index" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TLBracket,
-      #|  TNumber(0),
-      #|  TRBracket,
-      #|  TEof,
-      #|]
+      #|[TDot, TLBracket, TNumber(0), TRBracket, TEof]
     ),
   )
 }
@@ -49,12 +39,7 @@ test "lex: array iterator" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TDot,
-      #|  TLBracket,
-      #|  TRBracket,
-      #|  TEof,
-      #|]
+      #|[TDot, TLBracket, TRBracket, TEof]
     ),
   )
 }
@@ -65,13 +50,7 @@ test "lex: numbers" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TNumber(123),
-      #|  TNumber(45.67),
-      #|  TNumber(-89),
-      #|  TNumber(-0.5),
-      #|  TEof,
-      #|]
+      #|[TNumber(123), TNumber(45.67), TNumber(-89), TNumber(-0.5), TEof]
     ),
   )
 }
@@ -82,11 +61,7 @@ test "lex: string literals" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TString("hello"),
-      #|  TString("world"),
-      #|  TEof,
-      #|]
+      #|[TString("hello"), TString("world"), TEof]
     ),
   )
 }
@@ -119,16 +94,7 @@ test "lex: keywords" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TIf,
-      #|  TThen,
-      #|  TElse,
-      #|  TEnd,
-      #|  TAnd,
-      #|  TOr,
-      #|  TNot,
-      #|  TEof,
-      #|]
+      #|[TIf, TThen, TElse, TEnd, TAnd, TOr, TNot, TEof]
     ),
   )
 }
@@ -139,11 +105,7 @@ test "lex: variable" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TVariable("foo"),
-      #|  TVariable("bar123"),
-      #|  TEof,
-      #|]
+      #|[TVariable("foo"), TVariable("bar123"), TEof]
     ),
   )
 }
