@@ -29,14 +29,7 @@ test "lex: try-catch" {
   debug_inspect(
     tokens,
     content=(
-      #|[
-      #|  TTry,
-      #|  TDot,
-      #|  TIdentifier("foo"),
-      #|  TCatch,
-      #|  TString("error"),
-      #|  TEof,
-      #|]
+      #|[TTry, TDot, TIdentifier("foo"), TCatch, TString("error"), TEof]
     ),
   )
 }
