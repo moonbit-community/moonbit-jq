@@ -2,6 +2,9 @@
 /// Lex a number
 fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
   let start = self.pos
+  if start >= self.input.length() {
+    raise InvalidNumber(start, "")
+  }
   if self.current() == Some('-') {
     self.advance()
   }
