@@ -50,15 +50,35 @@ fn scan_matches(
   plen : Int,
   results : Array[Json],
 ) -> Unit {
+  if plen == 0 {
+    return
+  }
   let mut pos = idx
   let last = slen - plen
   while pos <= last {
-    let slice_result = s[pos:pos + plen].to_string()
-    if slice_result == pattern {
+    if is_string_boundary(s, pos) &&
+      is_string_boundary(s, pos + plen) &&
+      s[pos:pos + plen].to_string() == pattern {
       results.push(Json::string(pattern))
       pos += plen
     } else {
-      pos += 1
+      pos = next_string_index(s, pos)
     }
+  }
+}
+
+///|
+fn is_string_boundary(s : String, index : Int) -> Bool {
+  index == 0 ||
+  index == s.length() ||
+  !s.unsafe_get(index).is_trailing_surrogate()
+}
+
+///|
+fn next_string_index(s : String, index : Int) -> Int {
+  if index < s.length() && s.unsafe_get(index).is_leading_surrogate() {
+    index + 2
+  } else {
+    index + 1
   }
 }
