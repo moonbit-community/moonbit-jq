@@ -35,7 +35,7 @@ fn eval_repeat(
   let values = eval_with_env(expr, input, env).collect()
   guard values is [_, ..] else { return Iter::empty() }
   let len = values.length()
-  let idx : Ref[Int] = Ref::new(0)
+  let idx : Ref[Int] = Ref(0)
   Iter::new(fn() {
     let i = idx.val
     let result = Some(values[i])

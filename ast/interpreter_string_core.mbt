@@ -45,7 +45,7 @@ fn eval_ends_with(
 
 ///|
 fn string_views_to_json(parts : ArrayView[StringView]) -> Array[Json] {
-  parts.map(fn(part) { Json::string(part.to_string()) })
+  parts.map(fn(part) { Json::string(part.to_owned()) })
 }
 
 ///|

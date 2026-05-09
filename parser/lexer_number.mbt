@@ -23,7 +23,7 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
       _ => break
     }
   }
-  let text = self.input[start:self.pos].to_string()
+  let text = self.input[start:self.pos].to_owned()
   let n = @string.parse_double(text) catch {
     _ => raise InvalidNumber(start, text)
   }

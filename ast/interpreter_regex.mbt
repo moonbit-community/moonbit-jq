@@ -58,7 +58,7 @@ fn eval_splits(
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
   let parts = s.split(pattern).collect()
-  parts.iter().map(part => Json::string(part.to_string()))
+  parts.iter().map(part => Json::string(part.to_owned()))
 }
 
 ///|

@@ -58,7 +58,7 @@ fn scan_matches(
   while pos <= last {
     if is_string_boundary(s, pos) &&
       is_string_boundary(s, pos + plen) &&
-      s[pos:pos + plen].to_string() == pattern {
+      s[pos:pos + plen].to_owned() == pattern {
       results.push(Json::string(pattern))
       pos += plen
     } else {
