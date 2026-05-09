@@ -68,8 +68,8 @@ fn iter_paths(
   index_segment : (Int) -> Json,
 ) -> Iter[Json] {
   let path : Array[Json] = []
-  let stack_ref : Ref[Array[PathFrame]] = Ref::new([])
-  let root_pending : Ref[Bool] = Ref::new(true)
+  let stack_ref : Ref[Array[PathFrame]] = Ref([])
+  let root_pending : Ref[Bool] = Ref(true)
   Iter::new(fn() {
     if root_pending.val {
       root_pending.val = false
@@ -161,9 +161,9 @@ fn iter_paths_with_filter(
   env : Env,
 ) -> Iter[Json] {
   let path : Array[Json] = []
-  let stack_ref : Ref[Array[PathFrame]] = Ref::new([])
-  let root_pending : Ref[Bool] = Ref::new(true)
-  let done : Ref[Bool] = Ref::new(false)
+  let stack_ref : Ref[Array[PathFrame]] = Ref([])
+  let root_pending : Ref[Bool] = Ref(true)
+  let done : Ref[Bool] = Ref(false)
   Iter::new(fn() {
     if done.val {
       return None

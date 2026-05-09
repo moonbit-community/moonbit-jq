@@ -77,7 +77,7 @@ fn eval_slice_access(start : Int?, end : Int?, input : Json) -> Iter[Json] {
   let sliced = if s_clamped >= e_clamped {
     []
   } else {
-    arr[s_clamped:e_clamped].to_array()
+    arr[s_clamped:e_clamped].to_owned()
   }
   Iter::singleton(Json::array(sliced))
 }

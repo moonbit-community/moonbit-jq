@@ -8,7 +8,7 @@ fn eval_ltrim_str(
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
   match s.strip_prefix(prefix) {
-    Some(rest) => Iter::singleton(Json::string(rest.to_string()))
+    Some(rest) => Iter::singleton(Json::string(rest.to_owned()))
     None => Iter::singleton(input)
   }
 }
@@ -23,7 +23,7 @@ fn eval_rtrim_str(
     raise TypeMismatch("string", @ast_internal.json_type_name(input))
   }
   match s.strip_suffix(suffix) {
-    Some(rest) => Iter::singleton(Json::string(rest.to_string()))
+    Some(rest) => Iter::singleton(Json::string(rest.to_owned()))
     None => Iter::singleton(input)
   }
 }
