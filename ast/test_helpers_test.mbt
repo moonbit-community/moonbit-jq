@@ -15,12 +15,10 @@ fn test_query(query : String, input : String) -> String {
 struct InputQuery {
   query : String
   input : String
-
-  fn new(query~ : String, input~ : String) -> InputQuery
 }
 
 ///|
-fn InputQuery::new(query~ : String, input~ : String) -> InputQuery {
+fn InputQuery::InputQuery(query~ : String, input~ : String) -> InputQuery {
   InputQuery::{ query, input }
 }
 
