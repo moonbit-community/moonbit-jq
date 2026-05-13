@@ -56,15 +56,15 @@ fn eval_format(
               True => "true"
               False => "false"
               Null => ""
-              _ => item.to_string()
+              _ => @debug.to_string(item)
             }
           })
           Iter::singleton(Json::string(parts.join(sep)))
         }
         _ => raise TypeError("@csv/@tsv requires array")
       }
-    "json" => Iter::singleton(Json::string(input.to_string()))
-    "text" => Iter::singleton(Json::string(input.to_string()))
+    "json" => Iter::singleton(Json::string(@debug.to_string(input)))
+    "text" => Iter::singleton(Json::string(@debug.to_string(input)))
     "html" =>
       match input {
         String(s) => {

@@ -13,7 +13,7 @@ fn eval_unique_by(
   for elem in arr {
     match eval_with_env(expr, elem, env).collect() {
       [first, ..] => {
-        let key = first.to_string()
+        let key = @debug.to_string(first)
         if !seen.contains(key) {
           seen[key] = true
           results.push(elem)

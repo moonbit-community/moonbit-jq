@@ -1,7 +1,7 @@
 ///|
 /// Evaluate ToJsonString
 fn eval_to_json_string(input : Json) -> Iter[Json] {
-  Iter::singleton(Json::string(input.to_string()))
+  Iter::singleton(Json::string(@debug.to_string(input)))
 }
 
 ///|
