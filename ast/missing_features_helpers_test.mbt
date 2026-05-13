@@ -6,5 +6,5 @@ fn test_feature(query : String, input : String) -> String {
   let results = @ast.eval(expr, json).collect() catch {
     e => return "EvalError: \{e}"
   }
-  results.map(fn(j) { j.to_string() }).join("\n")
+  results.map(@debug.to_string).join("\n")
 }

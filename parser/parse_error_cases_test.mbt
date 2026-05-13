@@ -1,7 +1,7 @@
 ///|
 /// Test error handling
 test "panic unexpected token" {
-  inspect(
+  debug_inspect(
     try? @parser.parse("@"),
     content=(
       #|Err(UnexpectedToken(TAt, "expression"))
@@ -11,7 +11,7 @@ test "panic unexpected token" {
 
 ///|
 test "panic unexpected end" {
-  inspect(
+  debug_inspect(
     try? @parser.parse("if .x then"),
     content=(
       #|Err(UnexpectedEnd("TElse"))

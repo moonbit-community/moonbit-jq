@@ -68,7 +68,7 @@ fn eval_group_by(
       [] => null
       [first, ..] => first
     }
-    let key_str = key_json.to_string()
+    let key_str = @debug.to_string(key_json)
     groups.update(key_str, fn(existing) {
       match existing {
         Some(group) => {

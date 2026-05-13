@@ -13,7 +13,7 @@ fn eval_string_interpolation(
       Some(expr) =>
         match eval_with_env(expr, input, env).collect() {
           [String(s), ..] => buf.write_string(s)
-          [other, ..] => buf.write_string(other.to_string())
+          [other, ..] => buf.write_string(@debug.to_string(other))
           [] => ()
         }
       None => ()

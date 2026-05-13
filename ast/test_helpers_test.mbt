@@ -6,7 +6,7 @@ fn test_query(query : String, input : String) -> String {
   let results = @ast.eval(expr, json) catch { e => return "EvalError: \{e}" }
   let outputs : Array[String] = []
   for result in results {
-    outputs.push(result.to_string())
+    outputs.push(@debug.to_string(result))
   }
   outputs.join(", ")
 }
