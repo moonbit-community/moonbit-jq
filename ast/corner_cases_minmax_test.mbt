@@ -26,7 +26,7 @@ test "corner: min_by with single element" {
   debug_inspect(
     test_query("min_by(.x)", "[{\"x\":5}]"),
     content=(
-      #|"Object({\"x\": Number(5)})"
+      #|"Object({ \"x\": Number(5) })"
     ),
   )
 }
@@ -36,7 +36,7 @@ test "corner: max_by with single element" {
   debug_inspect(
     test_query("max_by(.x)", "[{\"x\":5}]"),
     content=(
-      #|"Object({\"x\": Number(5)})"
+      #|"Object({ \"x\": Number(5) })"
     ),
   )
 }

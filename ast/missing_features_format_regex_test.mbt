@@ -43,7 +43,7 @@ test "missing: @json format" {
   debug_inspect(
     test_feature("@json", "{\"a\":1}"),
     content=(
-      #|"String(\"Object({\\\"a\\\": Number(1)})\")"
+      #|"String(\"Object({ \\\"a\\\": Number(1) })\")"
     ),
   )
 }

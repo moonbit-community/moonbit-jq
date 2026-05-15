@@ -51,7 +51,7 @@ test "setpath: set value at path" {
   debug_inspect(
     test_query("setpath([\"a\",\"b\"]; 99)", "{\"a\":{\"b\":1,\"c\":2}}"),
     content=(
-      #|"Object({\"a\": Object({\"b\": Number(99), \"c\": Number(2)})})"
+      #|"Object({ \"a\": Object({ \"b\": Number(99), \"c\": Number(2) }) })"
     ),
   )
 }
@@ -63,7 +63,7 @@ test "delpaths: delete multiple paths" {
       "delpaths([[\"a\",\"b\"],[\"c\"]])", "{\"a\":{\"b\":1,\"d\":2},\"c\":3,\"e\":4}",
     ),
     content=(
-      #|"Object({\"a\": Object({\"d\": Number(2)}), \"e\": Number(4)})"
+      #|"Object({ \"a\": Object({ \"d\": Number(2) }), \"e\": Number(4) })"
     ),
   )
 }
@@ -119,7 +119,7 @@ test "walk: transform all values" {
       "walk(if type == \"number\" then . * 2 else . end)", "{\"a\":1,\"b\":{\"c\":2}}",
     ),
     content=(
-      #|"Object({\"a\": Number(2), \"b\": Object({\"c\": Number(4)})})"
+      #|"Object({ \"a\": Number(2), \"b\": Object({ \"c\": Number(4) }) })"
     ),
   )
 }

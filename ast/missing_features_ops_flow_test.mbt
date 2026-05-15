@@ -33,7 +33,7 @@ test "missing: walk function" {
       "walk(if type == \"number\" then . * 2 else . end)", "{\"a\":1,\"b\":[2,3]}",
     ),
     content=(
-      #|"Object({\"a\": Number(2), \"b\": Array([Number(4), Number(6)])})"
+      #|"Object({ \"a\": Number(2), \"b\": Array([Number(4), Number(6)]) })"
     ),
   )
 }
@@ -43,7 +43,7 @@ test "missing: update operator |=" {
   debug_inspect(
     test_feature(".a |= . + 1", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(6)})"
+      #|"Object({ \"a\": Number(6) })"
     ),
   )
 }
@@ -73,7 +73,7 @@ test "missing: += operator" {
   debug_inspect(
     test_feature(".a += 3", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(8)})"
+      #|"Object({ \"a\": Number(8) })"
     ),
   )
 }
@@ -83,7 +83,7 @@ test "missing: -= operator" {
   debug_inspect(
     test_feature(".a -= 3", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(2)})"
+      #|"Object({ \"a\": Number(2) })"
     ),
   )
 }
@@ -93,7 +93,7 @@ test "missing: *= operator" {
   debug_inspect(
     test_feature(".a *= 3", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(15)})"
+      #|"Object({ \"a\": Number(15) })"
     ),
   )
 }
@@ -103,7 +103,7 @@ test "missing: /= operator" {
   debug_inspect(
     test_feature(".a /= 2", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(2.5)})"
+      #|"Object({ \"a\": Number(2.5) })"
     ),
   )
 }
@@ -113,7 +113,7 @@ test "missing: %= operator" {
   debug_inspect(
     test_feature(".a %= 2", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(1)})"
+      #|"Object({ \"a\": Number(1) })"
     ),
   )
 }
@@ -123,7 +123,7 @@ test "missing: //= operator" {
   debug_inspect(
     test_feature(".a //= 10", "{\"a\":5}"),
     content=(
-      #|"Object({\"a\": Number(5)})"
+      #|"Object({ \"a\": Number(5) })"
     ),
   )
 }
