@@ -6,7 +6,7 @@ test "corner: recursive descent on nested arrays" {
   debug_inspect(
     test_query("[..]", "[1,[2,[3,[4]]]]"),
     content=(
-      #|"Array([Array([Number(1), Array([Number(2), Array([Number(3), Array([Number(4)])])])]), Number(1), Array([Number(2), Array([Number(3), Array([Number(4)])])]), Number(2), Array([Number(3), Array([Number(4)])]), Number(3), Array([Number(4)]), Number(4)])"
+      #|"Array(\n  [\n    Array(\n      [\n        Number(1),\n        Array([Number(2), Array([Number(3), Array([Number(4)])])]),\n      ],\n    ),\n    Number(1),\n    Array([Number(2), Array([Number(3), Array([Number(4)])])]),\n    Number(2),\n    Array([Number(3), Array([Number(4)])]),\n    Number(3),\n    Array([Number(4)]),\n    Number(4),\n  ],\n)"
     ),
   )
 }
@@ -16,7 +16,7 @@ test "corner: recursive descent on nested objects" {
   debug_inspect(
     test_query("[..]", "{\"a\":{\"b\":{\"c\":1}}}"),
     content=(
-      #|"Array([Object({\"a\": Object({\"b\": Object({\"c\": Number(1)})})}), Object({\"b\": Object({\"c\": Number(1)})}), Object({\"c\": Number(1)}), Number(1)])"
+      #|"Array(\n  [\n    Object({ \"a\": Object({ \"b\": Object({ \"c\": Number(1) }) }) }),\n    Object({ \"b\": Object({ \"c\": Number(1) }) }),\n    Object({ \"c\": Number(1) }),\n    Number(1),\n  ],\n)"
     ),
   )
 }

@@ -6,7 +6,7 @@ test "corner: tojson converts to JSON string" {
   debug_inspect(
     test_query("tojson", "{\"a\":1}"),
     content=(
-      #|"String(\"Object({\\\"a\\\": Number(1)})\")"
+      #|"String(\"Object({ \\\"a\\\": Number(1) })\")"
     ),
   )
 }
@@ -16,7 +16,7 @@ test "corner: fromjson parses JSON string" {
   debug_inspect(
     test_query("fromjson", "\"{\\\"a\\\":1}\""),
     content=(
-      #|"Object({\"a\": Number(1)})"
+      #|"Object({ \"a\": Number(1) })"
     ),
   )
 }

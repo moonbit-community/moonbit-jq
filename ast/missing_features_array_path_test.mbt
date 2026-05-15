@@ -63,7 +63,7 @@ test "missing: setpath" {
   debug_inspect(
     test_feature("setpath([\"a\",\"b\"]; 99)", "{\"a\":{\"b\":42}}"),
     content=(
-      #|"Object({\"a\": Object({\"b\": Number(99)})})"
+      #|"Object({ \"a\": Object({ \"b\": Number(99) }) })"
     ),
   )
 }
@@ -73,7 +73,7 @@ test "missing: delpaths" {
   debug_inspect(
     test_feature("delpaths([[\"a\",\"b\"]])", "{\"a\":{\"b\":42,\"c\":1}}"),
     content=(
-      #|"Object({\"a\": Object({\"c\": Number(1)})})"
+      #|"Object({ \"a\": Object({ \"c\": Number(1) }) })"
     ),
   )
 }

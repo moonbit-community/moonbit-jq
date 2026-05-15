@@ -16,7 +16,7 @@ test "corner: getpath with empty path returns input" {
   debug_inspect(
     test_query("getpath([])", "{\"a\":1}"),
     content=(
-      #|"Object({\"a\": Number(1)})"
+      #|"Object({ \"a\": Number(1) })"
     ),
   )
 }

@@ -8,7 +8,7 @@ test "complex: data transformation pipeline" {
       ".users | map({name: .name, email: .email}) | sort_by(.name)", "{\"users\":[{\"name\":\"Bob\",\"email\":\"bob@test.com\",\"age\":30},{\"name\":\"Alice\",\"email\":\"alice@test.com\",\"age\":25}]}",
     ),
     content=(
-      #|"Array([Object({\"name\": String(\"Bob\"), \"email\": String(\"bob@test.com\")}), Object({\"name\": String(\"Alice\"), \"email\": String(\"alice@test.com\")})])"
+      #|"Array(\n  [\n    Object({ \"name\": String(\"Bob\"), \"email\": String(\"bob@test.com\") }),\n    Object({ \"name\": String(\"Alice\"), \"email\": String(\"alice@test.com\") }),\n  ],\n)"
     ),
   )
 }
@@ -30,7 +30,7 @@ test "complex: grouped operations" {
       "group_by(.type) | map({type: .[0].type, count: length})", "[{\"type\":\"A\",\"val\":1},{\"type\":\"B\",\"val\":2},{\"type\":\"A\",\"val\":3},{\"type\":\"B\",\"val\":4}]",
     ),
     content=(
-      #|"Array([Object({\"type\": String(\"A\"), \"count\": Number(2)}), Object({\"type\": String(\"B\"), \"count\": Number(2)})])"
+      #|"Array(\n  [\n    Object({ \"type\": String(\"A\"), \"count\": Number(2) }),\n    Object({ \"type\": String(\"B\"), \"count\": Number(2) }),\n  ],\n)"
     ),
   )
 }

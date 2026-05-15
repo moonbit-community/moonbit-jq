@@ -28,7 +28,7 @@ test "corner: reduce building object" {
       "reduce .[] as $item ({}; . + {($item.key): $item.value})", "[{\"key\":\"a\",\"value\":1},{\"key\":\"b\",\"value\":2}]",
     ),
     content=(
-      #|"Object({\"a\": Number(1), \"b\": Number(2)})"
+      #|"Object({ \"a\": Number(1), \"b\": Number(2) })"
     ),
   )
 }

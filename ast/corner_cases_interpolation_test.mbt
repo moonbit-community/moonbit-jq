@@ -16,7 +16,7 @@ test "corner: interpolation with nested object" {
   debug_inspect(
     test_query("\"User: \\(.user)\"", "{\"user\":{\"name\":\"Alice\"}}"),
     content=(
-      #|"String(\"User: Object({\\\"name\\\": String(\\\"Alice\\\")})\")"
+      #|"String(\"User: Object({ \\\"name\\\": String(\\\"Alice\\\") })\")"
     ),
   )
 }
