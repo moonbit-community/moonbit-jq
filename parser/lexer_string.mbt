@@ -4,7 +4,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
   let start = self.pos
   self.advance()
   let parts : Array[(String, String?)] = []
-  let buf = @buffer.new()
+  let buf = StringBuilder::new()
   while true {
     match self.current() {
       None => raise UnterminatedString(start)
