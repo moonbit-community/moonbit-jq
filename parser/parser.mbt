@@ -18,9 +18,6 @@ fn Parser::parse_definitions(self : Parser) -> @ast.Expr raise ParseError {
   match defs {
     [] => main_expr
     // Fold defs from right to left so they execute in order
-    _ =>
-      defs
-      .rev()
-      .fold(init=main_expr, fn(expr, def) { Pipe(def, expr) })
+    _ => defs.rev().fold(init=main_expr, fn(expr, def) { Pipe(def, expr) })
   }
 }

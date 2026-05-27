@@ -68,6 +68,6 @@ pub(all) enum Token {
 } derive(Eq, Debug)
 
 ///|
-pub impl Show for Token with output(self, logger) {
+pub impl Show for Token with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }

@@ -1,0 +1,20 @@
+name = "bobzhang/moonjq"
+
+version = "0.1.0"
+
+repository = "git@github.com:moonbit-community/moobit-jq.git"
+
+keywords = [ "jq", "json", "query" ]
+
+description = "A jq implementation in MoonBit"
+
+import {
+  "moonbitlang/async@0.16.2",
+  "moonbitlang/x@0.4.38",
+}
+
+preferred_target = "native"
+
+license = "Apache-2.0"
+
+warnings = "+test_unqualified_package"
