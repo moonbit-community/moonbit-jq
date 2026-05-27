@@ -1,6 +1,5 @@
 import {
   "bobzhang/moonjq/ast/internal/helpers" @ast_internal,
-  "moonbitlang/core/buffer",
   "moonbitlang/core/cmp",
   "moonbitlang/core/encoding/utf8" @encoding/utf8,
   "moonbitlang/core/json",

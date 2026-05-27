@@ -1,7 +1,7 @@
 ///|
 /// HTML escape a string
 fn html_escape(s : String) -> String {
-  let buf = @buffer.new()
+  let buf = StringBuilder::new()
   for char in s {
     match char {
       '<' => buf.write_string("&lt;")
