@@ -29,6 +29,15 @@ test "coverage: string escape sequences" {
 }
 
 ///|
+test "coverage: string lexer preserves unicode text" {
+  let tokens = @parser.lex("\"hé 世界\"")
+  match tokens[0] {
+    TString(s) => assert_true(s == "hé 世界")
+    _ => assert_true(false)
+  }
+}
+
+///|
 test "coverage: interpolation lexer handles nested parens and strings" {
   // Includes nested parentheses and a nested string with an escaped quote.
   let query : String =
