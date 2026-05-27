@@ -13,40 +13,40 @@ fn Parser::parse_builtin_flow_range(
         if self.consume(TSemicolon) {
           let third_expr = self.parse_pipe()
           self.expect(TRParen)
-          Some(@ast.Expr::RangeWithStep(first_expr, second_expr, third_expr))
+          Some(RangeWithStep(first_expr, second_expr, third_expr))
         } else {
           self.expect(TRParen)
-          Some(@ast.Expr::RangeFromTo(first_expr, second_expr))
+          Some(RangeFromTo(first_expr, second_expr))
         }
       } else {
         self.expect(TRParen)
-        guard first_expr is @ast.Expr::Literal(@ast.Literal::Number(n)) else {
+        guard first_expr is Literal(Number(n)) else {
           raise InvalidSyntax("range(n) expects literal number")
         }
-        Some(@ast.Expr::Range(n.to_int()))
+        Some(Range(n.to_int()))
       }
     }
     "first" =>
       if self.consume(TLParen) {
         let expr = self.parse_pipe()
         self.expect(TRParen)
-        Some(@ast.Expr::FirstGen(expr))
+        Some(FirstGen(expr))
       } else {
-        Some(@ast.Expr::First)
+        Some(First)
       }
     "last" =>
       if self.consume(TLParen) {
         let expr = self.parse_pipe()
         self.expect(TRParen)
-        Some(@ast.Expr::LastGen(expr))
+        Some(LastGen(expr))
       } else {
-        Some(@ast.Expr::Last)
+        Some(Last)
       }
     "repeat" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Repeat(expr))
+      Some(Repeat(expr))
     }
     _ => None
   }

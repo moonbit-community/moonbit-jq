@@ -2,18 +2,18 @@
 /// Parse object constructor
 fn Parser::parse_object(self : Parser) -> @ast.Expr raise ParseError {
   if self.consume(TRBrace) {
-    return @ast.Expr::ObjectConstruct([])
+    return ObjectConstruct([])
   }
   let pairs : Array[(@ast.Expr, @ast.Expr?)] = []
   while true {
-    let key = match self.current() {
+    let key : @ast.Expr = match self.current() {
       Some(TIdentifier(name)) => {
         self.advance()
-        @ast.Expr::Literal(@ast.Literal::String(name))
+        Literal(String(name))
       }
       Some(TString(name)) => {
         self.advance()
-        @ast.Expr::Literal(@ast.Literal::String(name))
+        Literal(String(name))
       }
       Some(TLParen) => {
         self.advance()
@@ -34,7 +34,7 @@ fn Parser::parse_object(self : Parser) -> @ast.Expr raise ParseError {
     }
   }
   self.expect(TRBrace)
-  @ast.Expr::ObjectConstruct(pairs)
+  ObjectConstruct(pairs)
 }
 
 ///|
@@ -47,7 +47,7 @@ fn Parser::parse_if(self : Parser) -> @ast.Expr raise ParseError {
   self.expect(TElse)
   let else_expr = self.parse_pipe()
   self.expect(TEnd)
-  @ast.Expr::IfThenElse(cond, then_expr, else_expr)
+  IfThenElse(cond, then_expr, else_expr)
 }
 
 ///|
@@ -60,7 +60,7 @@ fn Parser::parse_try(self : Parser) -> @ast.Expr raise ParseError {
   } else {
     None
   }
-  @ast.Expr::TryCatch(expr, handler)
+  TryCatch(expr, handler)
 }
 
 ///|
@@ -82,7 +82,7 @@ fn Parser::parse_reduce(self : Parser) -> @ast.Expr raise ParseError {
   self.expect(TSemicolon)
   let update_expr = self.parse_pipe()
   self.expect(TRParen)
-  @ast.Expr::Reduce(gen_expr, var_name, init_expr, update_expr)
+  Reduce(gen_expr, var_name, init_expr, update_expr)
 }
 
 ///|
@@ -110,5 +110,5 @@ fn Parser::parse_foreach(self : Parser) -> @ast.Expr raise ParseError {
     None
   }
   self.expect(TRParen)
-  @ast.Expr::Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr)
+  Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr)
 }

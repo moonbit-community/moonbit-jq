@@ -19,7 +19,7 @@ fn Parser::parse_builtin_flow_reduce(
       let update_expr = self.parse_pipe()
       self.expect(TRParen)
       self.expect(TRParen)
-      Some(@ast.Expr::Reduce(gen_expr, var_name, init_expr, update_expr))
+      Some(Reduce(gen_expr, var_name, init_expr, update_expr))
     }
     "foreach" => {
       self.expect(TLParen)
@@ -41,7 +41,7 @@ fn Parser::parse_builtin_flow_reduce(
       self.expect(TRParen)
       self.expect(TRParen)
       Some(
-        @ast.Expr::Foreach(
+        Foreach(
           gen_expr, var_name, init_expr, update_expr, extract_expr,
         ),
       )

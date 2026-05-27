@@ -9,16 +9,16 @@ fn Parser::parse_builtin_path(
       if self.consume(TLParen) {
         let expr = self.parse_pipe()
         self.expect(TRParen)
-        Some(@ast.Expr::PathsWithFilter(expr))
+        Some(PathsWithFilter(expr))
       } else {
-        Some(@ast.Expr::Paths)
+        Some(Paths)
       }
-    "leaf_paths" => Some(@ast.Expr::LeafPaths)
+    "leaf_paths" => Some(LeafPaths)
     "getpath" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::GetPath(expr))
+      Some(GetPath(expr))
     }
     "setpath" => {
       self.expect(TLParen)
@@ -26,13 +26,13 @@ fn Parser::parse_builtin_path(
       self.expect(TSemicolon)
       let value = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::SetPath(path, value))
+      Some(SetPath(path, value))
     }
     "delpaths" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::DelPaths(expr))
+      Some(DelPaths(expr))
     }
     _ => None
   }

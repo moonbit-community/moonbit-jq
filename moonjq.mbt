@@ -1,7 +1,7 @@
 ///|
 /// Compile a jq query string into a reusable Query.
 pub fn parse(query : String) -> Query raise {
-  Query::{ expr: @parser.parse(query) }
+  { expr: @parser.parse(query) }
 }
 
 ///|

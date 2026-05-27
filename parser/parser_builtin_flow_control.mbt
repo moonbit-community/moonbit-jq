@@ -14,7 +14,7 @@ fn Parser::parse_builtin_flow_control(
       self.expect(TSemicolon)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Limit(n.to_int(), expr))
+      Some(Limit(n.to_int(), expr))
     }
     "until" => {
       self.expect(TLParen)
@@ -22,7 +22,7 @@ fn Parser::parse_builtin_flow_control(
       self.expect(TSemicolon)
       let update = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Until(cond, update))
+      Some(Until(cond, update))
     }
     "while" => {
       self.expect(TLParen)
@@ -30,7 +30,7 @@ fn Parser::parse_builtin_flow_control(
       self.expect(TSemicolon)
       let update = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::While(cond, update))
+      Some(While(cond, update))
     }
     _ => None
   }

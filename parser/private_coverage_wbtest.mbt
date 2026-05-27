@@ -48,14 +48,14 @@ test "wb: parser none branches" {
 test "wb: parse_builtin not" {
   let parser = Parser::new([])
   let expr = parser.parse_builtin("not")
-  assert_true(expr is @ast.Expr::Not)
+  assert_true(expr is Not)
 }
 
 ///|
 test "wb: parse_builtin reduce success" {
   let parser = Parser::new(reduce_tokens())
   let expr = parser.parse_builtin("reduce")
-  assert_true(expr is @ast.Expr::Reduce(_, _, _, _))
+  assert_true(expr is Reduce(_, _, _, _))
 }
 
 ///|
@@ -68,14 +68,14 @@ test "wb: parse_builtin reduce missing variable" {
 test "wb: parse_builtin foreach success with extract" {
   let parser = Parser::new(foreach_tokens(true))
   let expr = parser.parse_builtin("foreach")
-  assert_true(expr is @ast.Expr::Foreach(_, _, _, _, Some(_)))
+  assert_true(expr is Foreach(_, _, _, _, Some(_)))
 }
 
 ///|
 test "wb: parse_builtin foreach success without extract" {
   let parser = Parser::new(foreach_tokens(false))
   let expr = parser.parse_builtin("foreach")
-  assert_true(expr is @ast.Expr::Foreach(_, _, _, _, None))
+  assert_true(expr is Foreach(_, _, _, _, None))
 }
 
 ///|

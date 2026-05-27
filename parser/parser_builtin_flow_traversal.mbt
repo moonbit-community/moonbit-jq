@@ -11,15 +11,15 @@ fn Parser::parse_builtin_flow_traversal(
         self.expect(TSemicolon)
         let cond = self.parse_pipe()
         self.expect(TRParen)
-        Some(@ast.Expr::RecurseWith(f, cond))
+        Some(RecurseWith(f, cond))
       } else {
-        Some(@ast.Expr::Recurse)
+        Some(Recurse)
       }
     "walk" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Walk(expr))
+      Some(Walk(expr))
     }
     _ => None
   }

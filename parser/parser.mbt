@@ -21,6 +21,6 @@ fn Parser::parse_definitions(self : Parser) -> @ast.Expr raise ParseError {
     _ =>
       defs
       .rev()
-      .fold(init=main_expr, fn(expr, def) { @ast.Expr::Pipe(def, expr) })
+      .fold(init=main_expr, fn(expr, def) { Pipe(def, expr) })
   }
 }

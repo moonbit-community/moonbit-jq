@@ -6,18 +6,18 @@ fn Parser::parse_additive(self : Parser) -> @ast.Expr raise ParseError {
     match self.current() {
       Some(TPlus) => {
         self.advance()
-        expr = @ast.Expr::Operation(
+        expr = Operation(
           expr,
-          @ast.BinaryOp::Add,
+          Add,
           self.parse_multiplicative(),
         )
         continue
       }
       Some(TMinus) => {
         self.advance()
-        expr = @ast.Expr::Operation(
+        expr = Operation(
           expr,
-          @ast.BinaryOp::Subtract,
+          Subtract,
           self.parse_multiplicative(),
         )
         continue
@@ -36,27 +36,27 @@ fn Parser::parse_multiplicative(self : Parser) -> @ast.Expr raise ParseError {
     match self.current() {
       Some(TStar) => {
         self.advance()
-        expr = @ast.Expr::Operation(
+        expr = Operation(
           expr,
-          @ast.BinaryOp::Multiply,
+          Multiply,
           self.parse_unary(),
         )
         continue
       }
       Some(TSlash) => {
         self.advance()
-        expr = @ast.Expr::Operation(
+        expr = Operation(
           expr,
-          @ast.BinaryOp::Divide,
+          Divide,
           self.parse_unary(),
         )
         continue
       }
       Some(TPercent) => {
         self.advance()
-        expr = @ast.Expr::Operation(
+        expr = Operation(
           expr,
-          @ast.BinaryOp::Modulo,
+          Modulo,
           self.parse_unary(),
         )
         continue
@@ -71,7 +71,7 @@ fn Parser::parse_multiplicative(self : Parser) -> @ast.Expr raise ParseError {
 /// Parse unary operators
 fn Parser::parse_unary(self : Parser) -> @ast.Expr raise ParseError {
   if self.consume(TNot) {
-    @ast.Expr::Not
+    Not
   } else {
     self.parse_postfix()
   }

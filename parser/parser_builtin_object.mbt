@@ -11,12 +11,12 @@ fn Parser::parse_builtin_object(
         Some(TString(key)) => {
           self.advance()
           self.expect(TRParen)
-          Some(@ast.Expr::Has(key))
+          Some(Has(key))
         }
         Some(TNumber(n)) => {
           self.advance()
           self.expect(TRParen)
-          Some(@ast.Expr::Has(n.to_string()))
+          Some(Has(n.to_string()))
         }
         _ => raise InvalidSyntax("has expects string or number argument")
       }
@@ -25,21 +25,21 @@ fn Parser::parse_builtin_object(
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::In(expr))
+      Some(In(expr))
     }
-    "to_entries" => Some(@ast.Expr::ToEntries)
-    "from_entries" => Some(@ast.Expr::FromEntries)
+    "to_entries" => Some(ToEntries)
+    "from_entries" => Some(FromEntries)
     "with_entries" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::WithEntries(expr))
+      Some(WithEntries(expr))
     }
     "map_values" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::MapValues(expr))
+      Some(MapValues(expr))
     }
     _ => None
   }

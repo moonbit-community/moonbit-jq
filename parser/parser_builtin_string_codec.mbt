@@ -5,10 +5,10 @@ fn Parser::parse_builtin_string_codec(
   name : String,
 ) -> @ast.Expr? raise ParseError {
   match name {
-    "explode" => Some(@ast.Expr::Explode)
-    "implode" => Some(@ast.Expr::Implode)
-    "tojson" => Some(@ast.Expr::ToJsonString)
-    "fromjson" => Some(@ast.Expr::FromJsonString)
+    "explode" => Some(Explode)
+    "implode" => Some(Implode)
+    "tojson" => Some(ToJsonString)
+    "fromjson" => Some(FromJsonString)
     "scan" => {
       self.expect(TLParen)
       guard self.current() is Some(TString(s)) else {
@@ -16,7 +16,7 @@ fn Parser::parse_builtin_string_codec(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Scan(s))
+      Some(Scan(s))
     }
     _ => None
   }
