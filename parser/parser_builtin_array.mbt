@@ -9,16 +9,16 @@ fn Parser::parse_builtin_array(
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Map(expr))
+      Some(Map(expr))
     }
     "select" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Select(expr))
+      Some(Select(expr))
     }
-    "sort" => Some(@ast.Expr::Sort)
-    "reverse" => Some(@ast.Expr::Reverse)
+    "sort" => Some(Sort)
+    "reverse" => Some(Reverse)
     "flatten" =>
       if self.consume(TLParen) {
         let depth = if self.current() is Some(TNumber(n)) {
@@ -28,42 +28,42 @@ fn Parser::parse_builtin_array(
           None
         }
         self.expect(TRParen)
-        Some(@ast.Expr::Flatten(depth))
+        Some(Flatten(depth))
       } else {
-        Some(@ast.Expr::Flatten(None))
+        Some(Flatten(None))
       }
-    "unique" => Some(@ast.Expr::Unique)
+    "unique" => Some(Unique)
     "unique_by" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::UniqueBy(expr))
+      Some(UniqueBy(expr))
     }
-    "combinations" => Some(@ast.Expr::Combinations)
-    "transpose" => Some(@ast.Expr::Transpose)
+    "combinations" => Some(Combinations)
+    "transpose" => Some(Transpose)
     "indices" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::IndicesOf(expr))
+      Some(IndicesOf(expr))
     }
     "index" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::IndexOf(expr))
+      Some(IndexOf(expr))
     }
     "sort_by" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::SortBy(expr))
+      Some(SortBy(expr))
     }
     "group_by" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::GroupBy(expr))
+      Some(GroupBy(expr))
     }
     "nth" => {
       self.expect(TLParen)
@@ -72,13 +72,13 @@ fn Parser::parse_builtin_array(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Nth(n.to_int()))
+      Some(Nth(n.to_int()))
     }
     "rindex" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::RIndex(expr))
+      Some(RIndex(expr))
     }
     _ => None
   }

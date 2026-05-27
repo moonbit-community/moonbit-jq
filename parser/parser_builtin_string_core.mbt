@@ -12,7 +12,7 @@ fn Parser::parse_builtin_string_core(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Split(sep))
+      Some(Split(sep))
     }
     "join" => {
       self.expect(TLParen)
@@ -21,7 +21,7 @@ fn Parser::parse_builtin_string_core(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Join(sep))
+      Some(Join(sep))
     }
     "startswith" => {
       self.expect(TLParen)
@@ -30,7 +30,7 @@ fn Parser::parse_builtin_string_core(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::StartsWith(prefix))
+      Some(StartsWith(prefix))
     }
     "endswith" => {
       self.expect(TLParen)
@@ -39,19 +39,19 @@ fn Parser::parse_builtin_string_core(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::EndsWith(suffix))
+      Some(EndsWith(suffix))
     }
     "contains" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Contains(expr))
+      Some(Contains(expr))
     }
     "inside" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()
       self.expect(TRParen)
-      Some(@ast.Expr::Inside(expr))
+      Some(Inside(expr))
     }
     _ => None
   }

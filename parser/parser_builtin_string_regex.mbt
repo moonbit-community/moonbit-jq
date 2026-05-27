@@ -12,7 +12,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Test(s))
+      Some(Test(s))
     }
     "match" => {
       self.expect(TLParen)
@@ -21,7 +21,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Match(s))
+      Some(Match(s))
     }
     "capture" => {
       self.expect(TLParen)
@@ -30,7 +30,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Capture(s))
+      Some(Capture(s))
     }
     "splits" => {
       self.expect(TLParen)
@@ -39,7 +39,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Splits(s))
+      Some(Splits(s))
     }
     "sub" => {
       self.expect(TLParen)
@@ -53,7 +53,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::Sub(pattern, replacement))
+      Some(Sub(pattern, replacement))
     }
     "gsub" => {
       self.expect(TLParen)
@@ -67,7 +67,7 @@ fn Parser::parse_builtin_string_regex(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::GSub(pattern, replacement))
+      Some(GSub(pattern, replacement))
     }
     _ => None
   }

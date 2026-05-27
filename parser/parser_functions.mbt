@@ -25,5 +25,5 @@ fn Parser::parse_function_def(self : Parser) -> @ast.Expr raise ParseError {
   self.expect(TColon)
   let body = self.parse_pipe()
   self.expect(TSemicolon)
-  @ast.Expr::FunctionDef(name, params, body)
+  FunctionDef(name, params, body)
 }

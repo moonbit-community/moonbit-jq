@@ -4,23 +4,23 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
   match self.current() {
     Some(TNull) => {
       self.advance()
-      @ast.Expr::Literal(@ast.Literal::Null)
+      Literal(Null)
     }
     Some(TTrue) => {
       self.advance()
-      @ast.Expr::Literal(@ast.Literal::Bool(true))
+      Literal(Bool(true))
     }
     Some(TFalse) => {
       self.advance()
-      @ast.Expr::Literal(@ast.Literal::Bool(false))
+      Literal(Bool(false))
     }
     Some(TNumber(n)) => {
       self.advance()
-      @ast.Expr::Literal(@ast.Literal::Number(n))
+      Literal(Number(n))
     }
     Some(TString(s)) => {
       self.advance()
-      @ast.Expr::Literal(@ast.Literal::String(s))
+      Literal(String(s))
     }
     Some(TStringInterpolation(parts)) => {
       self.advance()
@@ -39,33 +39,33 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
           None => parsed_parts.push((text, None))
         }
       }
-      @ast.Expr::StringInterpolation(parsed_parts)
+      StringInterpolation(parsed_parts)
     }
     Some(TDotDot) => {
       self.advance()
-      @ast.Expr::Recurse
+      Recurse
     }
     Some(TDot) => {
       self.advance()
       match self.current() {
         Some(TIdentifier(name)) => {
           self.advance()
-          @ast.Expr::Key(name)
+          Key(name)
         }
         Some(TLBracket) => {
           self.advance()
-          self.parse_index_or_slice(@ast.Expr::Identity)
+          self.parse_index_or_slice(Identity)
         }
-        _ => @ast.Expr::Identity
+        _ => Identity
       }
     }
     Some(TVariable(name)) => {
       self.advance()
-      @ast.Expr::Variable(name)
+      Variable(name)
     }
     Some(TFormat(name)) => {
       self.advance()
-      @ast.Expr::Format(name)
+      Format(name)
     }
     Some(TLParen) => {
       self.advance()
@@ -76,11 +76,11 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
     Some(TLBracket) => {
       self.advance()
       if self.consume(TRBracket) {
-        @ast.Expr::ArrayConstruct(None)
+        ArrayConstruct(None)
       } else {
         let expr = self.parse_pipe()
         self.expect(TRBracket)
-        @ast.Expr::ArrayConstruct(Some(expr))
+        ArrayConstruct(Some(expr))
       }
     }
     Some(TLBrace) => {

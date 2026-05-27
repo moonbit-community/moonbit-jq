@@ -3,7 +3,7 @@
 fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
   let mut expr = self.parse_and()
   while self.consume(TOr) {
-    expr = @ast.Expr::Operation(expr, @ast.BinaryOp::Or, self.parse_and())
+    expr = Operation(expr, Or, self.parse_and())
   }
   expr
 }
@@ -13,9 +13,9 @@ fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
 fn Parser::parse_and(self : Parser) -> @ast.Expr raise ParseError {
   let mut expr = self.parse_comparison()
   while self.consume(TAnd) {
-    expr = @ast.Expr::Operation(
+    expr = Operation(
       expr,
-      @ast.BinaryOp::And,
+      And,
       self.parse_comparison(),
     )
   }
@@ -29,33 +29,33 @@ fn Parser::parse_comparison(self : Parser) -> @ast.Expr raise ParseError {
   match self.current() {
     Some(TEq) => {
       self.advance()
-      @ast.Expr::Operation(expr, @ast.BinaryOp::Equal, self.parse_additive())
+      Operation(expr, Equal, self.parse_additive())
     }
     Some(TNeq) => {
       self.advance()
-      @ast.Expr::Operation(expr, @ast.BinaryOp::NotEqual, self.parse_additive())
+      Operation(expr, NotEqual, self.parse_additive())
     }
     Some(TLt) => {
       self.advance()
-      @ast.Expr::Operation(expr, @ast.BinaryOp::LessThan, self.parse_additive())
+      Operation(expr, LessThan, self.parse_additive())
     }
     Some(TLe) => {
       self.advance()
-      @ast.Expr::Operation(expr, @ast.BinaryOp::LessEq, self.parse_additive())
+      Operation(expr, LessEq, self.parse_additive())
     }
     Some(TGt) => {
       self.advance()
-      @ast.Expr::Operation(
+      Operation(
         expr,
-        @ast.BinaryOp::GreaterThan,
+        GreaterThan,
         self.parse_additive(),
       )
     }
     Some(TGe) => {
       self.advance()
-      @ast.Expr::Operation(
+      Operation(
         expr,
-        @ast.BinaryOp::GreaterEq,
+        GreaterEq,
         self.parse_additive(),
       )
     }

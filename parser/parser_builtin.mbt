@@ -18,9 +18,9 @@ fn Parser::parse_builtin(
           }
         }
         self.expect(TRParen)
-        @ast.Expr::FunctionCall(name, args)
+        FunctionCall(name, args)
       } else {
-        @ast.Expr::FunctionCall(name, [])
+        FunctionCall(name, [])
       }
   }
 }

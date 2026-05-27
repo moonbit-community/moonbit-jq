@@ -12,7 +12,7 @@ fn Parser::parse_builtin_string_trim(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::LTrimStr(s))
+      Some(LTrimStr(s))
     }
     "rtrimstr" => {
       self.expect(TLParen)
@@ -21,10 +21,10 @@ fn Parser::parse_builtin_string_trim(
       }
       self.advance()
       self.expect(TRParen)
-      Some(@ast.Expr::RTrimStr(s))
+      Some(RTrimStr(s))
     }
-    "ascii_upcase" => Some(@ast.Expr::AsciiUpcase)
-    "ascii_downcase" => Some(@ast.Expr::AsciiDowncase)
+    "ascii_upcase" => Some(AsciiUpcase)
+    "ascii_downcase" => Some(AsciiDowncase)
     _ => None
   }
 }

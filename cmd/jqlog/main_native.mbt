@@ -46,16 +46,16 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
   while index < args.length() {
     let arg = args[index]
     if arg == "-h" || arg == "--help" {
-      return CliParseResult::Help
+      return Help
     }
     if arg == "-f" || arg == "--file" {
       if index + 1 >= args.length() {
-        return CliParseResult::Error("Missing path after --file")
+        return Error("Missing path after --file")
       }
       if input_opt is Some(_) {
-        return CliParseResult::Error("Multiple inputs provided")
+        return Error("Multiple inputs provided")
       }
-      input_opt = Some(InputSource::File(args[index + 1]))
+      input_opt = Some(File(args[index + 1]))
       index = index + 2
       continue
     }
@@ -64,35 +64,35 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
       break
     }
     if arg.has_prefix("-") {
-      return CliParseResult::Error("Unknown option: \"" + arg + "\"")
+      return Error("Unknown option: \"" + arg + "\"")
     }
     break
   }
   if index >= args.length() {
-    return CliParseResult::Error("Missing query")
+    return Error("Missing query")
   }
   let query = args[index]
   index = index + 1
   if index < args.length() {
     if input_opt is Some(_) {
-      return CliParseResult::Error("Multiple inputs provided")
+      return Error("Multiple inputs provided")
     }
     let inline = args[index]
     if inline == "-" {
-      input_opt = Some(InputSource::Stdin)
+      input_opt = Some(Stdin)
     } else {
-      input_opt = Some(InputSource::Inline(inline))
+      input_opt = Some(Inline(inline))
     }
     index = index + 1
   }
   if index < args.length() {
-    return CliParseResult::Error("Too many arguments")
+    return Error("Too many arguments")
   }
   let input = match input_opt {
     Some(source) => source
-    None => InputSource::Stdin
+    None => Stdin
   }
-  CliParseResult::Run({ query, input })
+  Run({ query, input })
 }
 
 ///|
