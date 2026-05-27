@@ -33,3 +33,13 @@ test "coverage: @html escapes ampersand and quotes" {
     "&amp;&quot;&#39;",
   ])
 }
+
+///|
+test "coverage: text builders preserve unicode output" {
+  json_inspect(coverage_eval("@html", "\"<&世界&>\""), content=[
+    "&lt;&amp;世界&amp;&gt;",
+  ])
+  json_inspect(coverage_eval("\"Hello \\(.name)\"", "{\"name\":\"世界\"}"), content=[
+    "Hello 世界",
+  ])
+}
