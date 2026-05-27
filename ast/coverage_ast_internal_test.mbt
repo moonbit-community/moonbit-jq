@@ -30,10 +30,7 @@ test "coverage: update with index left branches" {
 
 ///|
 test "coverage: update with complex left pipe" {
-  let path : @ast.Expr = Pipe(
-    Pipe(Key("a"), Key("b")),
-    Key("c"),
-  )
+  let path : @ast.Expr = Pipe(Pipe(Key("a"), Key("b")), Key("c"))
   let update_expr : @ast.Expr = Literal(Number(2.0))
   let expr : @ast.Expr = Update(path, update_expr)
   json_inspect(eval_expr(expr, "{\"a\":{\"b\":{\"c\":1}}}"), content=[

@@ -18,6 +18,6 @@ fn Literal::to_json(self : Literal) -> Json {
 }
 
 ///|
-pub impl Show for Literal with output(self, logger) {
+pub impl Show for Literal with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }

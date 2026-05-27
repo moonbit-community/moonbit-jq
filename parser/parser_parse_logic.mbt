@@ -13,11 +13,7 @@ fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
 fn Parser::parse_and(self : Parser) -> @ast.Expr raise ParseError {
   let mut expr = self.parse_comparison()
   while self.consume(TAnd) {
-    expr = Operation(
-      expr,
-      And,
-      self.parse_comparison(),
-    )
+    expr = Operation(expr, And, self.parse_comparison())
   }
   expr
 }
@@ -45,19 +41,11 @@ fn Parser::parse_comparison(self : Parser) -> @ast.Expr raise ParseError {
     }
     Some(TGt) => {
       self.advance()
-      Operation(
-        expr,
-        GreaterThan,
-        self.parse_additive(),
-      )
+      Operation(expr, GreaterThan, self.parse_additive())
     }
     Some(TGe) => {
       self.advance()
-      Operation(
-        expr,
-        GreaterEq,
-        self.parse_additive(),
-      )
+      Operation(expr, GreaterEq, self.parse_additive())
     }
     _ => expr
   }

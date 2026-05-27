@@ -148,6 +148,6 @@ pub(all) enum Expr {
 } derive(Eq, ToJson, Debug)
 
 ///|
-pub impl Show for Expr with output(self, logger) {
+pub impl Show for Expr with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }

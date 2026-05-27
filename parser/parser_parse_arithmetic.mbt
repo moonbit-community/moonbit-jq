@@ -6,20 +6,12 @@ fn Parser::parse_additive(self : Parser) -> @ast.Expr raise ParseError {
     match self.current() {
       Some(TPlus) => {
         self.advance()
-        expr = Operation(
-          expr,
-          Add,
-          self.parse_multiplicative(),
-        )
+        expr = Operation(expr, Add, self.parse_multiplicative())
         continue
       }
       Some(TMinus) => {
         self.advance()
-        expr = Operation(
-          expr,
-          Subtract,
-          self.parse_multiplicative(),
-        )
+        expr = Operation(expr, Subtract, self.parse_multiplicative())
         continue
       }
       _ => break
@@ -36,29 +28,17 @@ fn Parser::parse_multiplicative(self : Parser) -> @ast.Expr raise ParseError {
     match self.current() {
       Some(TStar) => {
         self.advance()
-        expr = Operation(
-          expr,
-          Multiply,
-          self.parse_unary(),
-        )
+        expr = Operation(expr, Multiply, self.parse_unary())
         continue
       }
       Some(TSlash) => {
         self.advance()
-        expr = Operation(
-          expr,
-          Divide,
-          self.parse_unary(),
-        )
+        expr = Operation(expr, Divide, self.parse_unary())
         continue
       }
       Some(TPercent) => {
         self.advance()
-        expr = Operation(
-          expr,
-          Modulo,
-          self.parse_unary(),
-        )
+        expr = Operation(expr, Modulo, self.parse_unary())
         continue
       }
       _ => break
