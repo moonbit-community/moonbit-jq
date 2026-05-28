@@ -1,0 +1,52 @@
+import {
+  "moonbitlang/async@0.16.2",
+  "moonbitlang/async@0.16.2/process",
+  "moonbitlang/core/env",
+  "moonbitlang/x@0.4.38/fs",
+  "moonbitlang/x@0.4.38/sys",
+}
+
+///|
+async fn main {
+  try {
+    run_cram_cli()
+  } catch {
+    err => fail("check_cram_cli failed: \{err}")
+  }
+}
+
+///|
+async fn run_cram_cli() -> Unit raise {
+  let build_code = @process.run(
+    "moon",
+    ["build", "--target", "native", "--release", "cmd/jq"],
+  )
+  if build_code != 0 {
+    fail("moon build --target native --release cmd/jq failed")
+  }
+
+  guard @env.current_dir() is Some(cwd) else {
+    fail("failed to resolve current working directory")
+  }
+  let cli_path = "\{cwd}/_build/native/release/build/cmd/jq/jq.exe"
+  if !@fs.path_exists(cli_path) {
+    fail("native CLI binary was not built: \{cli_path}")
+  }
+
+  // Moon Cram runs the shell snippets; pass the built binary explicitly so the
+  // tests do not depend on PATH or a particular checkout directory.
+  let cram_code = @process.run(
+    "moon",
+    ["cram", "test", "tests/cram"],
+    extra_env={"MOONJQ_CLI": cli_path},
+  )
+  if cram_code != 0 {
+    fail("moon cram test failed")
+  }
+}
+
+///|
+fn fail(message : String) -> Unit {
+  println(message)
+  @sys.exit(1)
+}

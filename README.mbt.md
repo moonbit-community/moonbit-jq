@@ -71,6 +71,33 @@ fn jq(query : String, input : String) -> String raise {
 }
 ```
 
+### Command Line
+
+The native command follows jq's argument order: the filter comes first, followed
+by zero or more input files. When no file is provided, input is read from stdin.
+
+```bash
+moon run cmd/jq --target native -- -c '.foo' data.json
+cat data.json | moon run cmd/jq --target native -- -r '.name'
+moon run cmd/jq --target native -- -n -c '{ok: true}'
+moon run cmd/jq --target native -- -f filter.jq data.json
+```
+
+Build the release binary when you want to run it directly:
+
+```bash
+moon build --target native --release cmd/jq
+_build/native/release/build/cmd/jq/jq.exe -c '.items[]' data.json
+```
+
+Supported CLI options:
+
+- `-c`, `--compact-output`: print compact JSON.
+- `-r`, `--raw-output`: print strings without JSON quotes.
+- `-f`, `--from-file FILE`: read the filter from `FILE`.
+- `-n`, `--null-input`: run the filter once with `null` input.
+- `-l`, `--logs`: treat input as JSONL/NDJSON and skip non-JSON lines.
+
 ## Examples
 
 All examples below are executable and type-checked by `moon check README.mbt.md`.
@@ -186,11 +213,13 @@ test "readme: recursive descent" {
 
 ```
 moobit-jq/
-├── moon.mod.json          # Module metadata
+├── moon.mod               # Module metadata
 ├── README.mbt.md          # This file (executable documentation)
 ├── ast/                   # AST + streaming evaluator + integration tests
+├── cmd/jq/                # Native jq-compatible CLI
 ├── parser/                # Parser (includes lexer)
-├── json/                  # JSON value wrapper
+├── scripts/               # Developer check scripts
+├── tests/cram/            # Moon Cram CLI tests
 ```
 
 ## Development
@@ -213,6 +242,20 @@ moon check README.mbt.md
 
 # Update test snapshots
 moon test --update
+```
+
+### CLI Cram Tests
+
+The CLI tests use the `moon cram` command, which is available on MoonBit
+nightly. Stable toolchains without `moon cram` are expected to fail this check.
+
+```bash
+# Build the native CLI and run tests/cram with MOONJQ_CLI set.
+moon run --target native scripts/check_cram_cli.mbtx
+
+# Equivalent manual flow.
+moon build --target native --release cmd/jq
+MOONJQ_CLI="$PWD/_build/native/release/build/cmd/jq/jq.exe" moon cram test tests/cram
 ```
 
 ### Code Quality
