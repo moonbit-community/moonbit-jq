@@ -2,14 +2,22 @@
 priv enum InputSource {
   Stdin
   File(String)
+}
+
+///|
+priv enum QuerySource {
   Inline(String)
+  File(String)
 }
 
 ///|
 priv struct CliOptions {
-  query : String
-  input : InputSource
+  query : QuerySource
+  inputs : Array[InputSource]
   logs : Bool
+  raw_output : Bool
+  compact_output : Bool
+  null_input : Bool
 }
 
 ///|
@@ -22,27 +30,35 @@ priv enum CliParseResult {
 ///|
 fn help_message() -> String {
   let message =
-    #|Usage: moon run cmd/jq -- [options] <query> [input]
+    #|Usage: moonjq [options] <filter> [file...]
     #|
     #|Options:
-    #|  -f, --file <path>   Read input JSON from a file.
-    #|  -l, --logs          Treat input as newline-delimited JSON logs.
-    #|  -h, --help          Show this help message.
+    #|  -c, --compact-output  Print compact JSON instead of pretty JSON.
+    #|  -f, --from-file FILE  Read the filter from FILE.
+    #|  -l, --logs            Treat input as newline-delimited JSON logs.
+    #|  -n, --null-input      Run the filter once with null input.
+    #|  -r, --raw-output      Print strings without JSON quotes.
+    #|  -h, --help            Show this help message.
     #|
-    #|If [input] is omitted, stdin is used.
-    #|If [input] is provided without --file, it is treated as a JSON string.
+    #|If no file is provided, stdin is used. Use '-' as a file to read stdin.
+    #|The --logs option is a MoonJQ extension for JSONL/NDJSON input.
     #|
     #|Examples:
-    #|  moon run cmd/jq -- '.foo' '{"foo": 1}'
-    #|  moon run cmd/jq -- -f data.json '.items[]'
-    #|  cat logs.ndjson | moon run cmd/jq -- --logs '.message'
+    #|  moonjq '.foo' data.json
+    #|  cat data.json | moonjq -r '.name'
+    #|  moonjq -n '{ok: true}'
+    #|  moonjq -f filter.jq data.json
+    #|  cat logs.ndjson | moonjq --logs -r '.message'
   message
 }
 
 ///|
 fn parse_cli(args : ArrayView[String]) -> CliParseResult {
   let mut logs = false
-  let mut input_opt : InputSource? = None
+  let mut raw_output = false
+  let mut compact_output = false
+  let mut null_input = false
+  let mut query_file : String? = None
   let mut index = 0
   while index < args.length() {
     let arg = args[index]
@@ -54,14 +70,29 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
       index = index + 1
       continue
     }
-    if arg == "-f" || arg == "--file" {
+    if arg == "-r" || arg == "--raw-output" {
+      raw_output = true
+      index = index + 1
+      continue
+    }
+    if arg == "-c" || arg == "--compact-output" {
+      compact_output = true
+      index = index + 1
+      continue
+    }
+    if arg == "-n" || arg == "--null-input" {
+      null_input = true
+      index = index + 1
+      continue
+    }
+    if arg == "-f" || arg == "--from-file" {
       if index + 1 >= args.length() {
-        return Error("Missing path after --file")
+        return Error("Missing path after --from-file")
       }
-      if input_opt is Some(_) {
-        return Error("Multiple inputs provided")
+      if query_file is Some(_) {
+        return Error("Multiple filters provided")
       }
-      input_opt = Some(File(args[index + 1]))
+      query_file = Some(args[index + 1])
       index = index + 2
       continue
     }
@@ -74,31 +105,42 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
     }
     break
   }
-  if index >= args.length() {
-    return Error("Missing query")
+  if logs && null_input {
+    return Error("--logs cannot be combined with --null-input")
   }
-  let query = args[index]
-  index = index + 1
-  if index < args.length() {
-    if input_opt is Some(_) {
-      return Error("Multiple inputs provided")
+  let query = match query_file {
+    Some(path) => QuerySource::File(path)
+    None => {
+      if index >= args.length() {
+        return Error("Missing filter")
+      }
+      let query_text = args[index]
+      index = index + 1
+      QuerySource::Inline(query_text)
     }
-    let inline = args[index]
-    if inline == "-" {
-      input_opt = Some(Stdin)
+  }
+  let inputs : Array[InputSource] = []
+  while index < args.length() {
+    let path = args[index]
+    if path == "-" {
+      inputs.push(Stdin)
     } else {
-      input_opt = Some(Inline(inline))
+      inputs.push(File(path))
     }
     index = index + 1
   }
-  if index < args.length() {
-    return Error("Too many arguments")
+  if inputs.is_empty() && !null_input {
+    inputs.push(Stdin)
   }
-  let input = match input_opt {
-    Some(source) => source
-    None => Stdin
+  Run({ query, inputs, logs, raw_output, compact_output, null_input })
+}
+
+///|
+fn read_query(source : QuerySource) -> String raise {
+  match source {
+    Inline(text) => text
+    File(path) => @fs.read_file_to_string(path)
   }
-  Run({ query, input, logs })
 }
 
 ///|
@@ -106,31 +148,47 @@ async fn read_input(source : InputSource) -> String {
   match source {
     Stdin => @stdio.stdin.read_all().text()
     File(path) => @fs.read_file_to_string(path)
-    Inline(text) => text
   }
 }
 
 ///|
-fn run_query(query : String, input : String, logs : Bool) -> Iter[Json] raise {
+fn run_query(
+  query : @moonjq.Query,
+  input : String,
+  logs : Bool,
+) -> Iter[Json] raise {
   if logs {
-    @moonjq.parse(query).eval_logs(input)
+    query.eval_logs(input)
   } else {
-    @moonjq.run(query, input).iter()
+    let json = @json.parse(input)
+    query.eval(json)
   }
 }
 
 ///|
-async fn write_results(results : Iter[Json]) -> Unit {
-  let mut first = true
-  for value in results {
-    if first {
-      first = false
-    } else {
-      @stdio.stdout.write("\n")
+fn render_result(
+  value : Json,
+  raw_output : Bool,
+  compact_output : Bool,
+) -> String {
+  if raw_output {
+    match value {
+      String(text) => text
+      _ => value.stringify(indent=if compact_output { 0 } else { 2 })
     }
-    @stdio.stdout.write(value.stringify())
+  } else {
+    value.stringify(indent=if compact_output { 0 } else { 2 })
   }
-  if !first {
+}
+
+///|
+async fn write_results(
+  results : Iter[Json],
+  raw_output : Bool,
+  compact_output : Bool,
+) -> Unit {
+  for value in results {
+    @stdio.stdout.write(render_result(value, raw_output, compact_output))
     @stdio.stdout.write("\n")
   }
 }
@@ -144,20 +202,50 @@ async fn main {
       return
     }
     Error(msg) => {
-      @stdio.stderr.write("Error: " + msg + "\n")
+      @stdio.stderr.write("moonjq: " + msg + "\n")
       @stdio.stderr.write(help_message())
+      @sys.exit(2)
       return
     }
-    Run(options) =>
-      try {
-        let input = read_input(options.input)
-        let results = run_query(options.query, input, options.logs)
-        write_results(results)
-      } catch {
+    Run(options) => {
+      let query_text = read_query(options.query) catch {
         err => {
-          @stdio.stderr.write("Error: \{err}\n")
+          @stdio.stderr.write("moonjq: \{err}\n")
+          @sys.exit(2)
           return
         }
       }
+      let query = @moonjq.parse(query_text) catch {
+        err => {
+          @stdio.stderr.write("moonjq: \{err}\n")
+          @sys.exit(3)
+          return
+        }
+      }
+      try {
+        if options.null_input {
+          write_results(
+            query.eval(null),
+            options.raw_output,
+            options.compact_output,
+          )
+        } else {
+          for input_source in options.inputs {
+            let input = read_input(input_source)
+            write_results(
+              run_query(query, input, options.logs),
+              options.raw_output,
+              options.compact_output,
+            )
+          }
+        }
+      } catch {
+        err => {
+          @stdio.stderr.write("moonjq: \{err}\n")
+          @sys.exit(5)
+          return
+        }
+      }
+    }
   }
 }
