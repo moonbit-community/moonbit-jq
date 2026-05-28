@@ -259,7 +259,7 @@ moon run --target native scripts/check_cram_cli.mbtx
 
 # Equivalent manual flow.
 moon build --target native --release cmd/jq
-MOONJQ_CLI="$PWD/_build/native/release/build/cmd/jq/jq.exe" moon cram test tests/cram
+MOONJQ_CLI="$PWD/_build/native/release/build/cmd/jq/jq.exe" moon cram test tests/cram TUTORIAL.md
 ```
 
 ### Code Quality
