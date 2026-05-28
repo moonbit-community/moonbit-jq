@@ -37,7 +37,7 @@ async fn run_cram_cli() -> Unit raise {
   // tests do not depend on PATH or a particular checkout directory.
   let cram_code = @process.run(
     "moon",
-    ["cram", "test", "tests/cram"],
+    ["cram", "test", "tests/cram", "TUTORIAL.md"],
     extra_env={"MOONJQ_CLI": cli_path},
   )
   if cram_code != 0 {
