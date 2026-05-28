@@ -98,6 +98,9 @@ Supported CLI options:
 - `-n`, `--null-input`: run the filter once with `null` input.
 - `-l`, `--logs`: treat input as JSONL/NDJSON and skip non-JSON lines.
 
+See [TUTORIAL.md](TUTORIAL.md) for a CLI walkthrough adapted from the jq
+tutorial.
+
 ## Examples
 
 All examples below are executable and type-checked by `moon check README.mbt.md`.
@@ -215,6 +218,7 @@ test "readme: recursive descent" {
 moobit-jq/
 ├── moon.mod               # Module metadata
 ├── README.mbt.md          # This file (executable documentation)
+├── TUTORIAL.md            # CLI tutorial
 ├── ast/                   # AST + streaming evaluator + integration tests
 ├── cmd/jq/                # Native jq-compatible CLI
 ├── parser/                # Parser (includes lexer)
