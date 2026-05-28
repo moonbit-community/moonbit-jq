@@ -45,3 +45,7 @@ jobs:
       - name: moon test
         run: |
           moon test --target all
+
+      - name: moon cram cli
+        run: |
+          moon run --target native scripts/check_cram_cli.mbtx
