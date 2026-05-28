@@ -22,117 +22,100 @@ priv struct CliOptions {
 
 ///|
 priv enum CliParseResult {
-  Help
   Error(String)
   Run(CliOptions)
 }
 
 ///|
-fn help_message() -> String {
-  let message =
-    #|Usage: moonjq [options] <filter> [file...]
-    #|
-    #|Options:
-    #|  -c, --compact-output  Print compact JSON instead of pretty JSON.
-    #|  -f, --from-file FILE  Read the filter from FILE.
-    #|  -l, --logs            Treat input as newline-delimited JSON logs.
-    #|  -n, --null-input      Run the filter once with null input.
-    #|  -r, --raw-output      Print strings without JSON quotes.
-    #|  -h, --help            Show this help message.
-    #|
-    #|If no file is provided, stdin is used. Use '-' as a file to read stdin.
-    #|The --logs option is a MoonJQ extension for JSONL/NDJSON input.
-    #|
-    #|Examples:
-    #|  moonjq '.foo' data.json
-    #|  cat data.json | moonjq -r '.name'
-    #|  moonjq -n '{ok: true}'
-    #|  moonjq -f filter.jq data.json
-    #|  cat logs.ndjson | moonjq --logs -r '.message'
-  message
+fn jq_command() -> @argparse.Command {
+  @argparse.Command(
+    "moonjq",
+    about="Run jq filters over JSON input.",
+    flags=[
+      @argparse.FlagArg(
+        "compact-output",
+        short='c',
+        about="Print compact JSON instead of pretty JSON.",
+      ),
+      @argparse.FlagArg(
+        "logs",
+        short='l',
+        about="Treat input as newline-delimited JSON logs.",
+        conflicts_with=["null-input"],
+      ),
+      @argparse.FlagArg(
+        "null-input",
+        short='n',
+        about="Run the filter once with null input.",
+        conflicts_with=["logs"],
+      ),
+      @argparse.FlagArg(
+        "raw-output",
+        short='r',
+        about="Print strings without JSON quotes.",
+      ),
+    ],
+    options=[
+      @argparse.OptionArg(
+        "from-file",
+        short='f',
+        about="Read the filter from FILE.",
+        action=@argparse.Append,
+      ),
+    ],
+    positionals=[
+      @argparse.PositionArg(
+        "args",
+        about="<filter> [file...]",
+        num_args=@argparse.ValueRange(lower=0),
+      ),
+    ],
+    disable_help_subcommand=true,
+  )
 }
 
 ///|
 fn parse_cli(args : ArrayView[String]) -> CliParseResult {
-  let mut logs = false
-  let mut raw_output = false
-  let mut compact_output = false
-  let mut null_input = false
-  let mut query_file : String? = None
-  let mut index = 0
-  while index < args.length() {
-    let arg = args[index]
-    if arg == "-h" || arg == "--help" {
-      return Help
-    }
-    if arg == "-l" || arg == "--logs" {
-      logs = true
-      index = index + 1
-      continue
-    }
-    if arg == "-r" || arg == "--raw-output" {
-      raw_output = true
-      index = index + 1
-      continue
-    }
-    if arg == "-c" || arg == "--compact-output" {
-      compact_output = true
-      index = index + 1
-      continue
-    }
-    if arg == "-n" || arg == "--null-input" {
-      null_input = true
-      index = index + 1
-      continue
-    }
-    if arg == "-f" || arg == "--from-file" {
-      if index + 1 >= args.length() {
-        return Error("Missing path after --from-file")
-      }
-      if query_file is Some(_) {
-        return Error("Multiple filters provided")
-      }
-      query_file = Some(args[index + 1])
-      index = index + 2
-      continue
-    }
-    if arg == "--" {
-      index = index + 1
-      break
-    }
-    if arg.has_prefix("-") {
-      return Error("Unknown option: \"" + arg + "\"")
-    }
-    break
+  let command = jq_command()
+  let matches = command.parse(argv=args, env={}) catch {
+    err => return Error(err.to_string())
   }
-  if logs && null_input {
-    return Error("--logs cannot be combined with --null-input")
-  }
-  let query = match query_file {
-    Some(path) => QuerySource::File(path)
-    None => {
-      if index >= args.length() {
-        return Error("Missing filter")
+  let positionals = matches.values.get("args").unwrap_or([])
+  let filter_files = matches.values.get("from-file").unwrap_or([])
+  let query = match filter_files.length() {
+    0 => {
+      if positionals.is_empty() {
+        return Error("error: missing filter\n\n" + command.render_help())
       }
-      let query_text = args[index]
-      index = index + 1
-      QuerySource::Inline(query_text)
+      QuerySource::Inline(positionals[0])
     }
+    1 => QuerySource::File(filter_files[0])
+    _ =>
+      return Error(
+        "error: multiple filters provided\n\n" + command.render_help(),
+      )
   }
+  let input_start = if filter_files.is_empty() { 1 } else { 0 }
   let inputs : Array[InputSource] = []
-  while index < args.length() {
-    let path = args[index]
+  for index in input_start..<positionals.length() {
+    let path = positionals[index]
     if path == "-" {
       inputs.push(Stdin)
     } else {
       inputs.push(File(path))
     }
-    index = index + 1
   }
-  if inputs.is_empty() && !null_input {
+  if inputs.is_empty() && !matches.flags.get_or_default("null-input", false) {
     inputs.push(Stdin)
   }
-  Run({ query, inputs, logs, raw_output, compact_output, null_input })
+  Run({
+    query,
+    inputs,
+    logs: matches.flags.get_or_default("logs", false),
+    raw_output: matches.flags.get_or_default("raw-output", false),
+    compact_output: matches.flags.get_or_default("compact-output", false),
+    null_input: matches.flags.get_or_default("null-input", false),
+  })
 }
 
 ///|
@@ -197,13 +180,11 @@ async fn write_results(
 async fn main {
   let args = @sys.get_cli_args()[1:]
   match parse_cli(args) {
-    Help => {
-      @stdio.stdout.write(help_message())
-      return
-    }
     Error(msg) => {
-      @stdio.stderr.write("moonjq: " + msg + "\n")
-      @stdio.stderr.write(help_message())
+      @stdio.stderr.write(msg)
+      if !msg.has_suffix("\n") {
+        @stdio.stderr.write("\n")
+      }
       @sys.exit(2)
       return
     }
