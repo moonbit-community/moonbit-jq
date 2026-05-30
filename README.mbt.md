@@ -222,7 +222,6 @@ moobit-jq/
 ├── ast/                   # AST + streaming evaluator + integration tests
 ├── cmd/jq/                # Native jq-compatible CLI
 ├── parser/                # Parser (includes lexer)
-├── scripts/               # Developer check scripts
 ├── tests/cram/            # Moon Cram CLI tests
 ```
 
@@ -252,14 +251,11 @@ moon test --update
 
 The CLI tests use the `moon cram` command, which is available on MoonBit
 nightly. Stable toolchains without `moon cram` are expected to fail this check.
+Nightly `moon cram` builds the workspace first and puts the built CLI binaries
+in `PATH`, so the cram examples call `jq.exe` directly.
 
 ```bash
-# Build the native CLI and run tests/cram with MOONJQ_CLI set.
-moon run --target native scripts/check_cram_cli.mbtx
-
-# Equivalent manual flow.
-moon build --target native --release cmd/jq
-MOONJQ_CLI="$PWD/_build/native/release/build/cmd/jq/jq.exe" moon cram test tests/cram TUTORIAL.md
+moon cram test tests/cram TUTORIAL.md
 ```
 
 ### Code Quality

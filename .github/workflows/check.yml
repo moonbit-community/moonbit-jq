@@ -27,13 +27,6 @@ jobs:
         run: |
           moon version --all
 
-      - name: install moon-cram
-        run: |
-          curl -fsSL https://github.com/moonbitlang/moon-cram/releases/download/v0.0.1/moon-cram-v0.0.1-linux-x86_64.tar.gz -o moon-cram.tar.gz
-          tar -xzf moon-cram.tar.gz
-          install -m 0755 moon-cram-linux-x86_64/moon-cram "$HOME/.moon/bin/moon-cram"
-          moon-cram --version
-
       - name: moon check
         run: |
           moon update
@@ -53,6 +46,24 @@ jobs:
         run: |
           moon test --target all
 
+  cram:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: install nightly
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s nightly
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: moon version
+        run: |
+          moon version --all
+
       - name: moon cram cli
         run: |
-          moon run --target native scripts/check_cram_cli.mbtx
+          moon update
+          moon cram test tests/cram TUTORIAL.md
