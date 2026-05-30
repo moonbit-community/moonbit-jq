@@ -1,45 +1,46 @@
 # MoonJQ CLI
 
-These tests exercise the native `moonjq` command-line surface. The runner
-builds the CLI and exposes it as `MOONJQ_CLI`.
+These tests exercise the native `moonjq` command-line surface. On nightly,
+`moon cram` builds the workspace first and puts the built CLI binaries in
+`PATH`, so the tests call `jq.exe` directly.
 
 ## File Input
 
 ```mooncram
-$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && "$MOONJQ_CLI" -c '.items[]' data.json
+$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && jq.exe -c '.items[]' data.json
 1
 2
 3
 ```
 
 ```mooncram
-$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && "$MOONJQ_CLI" -r '.name' data.json
+$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && jq.exe -r '.name' data.json
 Moon
 ```
 
 ## Stdin And Null Input
 
 ```mooncram
-$ printf '{"nested":{"ok":true}}' | "$MOONJQ_CLI" '.nested'
+$ printf '{"nested":{"ok":true}}' | jq.exe '.nested'
 {
   "ok": true
 }
 ```
 
 ```mooncram
-$ printf '{"nested":{"ok":true}}' | "$MOONJQ_CLI" -c '.nested'
+$ printf '{"nested":{"ok":true}}' | jq.exe -c '.nested'
 {"ok":true}
 ```
 
 ```mooncram
-$ "$MOONJQ_CLI" -n -c '{ok: true, values: [1, 2]}'
+$ jq.exe -n -c '{ok: true, values: [1, 2]}'
 {"ok":true,"values":[1,2]}
 ```
 
 ## Multiple Inputs
 
 ```mooncram
-$ printf '%s' '{"name":"Ada"}' > a.json && printf '%s' '{"name":"Grace"}' > b.json && printf '%s' '{"name":"Lin"}' | "$MOONJQ_CLI" -r '.name' a.json - b.json
+$ printf '%s' '{"name":"Ada"}' > a.json && printf '%s' '{"name":"Grace"}' > b.json && printf '%s' '{"name":"Lin"}' | jq.exe -r '.name' a.json - b.json
 Ada
 Lin
 Grace
@@ -48,40 +49,40 @@ Grace
 ## Filter Files
 
 ```mooncram
-$ printf '%s' '{"users":[{"name":"Ada","active":true},{"name":"Grace","active":false}]}' > data.json && printf '%s\n' '.users[] | select(.active) | .name' > filter.jq && "$MOONJQ_CLI" -r -f filter.jq data.json
+$ printf '%s' '{"users":[{"name":"Ada","active":true},{"name":"Grace","active":false}]}' > data.json && printf '%s\n' '.users[] | select(.active) | .name' > filter.jq && jq.exe -r -f filter.jq data.json
 Ada
 ```
 
 ## Logs
 
 ```mooncram
-$ printf '%s\n' '{"level":"info","message":"started"}' 'not json' '{"level":"error","message":"failed"}' > logs.ndjson && "$MOONJQ_CLI" --logs -r 'select(.level == "error") | .message' logs.ndjson
+$ printf '%s\n' '{"level":"info","message":"started"}' 'not json' '{"level":"error","message":"failed"}' > logs.ndjson && jq.exe --logs -r 'select(.level == "error") | .message' logs.ndjson
 failed
 ```
 
 ## Errors
 
 ```mooncram
-$ "$MOONJQ_CLI" --missing >/dev/null 2>&1
+$ jq.exe --missing >/dev/null 2>&1
 [2]
 ```
 
 ```mooncram
-$ "$MOONJQ_CLI" --logs -n '.' >/dev/null 2>&1
+$ jq.exe --logs -n '.' >/dev/null 2>&1
 [2]
 ```
 
 ```mooncram
-$ "$MOONJQ_CLI" -f missing.jq >/dev/null 2>&1
+$ jq.exe -f missing.jq >/dev/null 2>&1
 [2]
 ```
 
 ```mooncram
-$ printf '{"x":1}' | "$MOONJQ_CLI" '[' >/dev/null 2>&1
+$ printf '{"x":1}' | jq.exe '[' >/dev/null 2>&1
 [3]
 ```
 
 ```mooncram
-$ printf 'not json' | "$MOONJQ_CLI" '.' >/dev/null 2>&1
+$ printf 'not json' | jq.exe '.' >/dev/null 2>&1
 [5]
 ```
