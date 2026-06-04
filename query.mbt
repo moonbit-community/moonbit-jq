@@ -11,6 +11,15 @@ pub fn Query::eval(self : Query, input : Json) -> Iter[Json] raise {
 }
 
 ///|
+/// Evaluate this compiled query against one JSON input and collect every value
+/// it produces.
+///
+/// This is the eager counterpart to `Query::eval`. It is convenient when the
+/// full result set is small enough to keep in memory, while `Query::eval`
+/// should be preferred for callers that want to stream results.
+///
+/// Raises if evaluation fails, for example when the query applies an operation
+/// to an incompatible JSON type.
 pub fn Query::eval_all(self : Query, input : Json) -> Array[Json] raise {
   self.eval(input).collect()
 }
