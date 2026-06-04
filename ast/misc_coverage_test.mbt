@@ -56,12 +56,10 @@ test "coverage: foreach copies env bindings and functions" {
 
 ///|
 test "coverage: function call validates argument count" {
-  assert_true(
-    (try? coverage_eval("def add(a; b): a + b; add(1)", "null")) is Err(_),
-  )
+  assert_coverage_eval_error("def add(a; b): a + b; add(1)", "null")
 }
 
 ///|
 test "coverage: undefined function errors" {
-  assert_true((try? coverage_eval("no_such_fn", "null")) is Err(_))
+  assert_coverage_eval_error("no_such_fn", "null")
 }

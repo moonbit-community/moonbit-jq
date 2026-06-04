@@ -9,7 +9,7 @@ test "coverage: foreach extract empty falls back to accumulator" {
 ///|
 test "coverage: scan has misses and type mismatch" {
   json_inspect(coverage_eval("scan(\"aa\")", "\"abaaa\""), content=["aa"])
-  assert_true((try? coverage_eval("scan(\"a\")", "1")) is Err(_))
+  assert_coverage_eval_error("scan(\"a\")", "1")
 }
 
 ///|
@@ -47,5 +47,5 @@ test "coverage: delpaths and setpath edge cases" {
 
 ///|
 test "coverage: modulo rejects non-numbers" {
-  assert_true((try? coverage_eval("null % 2", "null")) is Err(_))
+  assert_coverage_eval_error("null % 2", "null")
 }

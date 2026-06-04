@@ -17,4 +17,4 @@ preferred_target = "native"
 
 license = "Apache-2.0"
 
-warnings = "+test_unqualified_package+unnecessary_view_op+unnecessary_annotation"
+warnings = "+test_unqualified_package+unnecessary_view_op+unnecessary_annotation+deprecated"

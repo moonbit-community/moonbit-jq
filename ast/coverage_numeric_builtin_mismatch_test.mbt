@@ -1,7 +1,7 @@
 ///|
 test "coverage: numeric builtins type mismatches" {
-  assert_true((try? coverage_eval("floor", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("sqrt", "\"x\"")) is Err(_))
+  assert_coverage_eval_error("floor", "\"x\"")
+  assert_coverage_eval_error("sqrt", "\"x\"")
 }
 
 ///|

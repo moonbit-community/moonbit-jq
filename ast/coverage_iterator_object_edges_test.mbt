@@ -8,7 +8,7 @@ test "coverage: object construction edge cases" {
   json_inspect(coverage_eval("{(empty): 1, \"a\": 2}", "null"), content=[
     { "a": 2 },
   ])
-  assert_true((try? coverage_eval("{(1): 2}", "null")) is Err(_))
+  assert_coverage_eval_error("{(1): 2}", "null")
   json_inspect(coverage_eval("{\"a\": empty}", "null"), content=[{ "a": null }])
   json_inspect(coverage_eval("{a}", "1"), content=[{ "a": null }])
 }

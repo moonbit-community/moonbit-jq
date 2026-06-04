@@ -5,8 +5,7 @@ fn collect(it : Iter[Json]) -> Array[Json] {
 
 ///|
 test "api: parse succeeds" {
-  let result = try? @moonjq.parse(".a")
-  assert_true(result is Ok(_))
+  ignore(@moonjq.parse(".a"))
 }
 
 ///|

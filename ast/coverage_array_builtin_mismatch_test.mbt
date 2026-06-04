@@ -1,8 +1,8 @@
 ///|
 test "coverage: array builtins type mismatches" {
-  assert_true((try? coverage_eval("sort", "1")) is Err(_))
-  assert_true((try? coverage_eval("reverse", "1")) is Err(_))
-  assert_true((try? coverage_eval("unique", "1")) is Err(_))
-  assert_true((try? coverage_eval("min", "1")) is Err(_))
-  assert_true((try? coverage_eval("max", "1")) is Err(_))
+  assert_coverage_eval_error("sort", "1")
+  assert_coverage_eval_error("reverse", "1")
+  assert_coverage_eval_error("unique", "1")
+  assert_coverage_eval_error("min", "1")
+  assert_coverage_eval_error("max", "1")
 }

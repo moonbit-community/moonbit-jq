@@ -3,7 +3,7 @@ test "coverage: range variants" {
   json_inspect(coverage_eval("range(1; 4)", "null"), content=[1, 2, 3])
   json_inspect(coverage_eval("range(0; 5; 2)", "null"), content=[0, 2, 4])
   json_inspect(coverage_eval("range(5; 0; -2)", "null"), content=[5, 3, 1])
-  assert_true((try? coverage_eval("range(\"a\"; 4)", "null")) is Err(_))
+  assert_coverage_eval_error("range(\"a\"; 4)", "null")
 }
 
 ///|

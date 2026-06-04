@@ -39,12 +39,12 @@ test "coverage: getpath, while, delpaths edges" {
 
 ///|
 test "coverage: builtin mismatch errors" {
-  assert_true((try? coverage_eval("to_entries", "1")) is Err(_))
-  assert_true((try? coverage_eval("map_values(.)", "1")) is Err(_))
-  assert_true((try? coverage_eval("unique_by(.)", "1")) is Err(_))
-  assert_true((try? coverage_eval("transpose", "1")) is Err(_))
-  assert_true((try? coverage_eval("range(1; \"x\"; 1)", "null")) is Err(_))
-  assert_true((try? coverage_eval("1 % 0", "null")) is Err(_))
+  assert_coverage_eval_error("to_entries", "1")
+  assert_coverage_eval_error("map_values(.)", "1")
+  assert_coverage_eval_error("unique_by(.)", "1")
+  assert_coverage_eval_error("transpose", "1")
+  assert_coverage_eval_error("range(1; \"x\"; 1)", "null")
+  assert_coverage_eval_error("1 % 0", "null")
 }
 
 ///|

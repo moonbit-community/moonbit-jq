@@ -35,6 +35,5 @@ test "jq compat: @uri percent-encodes utf8 bytes" {
 
 ///|
 test "jq compat: @uri rejects non-string input" {
-  let result = try? coverage_eval("@uri", "1")
-  assert_true(result is Err(_))
+  assert_coverage_eval_error("@uri", "1")
 }

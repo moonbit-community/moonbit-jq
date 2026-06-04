@@ -4,6 +4,6 @@ test "coverage: explode/implode and type mismatches" {
   json_inspect(coverage_eval("implode", "[65]"), content=["A"])
   // Invalid code point is ignored.
   json_inspect(coverage_eval("implode", "[1114112]"), content=[""])
-  assert_true((try? coverage_eval("explode", "1")) is Err(_))
-  assert_true((try? coverage_eval("implode", "\"x\"")) is Err(_))
+  assert_coverage_eval_error("explode", "1")
+  assert_coverage_eval_error("implode", "\"x\"")
 }

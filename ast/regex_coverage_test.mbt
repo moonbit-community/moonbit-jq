@@ -42,10 +42,10 @@ test "coverage: sub/gsub replace text" {
 
 ///|
 test "coverage: regex functions reject non-string input" {
-  assert_true((try? coverage_eval("test(\"x\")", "1")) is Err(_))
-  assert_true((try? coverage_eval("match(\"x\")", "1")) is Err(_))
-  assert_true((try? coverage_eval("capture(\"x\")", "1")) is Err(_))
-  assert_true((try? coverage_eval("splits(\"x\")", "1")) is Err(_))
-  assert_true((try? coverage_eval("sub(\"x\"; \"y\")", "1")) is Err(_))
-  assert_true((try? coverage_eval("gsub(\"x\"; \"y\")", "1")) is Err(_))
+  assert_coverage_eval_error("test(\"x\")", "1")
+  assert_coverage_eval_error("match(\"x\")", "1")
+  assert_coverage_eval_error("capture(\"x\")", "1")
+  assert_coverage_eval_error("splits(\"x\")", "1")
+  assert_coverage_eval_error("sub(\"x\"; \"y\")", "1")
+  assert_coverage_eval_error("gsub(\"x\"; \"y\")", "1")
 }

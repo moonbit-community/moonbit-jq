@@ -1,6 +1,6 @@
 ///|
 test "coverage: map and min/max edge cases" {
-  assert_true((try? coverage_eval("map(.)", "1")) is Err(_))
+  assert_coverage_eval_error("map(.)", "1")
   json_inspect(coverage_eval("min", "[]"), content=[null])
   json_inspect(coverage_eval("max", "[]"), content=[null])
 }
@@ -14,14 +14,12 @@ test "coverage: control flow fallbacks" {
 
 ///|
 test "coverage: undefined variable" {
-  assert_true((try? coverage_eval("$missing", "null")) is Err(_))
+  assert_coverage_eval_error("$missing", "null")
 }
 
 ///|
 test "coverage: function argument handling" {
-  assert_true(
-    (try? coverage_eval("def f(x; y): $x + $y; f(1)", "null")) is Err(_),
-  )
+  assert_coverage_eval_error("def f(x; y): $x + $y; f(1)", "null")
   json_inspect(coverage_eval("def id(x): $x; id(empty)", "null"), content=[null])
 }
 
