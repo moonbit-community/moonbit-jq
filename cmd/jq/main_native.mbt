@@ -28,46 +28,46 @@ priv enum CliParseResult {
 
 ///|
 fn jq_command() -> @argparse.Command {
-  @argparse.Command(
+  Command(
     "moonjq",
     about="Run jq filters over JSON input.",
     flags=[
-      @argparse.FlagArg(
+      FlagArg(
         "compact-output",
         short='c',
         about="Print compact JSON instead of pretty JSON.",
       ),
-      @argparse.FlagArg(
+      FlagArg(
         "logs",
         short='l',
         about="Treat input as newline-delimited JSON logs.",
         conflicts_with=["null-input"],
       ),
-      @argparse.FlagArg(
+      FlagArg(
         "null-input",
         short='n',
         about="Run the filter once with null input.",
         conflicts_with=["logs"],
       ),
-      @argparse.FlagArg(
+      FlagArg(
         "raw-output",
         short='r',
         about="Print strings without JSON quotes.",
       ),
     ],
     options=[
-      @argparse.OptionArg(
+      OptionArg(
         "from-file",
         short='f',
         about="Read the filter from FILE.",
-        action=@argparse.Append,
+        action=Append,
       ),
     ],
     positionals=[
-      @argparse.PositionArg(
+      PositionArg(
         "args",
         about="<filter> [file...]",
-        num_args=@argparse.ValueRange(lower=0),
+        num_args=ValueRange(lower=0),
       ),
     ],
     disable_help_subcommand=true,
@@ -89,7 +89,7 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
       }
       QuerySource::Inline(positionals[0])
     }
-    1 => QuerySource::File(filter_files[0])
+    1 => File(filter_files[0])
     _ =>
       return Error(
         "error: multiple filters provided\n\n" + command.render_help(),
