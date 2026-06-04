@@ -1,27 +1,30 @@
 ///|
 /// Lexing error handling
 test "lex: error - unterminated string" {
-  let result = try? @parser.lex("\"hello")
-  match result {
-    Err(UnterminatedString(_)) => debug_inspect(true, content="true")
-    _ => debug_inspect(false, content="should be UnterminatedString error")
+  try @parser.lex("\"hello") catch {
+    UnterminatedString(_) => debug_inspect(true, content="true")
+    _ => fail("expected UnterminatedString error")
+  } noraise {
+    _ => fail("expected UnterminatedString error")
   }
 }
 
 ///|
 test "lex: error - invalid escape" {
-  let result = try? @parser.lex("\"hello\\x\"")
-  match result {
-    Err(InvalidEscape(_, _)) => debug_inspect(true, content="true")
-    _ => debug_inspect(false, content="should be InvalidEscape error")
+  try @parser.lex("\"hello\\x\"") catch {
+    InvalidEscape(_, _) => debug_inspect(true, content="true")
+    _ => fail("expected InvalidEscape error")
+  } noraise {
+    _ => fail("expected InvalidEscape error")
   }
 }
 
 ///|
 test "lex: error - unexpected character" {
-  let result = try? @parser.lex("@")
-  match result {
-    Err(UnexpectedChar(_, _)) => debug_inspect(true, content="true")
+  try @parser.lex("@") catch {
+    UnexpectedChar(_, _) => fail("did not expect UnexpectedChar error")
+    _ => debug_inspect(false, content="false")
+  } noraise {
     _ => debug_inspect(false, content="false")
   }
 }

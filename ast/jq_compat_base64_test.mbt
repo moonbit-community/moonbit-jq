@@ -15,6 +15,5 @@ test "jq compat: @base64d decodes utf8" {
 
 ///|
 test "jq compat: @base64d rejects invalid base64" {
-  let result = try? coverage_eval("@base64d", "\"***\"")
-  assert_true(result is Err(_))
+  assert_coverage_eval_error("@base64d", "\"***\"")
 }

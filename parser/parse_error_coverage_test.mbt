@@ -9,8 +9,7 @@ fn parse_err(query : String) -> Bool {
 
 ///|
 fn parse_ok(query : String) -> Unit raise {
-  let result : Result[_] = try? @parser.parse(query)
-  assert_true(result is Ok(_))
+  ignore(@parser.parse(query))
 }
 
 ///|

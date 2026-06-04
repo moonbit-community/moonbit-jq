@@ -40,8 +40,16 @@ test "wb: parser none branches" {
   let parser = Parser::new([])
   assert_true(parser.current() is None)
   assert_true(!parser.check(TDot))
-  assert_true((try? parser.expect(TDot)) is Err(_))
-  assert_true((try? parser.parse_primary()) is Err(_))
+  try parser.expect(TDot) catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected parser.expect error")
+  }
+  try parser.parse_primary() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected parser.parse_primary error")
+  }
 }
 
 ///|
@@ -61,7 +69,11 @@ test "wb: parse_builtin reduce success" {
 ///|
 test "wb: parse_builtin reduce missing variable" {
   let parser = Parser::new([TLParen, TDot, TAs, TIdentifier("x")])
-  assert_true((try? parser.parse_builtin("reduce")) is Err(_))
+  try parser.parse_builtin("reduce") catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected reduce parse error")
+  }
 }
 
 ///|
@@ -81,5 +93,9 @@ test "wb: parse_builtin foreach success without extract" {
 ///|
 test "wb: parse_builtin foreach missing variable" {
   let parser = Parser::new([TLParen, TDot, TAs, TIdentifier("x")])
-  assert_true((try? parser.parse_builtin("foreach")) is Err(_))
+  try parser.parse_builtin("foreach") catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected foreach parse error")
+  }
 }

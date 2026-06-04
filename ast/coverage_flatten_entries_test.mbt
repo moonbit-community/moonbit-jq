@@ -12,7 +12,7 @@ test "coverage: flatten(n) flattens one level" {
 
 ///|
 test "coverage: flatten rejects non-array" {
-  assert_true((try? coverage_eval("flatten", "1")) is Err(_))
+  assert_coverage_eval_error("flatten", "1")
 }
 
 ///|

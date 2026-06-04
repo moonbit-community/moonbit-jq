@@ -1,20 +1,21 @@
 ///|
 /// Test error handling
 test "panic unexpected token" {
-  debug_inspect(
-    try? @parser.parse("@"),
-    content=(
-      #|Err(UnexpectedToken(TAt, "expression"))
-    ),
-  )
+  try @parser.parse("@") catch {
+    @parser.UnexpectedToken("TAt", "expression") =>
+      debug_inspect(true, content="true")
+    _ => fail("expected UnexpectedToken(TAt, \"expression\")")
+  } noraise {
+    _ => fail("expected UnexpectedToken(TAt, \"expression\")")
+  }
 }
 
 ///|
 test "panic unexpected end" {
-  debug_inspect(
-    try? @parser.parse("if .x then"),
-    content=(
-      #|Err(UnexpectedEnd("TElse"))
-    ),
-  )
+  try @parser.parse("if .x then") catch {
+    @parser.UnexpectedEnd("TElse") => debug_inspect(true, content="true")
+    _ => fail("expected UnexpectedEnd(\"TElse\")")
+  } noraise {
+    _ => fail("expected UnexpectedEnd(\"TElse\")")
+  }
 }

@@ -1,23 +1,23 @@
 ///|
 test "coverage: numeric builtins mismatches" {
-  assert_true((try? coverage_eval("round", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("ceil", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("abs", "\"x\"")) is Err(_))
+  assert_coverage_eval_error("round", "\"x\"")
+  assert_coverage_eval_error("ceil", "\"x\"")
+  assert_coverage_eval_error("abs", "\"x\"")
 }
 
 ///|
 test "coverage: math and range edges" {
   json_inspect(coverage_eval("pow(empty)", "2"), content=[null])
-  assert_true((try? coverage_eval("pow(2)", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("log", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("exp", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("sin", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("cos", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("tan", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("asin", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("acos", "\"x\"")) is Err(_))
-  assert_true((try? coverage_eval("atan", "\"x\"")) is Err(_))
+  assert_coverage_eval_error("pow(2)", "\"x\"")
+  assert_coverage_eval_error("log", "\"x\"")
+  assert_coverage_eval_error("exp", "\"x\"")
+  assert_coverage_eval_error("sin", "\"x\"")
+  assert_coverage_eval_error("cos", "\"x\"")
+  assert_coverage_eval_error("tan", "\"x\"")
+  assert_coverage_eval_error("asin", "\"x\"")
+  assert_coverage_eval_error("acos", "\"x\"")
+  assert_coverage_eval_error("atan", "\"x\"")
   json_inspect(coverage_eval("range(empty; 3)", "null"), content=[])
   json_inspect(coverage_eval("range(1; 3; empty)", "null"), content=[])
-  assert_true((try? coverage_eval("range(1; \"x\")", "null")) is Err(_))
+  assert_coverage_eval_error("range(1; \"x\")", "null")
 }

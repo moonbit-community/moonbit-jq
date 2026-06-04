@@ -27,7 +27,5 @@ test "integration: alternative operator" {
 ///|
 /// Test error handling
 test "integration: error propagation" {
-  // Division by zero should raise error
-  let result = try? jq("1 / 0", "null")
-  assert_true(result is Err(_))
+  assert_jq_error("1 / 0", "null")
 }

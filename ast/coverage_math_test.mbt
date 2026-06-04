@@ -9,5 +9,5 @@ test "coverage: math functions" {
   json_inspect(coverage_eval("asin", "0"), content=[0])
   json_inspect(coverage_eval("acos", "1"), content=[0])
   json_inspect(coverage_eval("atan", "0"), content=[0])
-  assert_true((try? coverage_eval("sin", "\"x\"")) is Err(_))
+  assert_coverage_eval_error("sin", "\"x\"")
 }
