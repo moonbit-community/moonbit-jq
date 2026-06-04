@@ -66,7 +66,7 @@ Use the `jq` helper function to evaluate queries:
 /// This mimics the command-line jq tool's behavior.
 fn jq(query : String, input : String) -> String raise {
   let expr = @parser.parse(query)
-  let json = @json.parse(input[:])
+  let json = @json.parse(input)
   @ast.eval(expr, json).collect().map(fn(v) { @debug.to_string(v) }).join("\n")
 }
 ```
