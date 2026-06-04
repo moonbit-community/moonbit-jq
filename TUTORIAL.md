@@ -4,9 +4,9 @@ This is a MoonJQ version of the jq tutorial. It uses a small local fixture with
 the same shape as the GitHub commits API so the examples are stable and do not
 depend on network access.
 
-The examples are executable documentation. On nightly, `moon cram` builds the
-workspace first and puts the built CLI binaries in `PATH`, so the examples call
-`jq.exe` directly:
+The examples are executable documentation. `moon cram` builds the workspace
+first and puts the built CLI binaries in `PATH`, so the examples call `jq.exe`
+directly:
 
 ```bash
 moon cram test TUTORIAL.md

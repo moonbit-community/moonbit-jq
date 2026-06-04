@@ -249,10 +249,9 @@ moon test --update
 
 ### CLI Cram Tests
 
-The CLI tests use the `moon cram` command, which is available on MoonBit
-nightly. Stable toolchains without `moon cram` are expected to fail this check.
-Nightly `moon cram` builds the workspace first and puts the built CLI binaries
-in `PATH`, so the cram examples call `jq.exe` directly.
+The CLI tests use the `moon cram` command. `moon cram` builds the workspace
+first and puts the built CLI binaries in `PATH`, so the cram examples call
+`jq.exe` directly.
 
 ```bash
 moon cram test tests/cram TUTORIAL.md
