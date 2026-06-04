@@ -1,8 +1,8 @@
 # MoonJQ CLI
 
-These tests exercise the native `moonjq` command-line surface. On nightly,
-`moon cram` builds the workspace first and puts the built CLI binaries in
-`PATH`, so the tests call `jq.exe` directly.
+These tests exercise the native `moonjq` command-line surface. `moon cram`
+builds the workspace first and puts the built CLI binaries in `PATH`, so the
+tests call `jq.exe` directly.
 
 ## File Input
 
