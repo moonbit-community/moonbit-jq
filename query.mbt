@@ -5,6 +5,10 @@ pub struct Query {
 } derive(Debug)
 
 ///|
+/// Preserve method-style access to the derived debug representation.
+pub extend Query with @debug.Debug::{to_repr}
+
+///|
 /// Methods on Query for direct control.
 pub fn Query::eval(self : Query, input : Json) -> Iter[Json] raise {
   @ast.eval(self.expr, input)
