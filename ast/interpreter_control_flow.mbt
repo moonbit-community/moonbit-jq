@@ -87,6 +87,14 @@ fn eval_until(
         }
       }
     }
+  } where {
+    proof_invariant: true,
+    proof_reasoning: (
+      #|`current` is always the initial input or the first value produced by
+      #|the update expression. Each iteration either breaks immediately or
+      #|continues with that next value; jq `until` may intentionally diverge
+      #|when neither the condition nor the update causes termination.
+    ),
   }
   Iter::singleton(result)
 }

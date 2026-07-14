@@ -24,6 +24,13 @@ fn base64_encode(bytes : Bytes) -> String {
     } else {
       buf.write_char('=')
     }
+  } where {
+    proof_invariant: 0 <= i && i <= len + 2 && i % 3 == 0,
+    proof_reasoning: (
+      #|`i` starts at zero and advances by three. If `i < len`, advancing by
+      #|three keeps it at most `len + 2`; therefore the loop reaches or passes
+      #|`len` after finitely many iterations.
+    ),
   }
   buf.to_string()
 }
@@ -89,6 +96,13 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
     } else if c4 != '=' {
       raise EvalError("Invalid base64")
     }
+  } where {
+    proof_invariant: 0 <= i && i <= len && i % 4 == 0,
+    proof_reasoning: (
+      #|A valid encoded length is divisible by four. `i` starts at zero and
+      #|advances by four, so it remains aligned and bounded by `len`, reaching
+      #|`len` after finitely many iterations.
+    ),
   }
   Bytes::from_array(buf)
 }
