@@ -85,7 +85,7 @@ fn eval_walk(
         }
       }
       Object(obj) => {
-        let walked : Map[String, Json] = {}
+        let walked : Map[String, Json] = Map([])
         for k, v in obj {
           walked[k] = walk_value(v)
         }

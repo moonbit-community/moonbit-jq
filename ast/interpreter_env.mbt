@@ -7,7 +7,7 @@ priv struct Env {
 
 ///|
 fn Env::new() -> Env {
-  { bindings: {}, functions: {} }
+  { bindings: Map([]), functions: Map([]) }
 }
 
 ///|
@@ -23,7 +23,7 @@ fn Env::set(self : Env, name : String, value : Json) -> Env {
 }
 
 ///|
-fn Env::extend(self : Env, name : String, value : Json) -> Env {
+fn Env::with_binding(self : Env, name : String, value : Json) -> Env {
   let new_bindings = self.bindings.copy()
   let new_funcs = self.functions.copy()
   new_bindings[name] = value

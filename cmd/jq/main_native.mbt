@@ -77,7 +77,7 @@ fn jq_command() -> @argparse.Command {
 ///|
 fn parse_cli(args : ArrayView[String]) -> CliParseResult {
   let command = jq_command()
-  let matches = command.parse(argv=args, env={}) catch {
+  let matches = command.parse(argv=args, env=Map([])) catch {
     err => return Error(err.to_string())
   }
   let positionals = matches.values.get("args").unwrap_or([])

@@ -21,7 +21,7 @@ fn eval_object_construct(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let obj : Map[String, Json] = {}
+  let obj : Map[String, Json] = Map([])
   for pair in pairs {
     let (key_expr, value_expr_opt) = pair
     // Evaluate key to get string

@@ -8,7 +8,7 @@ fn eval_unique_by(
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   let results : Array[Json] = []
   for elem in arr {
     match eval_with_env(expr, elem, env).collect() {

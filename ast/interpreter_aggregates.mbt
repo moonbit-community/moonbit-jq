@@ -61,7 +61,7 @@ fn eval_group_by(
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  let groups : Map[String, Array[Json]] = {}
+  let groups : Map[String, Array[Json]] = Map([])
   for elem in arr {
     let keys = eval_with_env(expr, elem, env).collect()
     let key_json = match keys {
