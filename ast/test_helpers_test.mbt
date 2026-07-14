@@ -28,10 +28,10 @@ fn InputQuery::InputQuery(query~ : String, input~ : String) -> InputQuery {
 #callsite(autofill(args_loc, loc))
 fn debug_query(
   iq : InputQuery,
-  content? : String,
+  content~ : String,
   loc~ : SourceLoc,
   args_loc~ : ArgsLoc,
 ) -> Unit raise {
   let output = test_query(iq.query, iq.input)
-  inspect(output, content?, loc~, args_loc~)
+  inspect(output, content~, loc~, args_loc~)
 }
