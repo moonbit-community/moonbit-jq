@@ -20,7 +20,9 @@ test "coverage: match(pattern) returns match object or empty" {
 
 ///|
 test "coverage: capture(pattern) returns object" {
-  json_inspect(coverage_eval("capture(\"foo\")", "\"foobar\""), content=[{}])
+  json_inspect(coverage_eval("capture(\"foo\")", "\"foobar\""), content=[
+    Json::empty_object(),
+  ])
 }
 
 ///|

@@ -18,7 +18,7 @@ fn eval_foreach(
     init=(init_value, []),
     fn(state, gen_result) raise InterpreterError {
       let (acc, results) = state
-      let new_env = env.extend(var_name, gen_result)
+      let new_env = env.with_binding(var_name, gen_result)
       let update_results = eval_with_env(update_expr, acc, new_env).collect()
       match update_results {
         [] => (acc, results)

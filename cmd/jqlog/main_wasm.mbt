@@ -2,7 +2,7 @@
 fn keep_imports_used() -> Unit {
   // The shared package imports are used by main_native.mbt.
   ignore(@moonjq.parse)
-  ignore(@async.now)
+  ignore(@async.is_being_cancelled)
   ignore(@io.pipe)
   ignore(@stdio.unimplemented)
   ignore(@json.valid)
