@@ -18,6 +18,12 @@ pub suberror LexError {
   InvalidNumber(Int, String)
   InvalidEscape(Int, Char)
 } derive(Eq, @debug.Debug)
+pub fn LexError::equal(Self, Self) -> Bool
+pub fn LexError::not_equal(Self, Self) -> Bool
+pub fn LexError::output(Self, &Logger) -> Unit
+#as_free_fn
+pub fn LexError::to_repr(Self) -> @debug.Repr
+pub fn LexError::to_string(Self) -> String
 pub impl Show for LexError
 
 pub(all) suberror ParseError {
@@ -26,6 +32,12 @@ pub(all) suberror ParseError {
   InvalidSyntax(String)
   InvalidExpression(String)
 } derive(Eq, @debug.Debug)
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::output(Self, &Logger) -> Unit
+#as_free_fn
+pub fn ParseError::to_repr(Self) -> @debug.Repr
+pub fn ParseError::to_string(Self) -> String
 pub impl Show for ParseError
 
 // Types and methods
@@ -88,6 +100,12 @@ pub(all) enum Token {
   TDef
   TEof
 } derive(Eq, @debug.Debug)
+pub fn Token::equal(Self, Self) -> Bool
+pub fn Token::not_equal(Self, Self) -> Bool
+pub fn Token::output(Self, &Logger) -> Unit
+#as_free_fn
+pub fn Token::to_repr(Self) -> @debug.Repr
+pub fn Token::to_string(Self) -> String
 pub impl Show for Token
 
 // Type aliases
