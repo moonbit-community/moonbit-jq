@@ -26,7 +26,6 @@ pub struct Query {
 pub fn Query::eval(Self, Json) -> Iter[Json] raise
 pub fn Query::eval_all(Self, Json) -> Array[Json] raise
 pub fn Query::eval_logs(Self, String) -> Iter[Json] raise
-#as_free_fn
 pub fn Query::to_repr(Self) -> @debug.Repr
 
 // Type aliases

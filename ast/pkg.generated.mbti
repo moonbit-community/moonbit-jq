@@ -21,7 +21,6 @@ pub(all) suberror InterpreterError {
 pub fn InterpreterError::equal(Self, Self) -> Bool
 pub fn InterpreterError::not_equal(Self, Self) -> Bool
 pub fn InterpreterError::output(Self, &Logger) -> Unit
-#as_free_fn
 pub fn InterpreterError::to_repr(Self) -> @debug.Repr
 pub fn InterpreterError::to_string(Self) -> String
 pub impl Show for InterpreterError
@@ -46,7 +45,6 @@ pub fn BinaryOp::equal(Self, Self) -> Bool
 pub fn BinaryOp::not_equal(Self, Self) -> Bool
 pub fn BinaryOp::output(Self, &Logger) -> Unit
 pub fn BinaryOp::to_json(Self) -> Json
-#as_free_fn
 pub fn BinaryOp::to_repr(Self) -> @debug.Repr
 pub fn BinaryOp::to_string(Self) -> String
 pub impl Show for BinaryOp
@@ -179,7 +177,6 @@ pub fn Expr::equal(Self, Self) -> Bool
 pub fn Expr::not_equal(Self, Self) -> Bool
 pub fn Expr::output(Self, &Logger) -> Unit
 pub fn Expr::to_json(Self) -> Json
-#as_free_fn
 pub fn Expr::to_repr(Self) -> @debug.Repr
 pub fn Expr::to_string(Self) -> String
 pub impl Show for Expr
@@ -194,7 +191,6 @@ pub fn Literal::equal(Self, Self) -> Bool
 pub fn Literal::not_equal(Self, Self) -> Bool
 pub fn Literal::output(Self, &Logger) -> Unit
 pub fn Literal::to_json(Self) -> Json
-#as_free_fn
 pub fn Literal::to_repr(Self) -> @debug.Repr
 pub fn Literal::to_string(Self) -> String
 pub impl Show for Literal
