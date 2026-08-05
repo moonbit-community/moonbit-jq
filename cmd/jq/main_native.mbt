@@ -178,7 +178,7 @@ async fn write_results(
 
 ///|
 async fn main {
-  let args = @sys.get_cli_args()[1:]
+  let args = @env.args()[1:]
   match parse_cli(args) {
     Error(msg) => {
       @stdio.stderr.write(msg)
