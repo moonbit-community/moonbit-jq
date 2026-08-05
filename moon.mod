@@ -9,7 +9,7 @@ keywords = [ "jq", "json", "query" ]
 description = "A jq implementation in MoonBit"
 
 import {
-  "moonbitlang/async@0.20.1",
+  "moonbitlang/async@0.20.3",
   "moonbitlang/x@0.4.38",
 }
 
