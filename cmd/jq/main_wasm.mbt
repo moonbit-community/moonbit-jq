@@ -5,9 +5,10 @@ fn keep_imports_used() -> Unit {
   ignore(@async.is_being_cancelled)
   ignore(@io.pipe)
   ignore(@stdio.unimplemented)
+  ignore(@env.args)
   ignore(@json.valid)
   ignore(@fs.path_exists)
-  ignore(@sys.get_cli_args)
+  ignore(@sys.exit)
 }
 
 ///|

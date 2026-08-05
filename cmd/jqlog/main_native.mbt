@@ -122,7 +122,7 @@ async fn write_results(results : Iter[Json]) -> Unit {
 
 ///|
 async fn main {
-  let args = @sys.get_cli_args()[1:]
+  let args = @env.args()[1:]
   match parse_cli(args) {
     Help => {
       @stdio.stdout.write(help_message())
