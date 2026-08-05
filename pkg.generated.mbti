@@ -31,4 +31,3 @@ pub fn Query::to_repr(Self) -> @debug.Repr
 // Type aliases
 
 // Traits
-

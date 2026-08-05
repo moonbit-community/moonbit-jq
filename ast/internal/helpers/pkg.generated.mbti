@@ -13,4 +13,3 @@ pub fn json_type_name(Json) -> String
 // Type aliases
 
 // Traits
-
