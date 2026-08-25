@@ -110,6 +110,13 @@ fn decode_escape(
       }
       value = value * 16 + hex_val(chars[idx])
     }
+    if value >= 0xD800 && value <= 0xDFFF {
+      // Surrogates are rejected like GNU printf...
+      return (
+        Invalid("printf: invalid universal character name \\\{e}"),
+        2 + need,
+      )
+    }
     match value.to_char() {
       Some(c) => {
         let out : Array[Byte] = []
@@ -117,8 +124,7 @@ fn decode_escape(
         (Out(out), 2 + need)
       }
       None => {
-        // Complete but out-of-range (or surrogate) names pass through
-        // literally, like GNU printf.
+        // ...while complete but out-of-range names pass through literally.
         let out : Array[Byte] = []
         out.push(b'\\')
         push_char_utf8(out, e)

@@ -215,6 +215,25 @@ fn pow2(exp : Int) -> Double {
 }
 
 ///|
+/// m * 2^exp in two steps so a subnormal result is not lost to an
+/// intermediate pow2 underflow (e.g. a 2^63-scaled significand with a
+/// deeply negative exponent).
+fn scale2(m : Double, exp : Int) -> Double {
+  if exp >= -600 {
+    m * pow2(exp)
+  } else {
+    m * pow2(-600) * pow2(exp + 600)
+  }
+}
+
+///|
+/// True for nonzero values below the smallest normal double; strtod flags
+/// these with ERANGE, and GNU printf reports them as range errors.
+fn is_subnormal(x : Double) -> Bool {
+  x != 0.0 && ((x.reinterpret_as_uint64() >> 52) & 0x7FF) == 0
+}
+
+///|
 /// Parse a printf float argument like strtod: leading blanks, 'C, inf/nan
 /// (with an optional payload), hex floats (0x1.8p+2), or the longest valid
 /// decimal prefix. Trailing text warns; out-of-range values become inf or 0
@@ -252,6 +271,7 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
   }
   let mut value = 0.0
   let mut end = i
+  let mut range_warned = false
   if matches_word(chars, i, "infinity") {
     value = 1.0 / 0.0
     end = i + 8
@@ -286,11 +306,15 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
     let mant_cap : UInt64 = 0x0800_0000_0000_0000
     let mut exp4 = 0
     let mut any = false
+    let mut sticky = false
     while j < chars.length() && hex_val(chars[j]) >= 0 {
       if mant < mant_cap {
         mant = mant * 16 + hex_val(chars[j]).to_int64().reinterpret_as_uint64()
       } else {
         exp4 += 1
+        if hex_val(chars[j]) != 0 {
+          sticky = true
+        }
       }
       any = true
       j += 1
@@ -302,10 +326,18 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
           mant = mant * 16 +
             hex_val(chars[j]).to_int64().reinterpret_as_uint64()
           exp4 -= 1
+        } else if hex_val(chars[j]) != 0 {
+          sticky = true
         }
         any = true
         j += 1
       }
+    }
+    // Dropped nonzero digits make the significand odd so the 64-bit to
+    // double conversion breaks round-half-even ties upward, like a sticky
+    // bit.
+    if sticky {
+      mant = mant | 1
     }
     if !any {
       // "0x" with no digits parses as 0 with trailing garbage.
@@ -342,9 +374,12 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
       value = if mant == 0 {
         0.0
       } else {
-        mant.to_double() * pow2(4 * exp4 + p)
+        scale2(mant.to_double(), 4 * exp4 + p)
       }
+      // Hex floats warn only on complete over/underflow: an exact subnormal
+      // like 0x1p-1074 carries no rounding error, so strtod raises no ERANGE.
       if mant != 0 && (value.is_inf() || value == 0.0) {
+        range_warned = true
         ctx.warn("printf: '\{text}': Result too large")
       }
       end = j
@@ -415,7 +450,6 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
     for k in i..<j {
       sb.write_char(chars[k])
     }
-    let mut range_warned = false
     value = @string.parse_double(sb.to_string()) catch {
       _ => {
         // Syntactically valid but out of double range: estimate the decimal
@@ -434,13 +468,18 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
         }
       }
     }
-    // Silent underflow to 0 or overflow to inf is still a range error.
-    if !range_warned && seen_nonzero && (value == 0.0 || value.is_inf()) {
+    // Silent underflow (to 0 or a subnormal) or overflow to inf is still a
+    // range error, matching strtod's ERANGE.
+    if !range_warned &&
+      seen_nonzero &&
+      (value == 0.0 || value.is_inf() || is_subnormal(value)) {
+      range_warned = true
       ctx.warn("printf: '\{text}': Result too large")
     }
     end = j
   }
-  if end < chars.length() {
+  // A range error supersedes the partial-conversion warning, like GNU.
+  if end < chars.length() && !range_warned {
     ctx.warn("printf: '\{text}': value not completely converted")
   }
   if neg {
@@ -626,9 +665,6 @@ fn spec_valid(
 }
 
 ///|
-let max_field : Int = 0x7FFFFFFF
-
-///|
 /// Field widths allocate real padding, so cap them far below INT_MAX.
 let max_width : Int = 100000000
 
@@ -732,7 +768,8 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
           Some(arg) => parse_integer(ctx, arg, unsigned=false)
           None => 0
         }
-        if v > max_field.to_int64() {
+        // Precision materializes zeros in memory, so it shares the width cap.
+        if v > max_width.to_int64() {
           ctx.fatal = Some("printf: invalid precision: '\{v}'")
           return
         }
@@ -744,7 +781,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         let digits_start = j
         while j < chars.length() && chars[j] is ('0'..='9') {
           let d = chars[j].to_int() - 0x30
-          if p > (max_field - d) / 10 {
+          if p > (max_width - d) / 10 {
             let sb = StringBuilder()
             for k in digits_start..<chars.length() {
               if !(chars[k] is ('0'..='9')) {
