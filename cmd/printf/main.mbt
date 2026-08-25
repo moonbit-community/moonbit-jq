@@ -82,11 +82,20 @@ fn parse_integer(ctx : Ctx, text : String, unsigned~ : Bool) -> Int64 {
     return 0
   }
   if chars[i] == '\'' || chars[i] == '"' {
-    return if i + 1 < chars.length() {
-      chars[i + 1].to_int().to_int64()
-    } else {
-      0
+    if i + 1 >= chars.length() {
+      ctx.warn("printf: '\{text}': expected a numeric value")
+      return 0
     }
+    if i + 2 < chars.length() {
+      let sb = StringBuilder()
+      for k in (i + 2)..<chars.length() {
+        sb.write_char(chars[k])
+      }
+      ctx.notice(
+        "printf: warning: \{sb}: character(s) following character constant have been ignored",
+      )
+    }
+    return chars[i + 1].to_int().to_int64()
   }
   let mut neg = false
   if chars[i] == '+' || chars[i] == '-' {
@@ -133,24 +142,26 @@ fn parse_integer(ctx : Ctx, text : String, unsigned~ : Bool) -> Int64 {
     ctx.warn("printf: '\{text}': expected a numeric value")
     return 0
   }
+  // A range error supersedes the partial-conversion warning, like GNU.
+  let range_error = if unsigned {
+    overflow
+  } else if neg {
+    overflow || mag > int64_min_mag
+  } else {
+    overflow || mag > int64_max_mag
+  }
+  if range_error {
+    ctx.warn("printf: '\{text}': Result too large")
+    return if unsigned {
+      uint64_max.reinterpret_as_int64()
+    } else if neg {
+      int64_min_mag.reinterpret_as_int64()
+    } else {
+      int64_max_mag.reinterpret_as_int64()
+    }
+  }
   if j < chars.length() {
     ctx.warn("printf: '\{text}': value not completely converted")
-  }
-  if unsigned {
-    if overflow {
-      ctx.warn("printf: '\{text}': Result too large")
-      return uint64_max.reinterpret_as_int64()
-    }
-    let bits = mag.reinterpret_as_int64()
-    return if neg { -bits } else { bits }
-  }
-  if !neg && (overflow || mag > int64_max_mag) {
-    ctx.warn("printf: '\{text}': Result too large")
-    return int64_max_mag.reinterpret_as_int64()
-  }
-  if neg && (overflow || mag > int64_min_mag) {
-    ctx.warn("printf: '\{text}': Result too large")
-    return int64_min_mag.reinterpret_as_int64()
   }
   let bits = mag.reinterpret_as_int64()
   if neg {
@@ -181,7 +192,15 @@ fn matches_word(chars : Array[Char], start : Int, word : String) -> Bool {
 }
 
 ///|
+/// 2^exp with clamping: doubles overflow past 2^1024 and underflow below
+/// 2^-1075, so huge exponents can short-circuit instead of looping.
 fn pow2(exp : Int) -> Double {
+  if exp > 1100 {
+    return 1.0 / 0.0
+  }
+  if exp < -1200 {
+    return 0.0
+  }
   let mut result = 1.0
   if exp >= 0 {
     for _ in 0..<exp {
@@ -196,9 +215,10 @@ fn pow2(exp : Int) -> Double {
 }
 
 ///|
-/// Parse a printf float argument like strtod: leading blanks, 'C, inf/nan,
-/// hex floats (0x1.8p+2), or the longest valid decimal prefix. Trailing text
-/// warns like GNU printf.
+/// Parse a printf float argument like strtod: leading blanks, 'C, inf/nan
+/// (with an optional payload), hex floats (0x1.8p+2), or the longest valid
+/// decimal prefix. Trailing text warns; out-of-range values become inf or 0
+/// with a range diagnostic, like GNU printf.
 fn parse_double_arg(ctx : Ctx, text : String) -> Double {
   let chars : Array[Char] = text.iter().collect()
   let mut i = 0
@@ -210,11 +230,20 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
     return 0.0
   }
   if chars[i] == '\'' || chars[i] == '"' {
-    return if i + 1 < chars.length() {
-      chars[i + 1].to_int().to_double()
-    } else {
-      0.0
+    if i + 1 >= chars.length() {
+      ctx.warn("printf: '\{text}': expected a numeric value")
+      return 0.0
     }
+    if i + 2 < chars.length() {
+      let sb = StringBuilder()
+      for k in (i + 2)..<chars.length() {
+        sb.write_char(chars[k])
+      }
+      ctx.notice(
+        "printf: warning: \{sb}: character(s) following character constant have been ignored",
+      )
+    }
+    return chars[i + 1].to_int().to_double()
   }
   let mut neg = false
   if chars[i] == '+' || chars[i] == '-' {
@@ -232,26 +261,48 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
   } else if matches_word(chars, i, "nan") {
     value = 0.0 / 0.0
     end = i + 3
+    // Consume an optional n-char payload like nan(0x123).
+    if end < chars.length() && chars[end] == '(' {
+      let mut j = end + 1
+      while j < chars.length() &&
+            chars[j] is ('0'..='9' | 'a'..='z' | 'A'..='Z' | '_') {
+        j += 1
+      }
+      if j < chars.length() && chars[j] == ')' {
+        end = j + 1
+      }
+    }
   } else if i + 1 < chars.length() &&
     chars[i] == '0' &&
     (chars[i + 1] == 'x' || chars[i + 1] == 'X') &&
     i + 2 < chars.length() &&
     (hex_val(chars[i + 2]) >= 0 || chars[i + 2] == '.') {
-    // Hexadecimal float: 0xH[.H][p[+-]D]
+    // Hexadecimal float: 0xH[.H][p[+-]D]. The significand accumulates in a
+    // 64-bit integer; digits beyond its capacity only adjust the exponent
+    // (integer part) or are dropped (fraction), which can differ from the
+    // correctly rounded result by at most one ULP on extreme inputs.
     let mut j = i + 2
-    let mut m = 0.0
+    let mut mant : UInt64 = 0
+    let mant_cap : UInt64 = 0x0800_0000_0000_0000
+    let mut exp4 = 0
     let mut any = false
     while j < chars.length() && hex_val(chars[j]) >= 0 {
-      m = m * 16.0 + hex_val(chars[j]).to_double()
+      if mant < mant_cap {
+        mant = mant * 16 + hex_val(chars[j]).to_int64().reinterpret_as_uint64()
+      } else {
+        exp4 += 1
+      }
       any = true
       j += 1
     }
     if j < chars.length() && chars[j] == '.' {
       j += 1
-      let mut scale = 1.0 / 16.0
       while j < chars.length() && hex_val(chars[j]) >= 0 {
-        m += hex_val(chars[j]).to_double() * scale
-        scale /= 16.0
+        if mant < mant_cap {
+          mant = mant * 16 +
+            hex_val(chars[j]).to_int64().reinterpret_as_uint64()
+          exp4 -= 1
+        }
         any = true
         j += 1
       }
@@ -261,6 +312,7 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
       value = 0.0
       end = i + 1
     } else {
+      let mut p = 0
       if j < chars.length() && (chars[j] == 'p' || chars[j] == 'P') {
         let mut k = j + 1
         let mut esign = 1
@@ -273,30 +325,57 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
         let mut ev = 0
         let mut edigits = false
         while k < chars.length() && chars[k] is ('0'..='9') {
-          ev = ev * 10 + (chars[k].to_int() - 0x30)
+          if ev < 1000000 {
+            ev = ev * 10 + (chars[k].to_int() - 0x30)
+          }
           edigits = true
           k += 1
         }
         if edigits {
-          m *= pow2(esign * ev)
+          if ev > 10000 {
+            ev = 10000
+          }
+          p = esign * ev
           j = k
         }
       }
-      value = m
+      value = if mant == 0 {
+        0.0
+      } else {
+        mant.to_double() * pow2(4 * exp4 + p)
+      }
+      if mant != 0 && (value.is_inf() || value == 0.0) {
+        ctx.warn("printf: '\{text}': Result too large")
+      }
       end = j
     }
   } else {
     // Decimal float: D[.D][e[+-]D]
     let mut j = i
     let mut any = false
+    let mut sig_digits = 0
+    let mut frac_zeros = 0
+    let mut seen_nonzero = false
     while j < chars.length() && chars[j] is ('0'..='9') {
       any = true
+      if chars[j] != '0' || seen_nonzero {
+        seen_nonzero = true
+        sig_digits += 1
+      }
       j += 1
     }
+    let int_sig = sig_digits
     if j < chars.length() && chars[j] == '.' {
       j += 1
       while j < chars.length() && chars[j] is ('0'..='9') {
         any = true
+        if int_sig == 0 && !seen_nonzero {
+          if chars[j] == '0' {
+            frac_zeros += 1
+          } else {
+            seen_nonzero = true
+          }
+        }
         j += 1
       }
     }
@@ -304,17 +383,30 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
       ctx.warn("printf: '\{text}': expected a numeric value")
       return 0.0
     }
+    let mut e10 = 0
     if j < chars.length() && (chars[j] == 'e' || chars[j] == 'E') {
       let mut k = j + 1
+      let mut esign = 1
       if k < chars.length() && (chars[k] == '+' || chars[k] == '-') {
+        if chars[k] == '-' {
+          esign = -1
+        }
         k += 1
       }
+      let mut ev = 0
       let mut edigits = false
       while k < chars.length() && chars[k] is ('0'..='9') {
+        if ev < 1000000 {
+          ev = ev * 10 + (chars[k].to_int() - 0x30)
+        }
         edigits = true
         k += 1
       }
       if edigits {
+        if ev > 100000 {
+          ev = 100000
+        }
+        e10 = esign * ev
         j = k
       }
     }
@@ -323,7 +415,29 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
     for k in i..<j {
       sb.write_char(chars[k])
     }
-    value = @string.parse_double(sb.to_string()) catch { _ => 0.0 }
+    let mut range_warned = false
+    value = @string.parse_double(sb.to_string()) catch {
+      _ => {
+        // Syntactically valid but out of double range: estimate the decimal
+        // exponent of the leading digit to pick inf versus 0.
+        let magnitude10 = if int_sig > 0 {
+          int_sig + e10
+        } else {
+          e10 - frac_zeros
+        }
+        range_warned = true
+        ctx.warn("printf: '\{text}': Result too large")
+        if magnitude10 > 0 {
+          1.0 / 0.0
+        } else {
+          0.0
+        }
+      }
+    }
+    // Silent underflow to 0 or overflow to inf is still a range error.
+    if !range_warned && seen_nonzero && (value == 0.0 || value.is_inf()) {
+      ctx.warn("printf: '\{text}': Result too large")
+    }
     end = j
   }
   if end < chars.length() {
@@ -419,7 +533,10 @@ fn emit_float(
     if upper {
       body = body.to_upper()
     }
-    let sign = if bits_neg {
+    // GNU printf prints NaN unsigned; infinities honor the sign flags.
+    let sign = if x.is_nan() {
+      ""
+    } else if bits_neg {
       "-"
     } else if plus {
       "+"
@@ -512,6 +629,10 @@ fn spec_valid(
 let max_field : Int = 0x7FFFFFFF
 
 ///|
+/// Field widths allocate real padding, so cap them far below INT_MAX.
+let max_width : Int = 100000000
+
+///|
 /// One pass over the format string; conversions consume arguments from ctx.
 fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
   let mut i = 0
@@ -561,25 +682,30 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     }
     let mut width : Int? = None
     if j < chars.length() && chars[j] == '*' {
-      let arg = ctx.next_arg().unwrap_or("")
-      let v = parse_integer(ctx, arg, unsigned=false)
-      if v > max_field.to_int64() || v < -max_field.to_int64() {
-        ctx.fatal = Some("printf: invalid field width: '\{arg}'")
+      let v = match ctx.next_arg() {
+        Some(arg) => parse_integer(ctx, arg, unsigned=false)
+        None => 0
+      }
+      // Padding is materialized in memory, so widths are capped well below
+      // INT_MAX; GNU would print the gigabytes of spaces instead.
+      if v > max_width.to_int64() || v < -max_width.to_int64() {
+        ctx.fatal = Some("printf: invalid field width: '\{v}'")
         return
       }
-      let mut w = v.to_int()
-      if w < 0 {
+      if v < 0 {
         minus = true
-        w = -w
+        width = Some((-v).to_int())
+      } else {
+        width = Some(v.to_int())
       }
-      width = Some(w)
       j += 1
     } else {
       let mut w = 0
       let mut any = false
       let digits_start = j
       while j < chars.length() && chars[j] is ('0'..='9') {
-        if w > (max_field - 9) / 10 {
+        let d = chars[j].to_int() - 0x30
+        if w > (max_width - d) / 10 {
           let sb = StringBuilder()
           for k in digits_start..<chars.length() {
             if !(chars[k] is ('0'..='9')) {
@@ -590,7 +716,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
           ctx.fatal = Some("printf: invalid field width: '\{sb}'")
           return
         }
-        w = w * 10 + (chars[j].to_int() - 0x30)
+        w = w * 10 + d
         any = true
         j += 1
       }
@@ -602,20 +728,23 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     if j < chars.length() && chars[j] == '.' {
       j += 1
       if j < chars.length() && chars[j] == '*' {
-        let arg = ctx.next_arg().unwrap_or("")
-        let v = parse_integer(ctx, arg, unsigned=false)
-        if v > max_field.to_int64() || v < -max_field.to_int64() {
-          ctx.fatal = Some("printf: invalid precision: '\{arg}'")
+        let v = match ctx.next_arg() {
+          Some(arg) => parse_integer(ctx, arg, unsigned=false)
+          None => 0
+        }
+        if v > max_field.to_int64() {
+          ctx.fatal = Some("printf: invalid precision: '\{v}'")
           return
         }
-        let p = v.to_int()
-        prec = if p < 0 { None } else { Some(p) }
+        // Any negative precision means the precision is omitted.
+        prec = if v < 0 { None } else { Some(v.to_int()) }
         j += 1
       } else {
         let mut p = 0
         let digits_start = j
         while j < chars.length() && chars[j] is ('0'..='9') {
-          if p > (max_field - 9) / 10 {
+          let d = chars[j].to_int() - 0x30
+          if p > (max_field - d) / 10 {
             let sb = StringBuilder()
             for k in digits_start..<chars.length() {
               if !(chars[k] is ('0'..='9')) {
@@ -626,7 +755,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
             ctx.fatal = Some("printf: invalid precision: '\{sb}'")
             return
           }
-          p = p * 10 + (chars[j].to_int() - 0x30)
+          p = p * 10 + d
           j += 1
         }
         prec = Some(p)
@@ -649,54 +778,29 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     match conv {
       '%' => ctx.out.push(b'%')
       'd' | 'i' => {
-        let arg = ctx.next_arg().unwrap_or("")
-        emit_signed(
-          ctx,
-          parse_integer(ctx, arg, unsigned=false),
-          width,
-          prec,
-          minus,
-          plus,
-          space,
-          zero,
-        )
+        // A missing argument formats as zero without a diagnostic.
+        let n = match ctx.next_arg() {
+          Some(arg) => parse_integer(ctx, arg, unsigned=false)
+          None => 0
+        }
+        emit_signed(ctx, n, width, prec, minus, plus, space, zero)
       }
-      'u' => {
-        let arg = ctx.next_arg().unwrap_or("")
+      'u' | 'o' | 'x' | 'X' => {
+        let n = match ctx.next_arg() {
+          Some(arg) => parse_integer(ctx, arg, unsigned=true)
+          None => 0
+        }
+        let radix = match conv {
+          'u' => 10
+          'o' => 8
+          _ => 16
+        }
         emit_unsigned(
           ctx,
-          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
-          10,
-          false,
-          false,
-          width,
-          prec,
-          minus,
-          zero,
-        )
-      }
-      'o' => {
-        let arg = ctx.next_arg().unwrap_or("")
-        emit_unsigned(
-          ctx,
-          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
-          8,
-          false,
-          alt,
-          width,
-          prec,
-          minus,
-          zero,
-        )
-      }
-      'x' | 'X' => {
-        let arg = ctx.next_arg().unwrap_or("")
-        emit_unsigned(
-          ctx,
-          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
-          16,
+          n.reinterpret_as_uint64(),
+          radix,
           conv == 'X',
-          alt,
+          alt && conv != 'u',
           width,
           prec,
           minus,
@@ -720,11 +824,12 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         emit_padded_bytes(ctx.out, limited, width, minus)
       }
       'c' => {
-        // GNU printf emits only the first byte of the argument.
+        // GNU printf emits only the first byte of the argument; a missing
+        // or empty argument emits one NUL byte.
         let arg = ctx.next_arg().unwrap_or("")
         let bytes : Array[Byte] = []
         push_string_utf8(bytes, arg)
-        let first = if bytes.length() > 0 { [bytes[0]] } else { [] }
+        let first = if bytes.length() > 0 { [bytes[0]] } else { [b'\x00'] }
         emit_padded_bytes(ctx.out, first, width, minus)
       }
       'b' => {
@@ -732,19 +837,11 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         emit_b(ctx, arg)
       }
       'f' | 'F' | 'e' | 'E' | 'g' | 'G' => {
-        let arg = ctx.next_arg().unwrap_or("")
-        emit_float(
-          ctx,
-          conv,
-          parse_double_arg(ctx, arg),
-          width,
-          prec,
-          minus,
-          plus,
-          space,
-          zero,
-          alt,
-        )
+        let x = match ctx.next_arg() {
+          Some(arg) => parse_double_arg(ctx, arg)
+          None => 0.0
+        }
+        emit_float(ctx, conv, x, width, prec, minus, plus, space, zero, alt)
       }
       _ => {
         ctx.fatal = Some("printf: %\{conv}: invalid conversion specification")

@@ -116,13 +116,17 @@ fn decode_escape(
         push_char_utf8(out, c)
         (Out(out), 2 + need)
       }
-      None =>
-        (
-          Invalid(
-            "printf: invalid universal character name \\\{e}\{value.to_string(radix=16)}",
-          ),
-          2 + need,
-        )
+      None => {
+        // Complete but out-of-range (or surrogate) names pass through
+        // literally, like GNU printf.
+        let out : Array[Byte] = []
+        out.push(b'\\')
+        push_char_utf8(out, e)
+        for k in 0..<need {
+          push_char_utf8(out, chars[start + 2 + k])
+        }
+        (Out(out), 2 + need)
+      }
     }
   } else {
     // Unknown escape: print backslash and the character literally.
