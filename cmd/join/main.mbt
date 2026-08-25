@@ -113,8 +113,10 @@ async fn main {
         return
       }
       if is_separator {
-        if value == "" {
-          @stdio.stderr.write("join: empty separator\n")
+        if value.length() != 1 {
+          @stdio.stderr.write(
+            "join: the separator must be a single character\n",
+          )
           @sys.exit(2)
           return
         }

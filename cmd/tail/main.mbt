@@ -79,35 +79,50 @@ fn parse_spec(text : String) -> CountSpec raise CliError {
 }
 
 ///|
-fn split_lines(text : String) -> Array[String] {
-  if text is "" {
-    return []
-  }
-  let lines : Array[String] = text.split("\n").map(v => v.to_owned()).collect()
-  if text.has_suffix("\n") {
-    ignore(lines.pop())
-  }
-  lines
-}
-
-///|
-fn select_lines(text : String, spec : CountSpec) -> String {
-  let lines = split_lines(text)
-  let start = match spec {
-    Last(n) => if n >= lines.length() { 0 } else { lines.length() - n }
-    FromStart(k) => if k - 1 > lines.length() { lines.length() } else { k - 1 }
-  }
-  if start >= lines.length() {
-    return ""
-  }
-  let sb = StringBuilder()
-  for i in start..<lines.length() {
-    sb.write_string(lines[i])
-    if i < lines.length() - 1 || text.has_suffix("\n") {
-      sb.write_string("\n")
+/// Select lines as raw bytes so binary or invalid-UTF-8 data passes through
+/// unchanged. A trailing newline terminates the final line rather than
+/// starting an empty one.
+fn select_lines(data : Bytes, spec : CountSpec) -> BytesView {
+  match spec {
+    Last(n) => {
+      if n <= 0 || data.length() == 0 {
+        return data[0:0]
+      }
+      // Scan backward; the trailing newline (if any) does not count as a
+      // line boundary of its own.
+      let mut i = if data[data.length() - 1] is b'\n' {
+        data.length() - 2
+      } else {
+        data.length() - 1
+      }
+      let mut newlines = 0
+      while i >= 0 {
+        if data[i] is b'\n' {
+          newlines += 1
+          if newlines == n {
+            return data[i + 1:]
+          }
+        }
+        i -= 1
+      }
+      data
+    }
+    FromStart(k) => {
+      if k <= 1 {
+        return data
+      }
+      let mut seen = 0
+      for i in 0..<data.length() {
+        if data[i] is b'\n' {
+          seen += 1
+          if seen == k - 1 {
+            return data[i + 1:]
+          }
+        }
+      }
+      data[data.length():]
     }
   }
-  sb.to_string()
 }
 
 ///|
@@ -130,15 +145,6 @@ async fn read_source_bytes(path : String) -> Bytes {
     @stdio.stdin.read_all().binary()
   } else {
     @fs.read_file_to_bytes(path)
-  }
-}
-
-///|
-async fn read_source_text(path : String) -> String {
-  if path == "-" {
-    @stdio.stdin.read_all().text()
-  } else {
-    @fs.read_file_to_string(path)
   }
 }
 
@@ -183,11 +189,10 @@ async fn main {
       @stdio.stdout.write("\{prefix}==> \{name} <==\n")
     }
     try {
+      let data = read_source_bytes(path)
       match byte_spec {
-        Some(spec) =>
-          @stdio.stdout.write(select_bytes(read_source_bytes(path), spec))
-        None =>
-          @stdio.stdout.write(select_lines(read_source_text(path), line_spec))
+        Some(spec) => @stdio.stdout.write(select_bytes(data, spec))
+        None => @stdio.stdout.write(select_lines(data, line_spec))
       }
     } catch {
       err => {

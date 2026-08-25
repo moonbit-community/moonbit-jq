@@ -203,13 +203,14 @@ fn option_value(matches : @argparse.Matches, name : String) -> String? {
 fn parse_number(
   matches : @argparse.Matches,
   name : String,
+  minimum? : Int = 1,
 ) -> Int? raise CliError {
   match option_value(matches, name) {
     Some(text) => {
       let n = @string.parse_int(text) catch {
         _ => raise CliError("xxd: invalid -\{name} value: '\{text}'")
       }
-      if n < 1 {
+      if n < minimum {
         raise CliError("xxd: invalid -\{name} value: '\{text}'")
       }
       Some(n)
@@ -251,7 +252,7 @@ async fn main {
   let reverse = matches.flags.get_or_default("reverse", false)
   let (cols_opt, len_opt) = (
     parse_number(matches, "cols"),
-    parse_number(matches, "len"),
+    parse_number(matches, "len", minimum=0),
   ) catch {
     CliError(msg) => {
       @stdio.stderr.write("\{msg}\n")

@@ -194,3 +194,19 @@ hi
 $ printf 'hello moonbit!' | xxd.exe | xxd.exe -r && echo
 hello moonbit!
 ```
+
+## Review Regressions
+
+```mooncram
+$ printf 'abcdef\n' | cut.exe -c -3
+abc
+```
+
+```mooncram
+$ printf 'héllo\n' | wc.exe -m
+6
+```
+
+```mooncram
+$ printf 'hello' | xxd.exe -l 0
+```

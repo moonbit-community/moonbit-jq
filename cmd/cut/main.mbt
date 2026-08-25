@@ -28,12 +28,14 @@ fn cut_command() -> @argparse.Command {
         "fields",
         short='f',
         about="Comma-separated field list, e.g. 1,3-5,7-.",
+        allow_hyphen_values=true,
       ),
       OptionArg(
         "characters",
         short='c',
         about="Comma-separated character position list.",
         conflicts_with=["fields"],
+        allow_hyphen_values=true,
       ),
     ],
     positionals=[

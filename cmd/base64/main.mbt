@@ -102,7 +102,8 @@ fn encode(data : Bytes, wrap : Int) -> String {
 fn decode(text : String) -> Bytes raise CliError {
   let cleaned : Array[Char] = []
   for c in text {
-    if c is (' ' | '\t' | '\n' | '\r') {
+    // Skip all ASCII whitespace, including vertical tab and form feed.
+    if c.to_int() is (0x20 | 0x09 | 0x0A | 0x0D | 0x0B | 0x0C) {
       continue
     }
     cleaned.push(c)
@@ -131,6 +132,14 @@ fn decode(text : String) -> Bytes raise CliError {
     let v1 = sextet(c1)
     let v2 = if c2 == '=' { 0 } else { sextet(c2) }
     let v3 = if c3 == '=' { 0 } else { sextet(c3) }
+    // Reject non-canonical encodings whose discarded padding bits are set,
+    // e.g. AB== (low bits of v1) or AAB= (low bits of v2).
+    if c2 == '=' && (v1 & 0xF) != 0 {
+      raise CliError("base64: invalid input")
+    }
+    if c3 == '=' && (v2 & 0x3) != 0 {
+      raise CliError("base64: invalid input")
+    }
     let n = (v0 << 18) | (v1 << 12) | (v2 << 6) | v3
     out.push(((n >> 16) & 0xFF).to_byte())
     if c2 != '=' {

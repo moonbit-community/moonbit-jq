@@ -25,17 +25,76 @@ fn is_space_byte(b : Byte) -> Bool {
 }
 
 ///|
+fn is_continuation(b : Byte) -> Bool {
+  (b.to_int() & 0xC0) == 0x80
+}
+
+///|
+/// Count valid UTF-8 encoded characters. Bytes that are not part of a valid
+/// sequence are skipped without being counted, like GNU wc -m.
+fn count_utf8_chars(data : Bytes) -> Int64 {
+  let mut count : Int64 = 0
+  let mut i = 0
+  while i < data.length() {
+    let b0 = data[i].to_int()
+    if b0 < 0x80 {
+      count += 1
+      i += 1
+      continue
+    }
+    // (sequence length, valid range for the second byte)
+    let (len, lo1, hi1) = if b0 >= 0xC2 && b0 <= 0xDF {
+      (2, 0x80, 0xBF)
+    } else if b0 == 0xE0 {
+      (3, 0xA0, 0xBF)
+    } else if (b0 >= 0xE1 && b0 <= 0xEC) || b0 == 0xEE || b0 == 0xEF {
+      (3, 0x80, 0xBF)
+    } else if b0 == 0xED {
+      (3, 0x80, 0x9F)
+    } else if b0 == 0xF0 {
+      (4, 0x90, 0xBF)
+    } else if b0 >= 0xF1 && b0 <= 0xF3 {
+      (4, 0x80, 0xBF)
+    } else if b0 == 0xF4 {
+      (4, 0x80, 0x8F)
+    } else {
+      (0, 0, 0)
+    }
+    if len == 0 || i + len > data.length() {
+      i += 1
+      continue
+    }
+    let second = data[i + 1].to_int()
+    if second < lo1 || second > hi1 {
+      i += 1
+      continue
+    }
+    let mut ok = true
+    for k in 2..<len {
+      if !is_continuation(data[i + k]) {
+        ok = false
+        break
+      }
+    }
+    if ok {
+      count += 1
+      i += len
+    } else {
+      i += 1
+    }
+  }
+  count
+}
+
+///|
 fn count(data : Bytes) -> Counts {
   let counts = Counts::new()
   counts.bytes = data.length().to_int64()
+  counts.chars = count_utf8_chars(data)
   let mut in_word = false
   for b in data {
     if b is b'\n' {
       counts.lines += 1
-    }
-    // UTF-8 continuation bytes are 0b10xxxxxx; everything else starts a char.
-    if (b.to_int() & 0xC0) != 0x80 {
-      counts.chars += 1
     }
     if is_space_byte(b) {
       in_word = false

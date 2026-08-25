@@ -58,29 +58,22 @@ fn parse_count(text : String) -> Int raise CliError {
 }
 
 ///|
-fn split_lines(text : String) -> Array[String] {
-  if text is "" {
-    return []
+/// Take the first n lines as raw bytes so that binary or invalid-UTF-8 data
+/// passes through unchanged; a line ends at '\n' or at end of input.
+fn take_lines(data : Bytes, n : Int) -> BytesView {
+  if n <= 0 {
+    return data[0:0]
   }
-  let lines : Array[String] = text.split("\n").map(v => v.to_owned()).collect()
-  if text.has_suffix("\n") {
-    ignore(lines.pop())
-  }
-  lines
-}
-
-///|
-fn take_lines(text : String, n : Int) -> String {
-  let lines = split_lines(text)
-  let count = if n < lines.length() { n } else { lines.length() }
-  let sb = StringBuilder()
-  for i in 0..<count {
-    sb.write_string(lines[i])
-    if i < lines.length() - 1 || text.has_suffix("\n") {
-      sb.write_string("\n")
+  let mut seen = 0
+  for i in 0..<data.length() {
+    if data[i] is b'\n' {
+      seen += 1
+      if seen == n {
+        return data[0:i + 1]
+      }
     }
   }
-  sb.to_string()
+  data
 }
 
 ///|
@@ -89,15 +82,6 @@ async fn read_source_bytes(path : String) -> Bytes {
     @stdio.stdin.read_all().binary()
   } else {
     @fs.read_file_to_bytes(path)
-  }
-}
-
-///|
-async fn read_source_text(path : String) -> String {
-  if path == "-" {
-    @stdio.stdin.read_all().text()
-  } else {
-    @fs.read_file_to_string(path)
   }
 }
 
@@ -142,14 +126,13 @@ async fn main {
       @stdio.stdout.write("\{prefix}==> \{name} <==\n")
     }
     try {
+      let data = read_source_bytes(path)
       match byte_count {
         Some(n) => {
-          let data = read_source_bytes(path)
           let take = if n < data.length() { n } else { data.length() }
           @stdio.stdout.write(data[0:take])
         }
-        None =>
-          @stdio.stdout.write(take_lines(read_source_text(path), line_count))
+        None => @stdio.stdout.write(take_lines(data, line_count))
       }
     } catch {
       err => {

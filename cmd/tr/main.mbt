@@ -227,6 +227,16 @@ async fn main {
     if !delete && sets.length() == 1 && !squeeze_repeats {
       raise CliError("tr: two sets must be given when translating")
     }
+    if delete && sets.length() > 1 && !squeeze_repeats {
+      raise CliError(
+        "tr: extra operand '\{sets[1]}' (a second set is only used with -s)",
+      )
+    }
+    if delete && squeeze_repeats && sets.length() == 1 {
+      raise CliError(
+        "tr: two sets must be given when both deleting and squeezing repeats",
+      )
+    }
     let input : Array[Byte] = []
     for b in @stdio.stdin.read_all().binary() {
       input.push(b)
