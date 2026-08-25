@@ -50,8 +50,8 @@ fn option_value(matches : @argparse.Matches, name : String) -> String? {
 }
 
 ///|
-fn parse_count(text : String) -> Int raise CliError {
-  let n = @string.parse_int(text) catch {
+fn parse_count(text : String) -> Int64 raise CliError {
+  let n = @string.parse_int64(text) catch {
     _ => raise CliError("head: invalid count: '\{text}'")
   }
   if n < 0 {
@@ -76,8 +76,8 @@ async fn read_chunk(r : &@io.Reader, buf : FixedArray[Byte]) -> Bytes? {
 /// passes through unchanged.
 async fn head_reader(
   r : &@io.Reader,
-  line_count : Int,
-  byte_count : Int?,
+  line_count : Int64,
+  byte_count : Int64?,
 ) -> Unit {
   let buf : FixedArray[Byte] = FixedArray::make(chunk_size, 0)
   match byte_count {
@@ -86,11 +86,11 @@ async fn head_reader(
       while remaining > 0 {
         match read_chunk(r, buf) {
           Some(chunk) =>
-            if chunk.length() <= remaining {
+            if chunk.length().to_int64() <= remaining {
               @stdio.stdout.write(chunk)
-              remaining -= chunk.length()
+              remaining -= chunk.length().to_int64()
             } else {
-              @stdio.stdout.write(chunk[0:remaining])
+              @stdio.stdout.write(chunk[0:remaining.to_int()])
               remaining = 0
             }
           None => break
@@ -139,7 +139,7 @@ async fn main {
   let quiet = matches.flags.get_or_default("quiet", false)
   let verbose = matches.flags.get_or_default("verbose", false)
   let (line_count, byte_count) = try {
-    let byte_count : Int? = match option_value(matches, "bytes") {
+    let byte_count : Int64? = match option_value(matches, "bytes") {
       Some(text) => Some(parse_count(text))
       None => None
     }
@@ -170,8 +170,8 @@ async fn main {
         head_reader(@stdio.stdin, line_count, byte_count)
       } else {
         let file = @fs.open(path, mode=ReadOnly)
+        defer file.close()
         head_reader(file, line_count, byte_count)
-        file.close()
       }
     } catch {
       err => {

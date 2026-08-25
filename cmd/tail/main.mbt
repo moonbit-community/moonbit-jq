@@ -7,8 +7,8 @@ priv suberror CliError {
 /// `Last(n)` selects the final n units; `FromStart(k)` selects from the k-th
 /// unit (1-based) to the end, mirroring tail's `-n +K` syntax.
 priv enum CountSpec {
-  Last(Int)
-  FromStart(Int)
+  Last(Int64)
+  FromStart(Int64)
 }
 
 ///|
@@ -68,7 +68,7 @@ fn parse_spec(text : String) -> CountSpec raise CliError {
   } else {
     (false, text)
   }
-  let n = @string.parse_int(digits) catch {
+  let n = @string.parse_int64(digits) catch {
     _ => raise CliError("tail: invalid count: '\{text}'")
   }
   if n < 0 {
@@ -96,7 +96,7 @@ fn select_lines(data : Bytes, spec : CountSpec) -> BytesView {
       } else {
         data.length() - 1
       }
-      let mut newlines = 0
+      let mut newlines : Int64 = 0
       while i >= 0 {
         if data[i] is b'\n' {
           newlines += 1
@@ -112,7 +112,7 @@ fn select_lines(data : Bytes, spec : CountSpec) -> BytesView {
       if k <= 1 {
         return data
       }
-      let mut seen = 0
+      let mut seen : Int64 = 0
       for i in 0..<data.length() {
         if data[i] is b'\n' {
           seen += 1
@@ -128,13 +128,14 @@ fn select_lines(data : Bytes, spec : CountSpec) -> BytesView {
 
 ///|
 fn select_bytes(data : Bytes, spec : CountSpec) -> BytesView {
+  let len = data.length().to_int64()
   match spec {
     Last(n) => {
-      let start = if n >= data.length() { 0 } else { data.length() - n }
+      let start = if n >= len { 0 } else { (len - n).to_int() }
       data[start:]
     }
     FromStart(k) => {
-      let start = if k - 1 > data.length() { data.length() } else { k - 1 }
+      let start = if k - 1 > len { data.length() } else { (k - 1).to_int() }
       data[start:]
     }
   }
@@ -189,22 +190,8 @@ async fn tail_file(
   let size = file.size()
   if bytes_mode {
     let start : Int64 = match spec {
-      Last(n) => {
-        let want = n.to_int64()
-        if want >= size {
-          0
-        } else {
-          size - want
-        }
-      }
-      FromStart(k) => {
-        let s = (k - 1).to_int64()
-        if s > size {
-          size
-        } else {
-          s
-        }
-      }
+      Last(n) => if n >= size { 0 } else { size - n }
+      FromStart(k) => if k - 1 > size { size } else { k - 1 }
     }
     stream_range(file, start, size)
     return
@@ -214,7 +201,7 @@ async fn tail_file(
       if n <= 0 || size == 0 {
         return
       }
-      let mut newlines = 0
+      let mut newlines : Int64 = 0
       let mut start : Int64 = 0
       let mut found = false
       let mut pos = size
@@ -254,7 +241,7 @@ async fn tail_file(
         return
       }
       // Scan forward for the (k-1)-th newline, then stream the rest.
-      let mut seen = 0
+      let mut seen : Int64 = 0
       let mut pos : Int64 = 0
       while pos < size {
         let len = if size - pos < chunk_size.to_int64() {
@@ -311,26 +298,28 @@ async fn tail_stream(
         return
       }
       let chunks : Array[Bytes] = []
-      let counts : Array[Int] = []
-      let mut total_newlines = 0
-      let mut total_bytes = 0
+      let counts : Array[Int64] = []
+      let mut total_newlines : Int64 = 0
+      let mut total_bytes : Int64 = 0
       for ;; {
         match read_chunk(r, buf) {
           Some(chunk) => {
             chunks.push(chunk)
-            total_bytes += chunk.length()
+            total_bytes += chunk.length().to_int64()
             if bytes_mode {
-              while chunks.length() > 1 && total_bytes - chunks[0].length() >= n {
-                total_bytes -= chunks[0].length()
+              while chunks.length() > 1 &&
+                    total_bytes - chunks[0].length().to_int64() >= n {
+                total_bytes -= chunks[0].length().to_int64()
                 ignore(chunks.remove(0))
               }
             } else {
-              let c = count_newlines(chunk)
+              let c = count_newlines(chunk).to_int64()
               counts.push(c)
               total_newlines += c
-              // Keep at least n+1 newlines beyond the dropped prefix so the
-              // last n lines stay fully buffered.
-              while chunks.length() > 1 && total_newlines - counts[0] >= n + 1 {
+              // Keep more than n newlines beyond the dropped prefix so the
+              // last n lines stay fully buffered. (Written as `> n` rather
+              // than `>= n + 1`, which would overflow for n = INT64_MAX.)
+              while chunks.length() > 1 && total_newlines - counts[0] > n {
                 total_newlines -= counts[0]
                 ignore(chunks.remove(0))
                 ignore(counts.remove(0))
@@ -349,14 +338,14 @@ async fn tail_stream(
     }
     FromStart(k) =>
       if bytes_mode {
-        let mut to_skip = if k > 1 { k - 1 } else { 0 }
+        let mut to_skip : Int64 = if k > 1 { k - 1 } else { 0 }
         for ;; {
           match read_chunk(r, buf) {
             Some(chunk) =>
-              if to_skip >= chunk.length() {
-                to_skip -= chunk.length()
+              if to_skip >= chunk.length().to_int64() {
+                to_skip -= chunk.length().to_int64()
               } else if to_skip > 0 {
-                @stdio.stdout.write(chunk[to_skip:])
+                @stdio.stdout.write(chunk[to_skip.to_int():])
                 to_skip = 0
               } else {
                 @stdio.stdout.write(chunk)
@@ -365,7 +354,7 @@ async fn tail_stream(
           }
         }
       } else {
-        let mut remaining = if k > 1 { k - 1 } else { 0 }
+        let mut remaining : Int64 = if k > 1 { k - 1 } else { 0 }
         for ;; {
           match read_chunk(r, buf) {
             Some(chunk) => {
@@ -437,13 +426,13 @@ async fn main {
         tail_stream(@stdio.stdin, spec, bytes_mode)
       } else {
         let file = @fs.open(path, mode=ReadOnly)
+        defer file.close()
         if file.kind() is Regular {
           tail_file(file, spec, bytes_mode)
         } else {
           // Named pipes and devices are not seekable; stream them instead.
           tail_stream(file, spec, bytes_mode)
         }
-        file.close()
       }
     } catch {
       err => {
