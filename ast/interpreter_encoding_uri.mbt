@@ -28,7 +28,7 @@ fn uri_encode(s : String) -> String {
   }
 
   let bytes = @encoding/utf8.encode(s)
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for b in bytes {
     if is_unreserved_byte(b) {
       buf.write_char(Int::unsafe_to_char(b.to_uint().reinterpret_as_int()))
