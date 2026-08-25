@@ -113,7 +113,7 @@ async fn main {
         return
       }
       if is_separator {
-        if value.length() != 1 {
+        if value.char_length() != 1 {
           @stdio.stderr.write(
             "join: the separator must be a single character\n",
           )

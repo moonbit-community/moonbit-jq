@@ -194,7 +194,7 @@ async fn main {
   let only_delimited = matches.flags.get_or_default("only-delimited", false)
   let delimiter = match option_value(matches, "delimiter") {
     Some(d) => {
-      if d.length() != 1 {
+      if d.char_length() != 1 {
         @stdio.stderr.write("cut: the delimiter must be a single character\n")
         @sys.exit(2)
         return

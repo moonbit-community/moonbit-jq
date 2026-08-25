@@ -228,7 +228,7 @@ async fn main {
   let fold_case = matches.flags.get_or_default("ignore-case", false)
   let separator = match option_value(matches, "field-separator") {
     Some(sep) => {
-      if sep.length() != 1 {
+      if sep.char_length() != 1 {
         @stdio.stderr.write(
           "sort: the field separator must be a single character\n",
         )
