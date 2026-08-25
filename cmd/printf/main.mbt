@@ -371,14 +371,15 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
           j = k
         }
       }
-      value = if mant == 0 {
-        0.0
-      } else {
-        scale2(mant.to_double(), 4 * exp4 + p)
-      }
-      // Hex floats warn only on complete over/underflow: an exact subnormal
-      // like 0x1p-1074 carries no rounding error, so strtod raises no ERANGE.
-      if mant != 0 && (value.is_inf() || value == 0.0) {
+      let total = 4 * exp4 + p
+      value = if mant == 0 { 0.0 } else { scale2(mant.to_double(), total) }
+      // strtod raises ERANGE for complete over/underflow and for INEXACT
+      // subnormals; an exact subnormal like 0x1p-1074 stays silent. The
+      // conversion is inexact when digits were dropped (sticky) or when the
+      // significand's lowest set bit lands below 2^-1074.
+      let inexact_subnormal = is_subnormal(value) &&
+        (sticky || total + mant.ctz() < -1074)
+      if mant != 0 && (value.is_inf() || value == 0.0 || inexact_subnormal) {
         range_warned = true
         ctx.warn("printf: '\{text}': Result too large")
       }
