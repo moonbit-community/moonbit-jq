@@ -16,4 +16,8 @@ members = [
   "./cmd/base64",
   "./cmd/xxd",
   "./cmd/printf",
+  "./cmd/true",
+  "./cmd/false",
+  "./cmd/cat",
+  "./cmd/sleep",
 ]
