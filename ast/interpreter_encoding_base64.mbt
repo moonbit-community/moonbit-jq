@@ -2,7 +2,7 @@
 /// Simple base64 encoding
 fn base64_encode(bytes : Bytes) -> String {
   let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   let len = bytes.length()
   for i = 0; i < len; i = i + 3 {
     let b1 : UInt = bytes[i].to_uint()

@@ -5,7 +5,7 @@ fn eval_string_interpolation(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for pair in parts {
     let (text, expr_opt) = pair
     buf.write_string(text)

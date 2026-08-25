@@ -74,7 +74,7 @@ fn repeat_string(s : String, count : Int) -> String {
   if count <= 0 {
     ""
   } else {
-    let builder = StringBuilder::new()
+    let builder = StringBuilder()
     for _ in 0..<count {
       builder.write_string(s)
     }
