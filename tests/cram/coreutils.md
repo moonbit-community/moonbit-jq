@@ -256,3 +256,34 @@ $ printf.exe '%d\n' 0x1f 010 "'A"
 8
 65
 ```
+
+## true And false
+
+```mooncram
+$ true.exe && echo it worked
+it worked
+```
+
+```mooncram
+$ false.exe || echo it failed
+it failed
+```
+
+## cat
+
+```mooncram
+$ printf 'hello' > c1.txt && printf ' world\n' > c2.txt && cat.exe c1.txt c2.txt
+hello world
+```
+
+```mooncram
+$ printf '\x00\xff\x01ok' | cat.exe | xxd.exe -p
+00ff016f6b
+```
+
+## sleep
+
+```mooncram
+$ sleep.exe 0 && echo done
+done
+```
