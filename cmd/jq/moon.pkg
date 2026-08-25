@@ -10,11 +10,6 @@ import {
   "moonbitlang/x/sys",
 }
 
-pkgtype(kind: "executable")
+supported_targets = "native+wasm"
 
-options(
-  targets: {
-    "main_native.mbt": [ "native", "llvm" ],
-    "main_wasm.mbt": [ "wasm", "wasm-gc", "js" ],
-  },
-)
+pkgtype(kind: "executable")

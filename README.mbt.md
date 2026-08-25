@@ -73,8 +73,19 @@ fn jq(query : String, input : String) -> String raise {
 
 ### Command Line
 
-The native command follows jq's argument order: the filter comes first, followed
-by zero or more input files. When no file is provided, input is read from stdin.
+The `bobzhang/jq` workspace module publishes a portable WebAssembly command that
+can be run directly from Mooncakes:
+
+```bash
+printf '%s' '{"name":"Moon"}' | moonx bobzhang/jq -r '.name'
+moonx bobzhang/jq -n -c '{ok: true, values: [1, 2]}'
+moonx bobzhang/jq -c '.items[]' data.json
+```
+
+`moonx` uses linear-memory WebAssembly by default and forwards every argument
+after `bobzhang/jq` to the command. The command follows jq's argument order: the
+filter comes first, followed by zero or more input files. When no file is
+provided, input is read from stdin.
 
 ```bash
 moon run cmd/jq --target native -- -c '.foo' data.json
@@ -216,11 +227,13 @@ test "readme: recursive descent" {
 
 ```
 moobit-jq/
-├── moon.mod               # Module metadata
+├── moon.work              # Workspace containing three modules
+├── moon.mod               # bobzhang/moonjq library module
 ├── README.mbt.md          # This file (executable documentation)
 ├── TUTORIAL.md            # CLI tutorial
 ├── ast/                   # AST + streaming evaluator + integration tests
-├── cmd/jq/                # Native jq-compatible CLI
+├── cmd/jq/                # bobzhang/jq native + Wasm executable module
+├── cmd/jqlog/             # bobzhang/jqlog native executable module
 ├── parser/                # Parser (includes lexer)
 ├── tests/cram/            # Moon Cram CLI tests
 ```

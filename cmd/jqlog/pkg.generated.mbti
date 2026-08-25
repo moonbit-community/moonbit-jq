@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/moonjq/cmd/jqlog"
+package "bobzhang/jqlog"
 
 // Values
 
