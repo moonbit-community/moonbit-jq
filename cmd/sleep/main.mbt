@@ -25,6 +25,17 @@ fn parse_duration(text : String) -> Double raise CliError {
     [.. rest, 'd'] => (rest, 86400.0)
     _ => (text, 1.0)
   }
+  // Reject a leading minus up front (so "-1e-9999" cannot underflow to an
+  // accepted -0.0) and MoonBit digit separators like "1_0", which the
+  // conventional sleep grammar does not allow.
+  if number is ['-', ..] {
+    raise CliError("sleep: invalid time interval: '\{text}'")
+  }
+  for c in number {
+    if c == '_' {
+      raise CliError("sleep: invalid time interval: '\{text}'")
+    }
+  }
   let value = @string.parse_double(number) catch {
     _ => raise CliError("sleep: invalid time interval: '\{text}'")
   }
@@ -56,8 +67,9 @@ async fn main {
       }
     }
   }
-  let ms = seconds * 1000.0
-  // @async.sleep takes milliseconds in an Int; clamp absurd durations.
+  // @async.sleep takes milliseconds in an Int; round up so sleep never
+  // waits less than requested, and clamp absurd durations.
+  let ms = (seconds * 1000.0).ceil()
   let clamped = if ms > 2147483647.0 { 2147483647 } else { ms.to_int() }
   if clamped > 0 {
     @async.sleep(clamped)

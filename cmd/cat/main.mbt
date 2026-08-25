@@ -17,7 +17,14 @@ async fn main {
     @stdio.stdout.write(help_message() + "\n")
     return
   }
-  let sources = if args.is_empty() { ["-"][:] } else { args }
+  // A leading `--` ends option processing, so `cat -- -h` reads a file
+  // literally named -h.
+  let operands = if args.length() > 0 && args[0] == "--" {
+    args[1:]
+  } else {
+    args
+  }
+  let sources = if operands.is_empty() { ["-"][:] } else { operands }
   let mut failed = false
   for path in sources {
     try {
