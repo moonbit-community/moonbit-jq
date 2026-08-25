@@ -236,7 +236,7 @@ moobit-jq/
 ├── cmd/jqlog/             # bobzhang/jqlog native executable module
 ├── cmd/<tool>/            # bobzhang/<tool> coreutils-style commands (wc, head,
 │                          # tail, nl, uniq, cut, paste, comm, join, tr, sort,
-│                          # base64, xxd), each a standalone moonx module
+│                          # base64, xxd, printf), each a standalone moonx module
 ├── parser/                # Parser (includes lexer)
 ├── tests/cram/            # Moon Cram CLI tests
 ```

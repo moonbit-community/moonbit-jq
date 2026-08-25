@@ -210,3 +210,49 @@ $ printf 'héllo\n' | wc.exe -m
 ```mooncram
 $ printf 'hello' | xxd.exe -l 0
 ```
+
+## printf
+
+```mooncram
+$ printf.exe '%s=%d\n' answer 42
+answer=42
+```
+
+```mooncram
+$ printf.exe '%5d|%-5d|%05d|%+d\n' 42 42 42 7
+   42|42   |00042|+7
+```
+
+```mooncram
+$ printf.exe '%x %X %#o %.3d\n' 255 255 8 5
+ff FF 010 005
+```
+
+```mooncram
+$ printf.exe '%s\n' one two three
+one
+two
+three
+```
+
+```mooncram
+$ printf.exe '%.2f %e %g\n' 3.14159 12345.678 0.0001
+3.14 1.234568e+04 0.0001
+```
+
+```mooncram
+$ printf.exe '%b|\n' 'a\tb'
+a	b|
+```
+
+```mooncram
+$ printf.exe 'x\x41\1012\n'
+xAA2
+```
+
+```mooncram
+$ printf.exe '%d\n' 0x1f 010 "'A"
+31
+8
+65
+```

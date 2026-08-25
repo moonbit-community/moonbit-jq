@@ -15,4 +15,5 @@ members = [
   "./cmd/sort",
   "./cmd/base64",
   "./cmd/xxd",
+  "./cmd/printf",
 ]
