@@ -3,7 +3,8 @@ priv struct Ctx {
   out : Array[Byte]
   args : Array[String]
   mut arg_index : Int
-  warnings : Array[String]
+  messages : Array[String]
+  mut exit_error : Bool
   mut stop : Bool
   mut fatal : String?
 }
@@ -39,20 +40,45 @@ fn Ctx::next_arg(self : Ctx) -> String? {
 }
 
 ///|
+/// Record a diagnostic that also makes the final exit status 1.
 fn Ctx::warn(self : Ctx, msg : String) -> Unit {
-  self.warnings.push(msg)
+  self.messages.push(msg)
+  self.exit_error = true
 }
 
 ///|
-/// Parse a printf numeric argument: optional blanks, 'C or "C for a character
-/// code, otherwise decimal, 0x hex, or leading-0 octal with optional sign.
-fn parse_int_arg(ctx : Ctx, text : String) -> Int64 {
+/// Record a diagnostic that leaves the exit status unchanged.
+fn Ctx::notice(self : Ctx, msg : String) -> Unit {
+  self.messages.push(msg)
+}
+
+///|
+fn is_blank(c : Char) -> Bool {
+  c.to_int() is (0x20 | 0x09 | 0x0A | 0x0D | 0x0B | 0x0C)
+}
+
+///|
+let uint64_max : UInt64 = 0xFFFF_FFFF_FFFF_FFFF
+
+///|
+let int64_max_mag : UInt64 = 0x7FFF_FFFF_FFFF_FFFF
+
+///|
+let int64_min_mag : UInt64 = 0x8000_0000_0000_0000
+
+///|
+/// Parse a printf integer argument like strtoimax/strtoumax: leading blanks,
+/// 'C or "C for a character code, then the longest valid decimal, 0x hex, or
+/// leading-0 octal prefix. Trailing text warns; overflow clamps and warns.
+/// Returns the value's 64-bit pattern.
+fn parse_integer(ctx : Ctx, text : String, unsigned~ : Bool) -> Int64 {
   let chars : Array[Char] = text.iter().collect()
   let mut i = 0
-  while i < chars.length() && (chars[i] == ' ' || chars[i] == '\t') {
+  while i < chars.length() && is_blank(chars[i]) {
     i += 1
   }
   if i >= chars.length() {
+    ctx.warn("printf: '\{text}': expected a numeric value")
     return 0
   }
   if chars[i] == '\'' || chars[i] == '"' {
@@ -67,40 +93,120 @@ fn parse_int_arg(ctx : Ctx, text : String) -> Int64 {
     neg = chars[i] == '-'
     i += 1
   }
-  let sb = StringBuilder()
-  for k in i..<chars.length() {
-    sb.write_char(chars[k])
+  let mut base = 10
+  let mut digits_start = i
+  if i < chars.length() &&
+    chars[i] == '0' &&
+    i + 1 < chars.length() &&
+    (chars[i + 1] == 'x' || chars[i + 1] == 'X') &&
+    i + 2 < chars.length() &&
+    hex_val(chars[i + 2]) >= 0 {
+    base = 16
+    digits_start = i + 2
+  } else if i < chars.length() && chars[i] == '0' {
+    base = 8
   }
-  let rest = sb.to_string()
-  let value : Int64 = try {
-    if rest.has_prefix("0x") || rest.has_prefix("0X") {
-      @string.parse_uint64(rest, base=16).reinterpret_as_int64()
-    } else if rest.has_prefix("0") && rest.length() > 1 {
-      @string.parse_uint64(rest, base=8).reinterpret_as_int64()
+  let mut j = digits_start
+  let mut any = false
+  let mut mag : UInt64 = 0
+  let mut overflow = false
+  while j < chars.length() {
+    let d = match base {
+      16 => hex_val(chars[j])
+      8 => if chars[j] is ('0'..='7') { chars[j].to_int() - 0x30 } else { -1 }
+      _ => if chars[j] is ('0'..='9') { chars[j].to_int() - 0x30 } else { -1 }
+    }
+    if d < 0 {
+      break
+    }
+    any = true
+    let big_base = base.to_int64().reinterpret_as_uint64()
+    let big_d = d.to_int64().reinterpret_as_uint64()
+    if mag > (uint64_max - big_d) / big_base {
+      overflow = true
     } else {
-      @string.parse_uint64(rest, base=10).reinterpret_as_int64()
+      mag = mag * big_base + big_d
     }
-  } catch {
-    _ => {
-      ctx.warn("printf: '\{text}': expected a numeric value")
-      0
-    }
+    j += 1
   }
+  if !any {
+    ctx.warn("printf: '\{text}': expected a numeric value")
+    return 0
+  }
+  if j < chars.length() {
+    ctx.warn("printf: '\{text}': value not completely converted")
+  }
+  if unsigned {
+    if overflow {
+      ctx.warn("printf: '\{text}': Result too large")
+      return uint64_max.reinterpret_as_int64()
+    }
+    let bits = mag.reinterpret_as_int64()
+    return if neg { -bits } else { bits }
+  }
+  if !neg && (overflow || mag > int64_max_mag) {
+    ctx.warn("printf: '\{text}': Result too large")
+    return int64_max_mag.reinterpret_as_int64()
+  }
+  if neg && (overflow || mag > int64_min_mag) {
+    ctx.warn("printf: '\{text}': Result too large")
+    return int64_min_mag.reinterpret_as_int64()
+  }
+  let bits = mag.reinterpret_as_int64()
   if neg {
-    -value
+    -bits
   } else {
-    value
+    bits
   }
 }
 
 ///|
+fn matches_word(chars : Array[Char], start : Int, word : String) -> Bool {
+  let want : Array[Char] = word.iter().collect()
+  if start + want.length() > chars.length() {
+    return false
+  }
+  for k, w in want {
+    let c = chars[start + k]
+    let lower = if c is ('A'..='Z') {
+      (c.to_int() + 0x20).unsafe_to_char()
+    } else {
+      c
+    }
+    if lower != w {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn pow2(exp : Int) -> Double {
+  let mut result = 1.0
+  if exp >= 0 {
+    for _ in 0..<exp {
+      result *= 2.0
+    }
+  } else {
+    for _ in 0..<-exp {
+      result /= 2.0
+    }
+  }
+  result
+}
+
+///|
+/// Parse a printf float argument like strtod: leading blanks, 'C, inf/nan,
+/// hex floats (0x1.8p+2), or the longest valid decimal prefix. Trailing text
+/// warns like GNU printf.
 fn parse_double_arg(ctx : Ctx, text : String) -> Double {
   let chars : Array[Char] = text.iter().collect()
   let mut i = 0
-  while i < chars.length() && (chars[i] == ' ' || chars[i] == '\t') {
+  while i < chars.length() && is_blank(chars[i]) {
     i += 1
   }
   if i >= chars.length() {
+    ctx.warn("printf: '\{text}': expected a numeric value")
     return 0.0
   }
   if chars[i] == '\'' || chars[i] == '"' {
@@ -110,15 +216,123 @@ fn parse_double_arg(ctx : Ctx, text : String) -> Double {
       0.0
     }
   }
-  let sb = StringBuilder()
-  for k in i..<chars.length() {
-    sb.write_char(chars[k])
+  let mut neg = false
+  if chars[i] == '+' || chars[i] == '-' {
+    neg = chars[i] == '-'
+    i += 1
   }
-  @string.parse_double(sb.to_string()) catch {
-    _ => {
-      ctx.warn("printf: '\{text}': expected a numeric value")
-      0.0
+  let mut value = 0.0
+  let mut end = i
+  if matches_word(chars, i, "infinity") {
+    value = 1.0 / 0.0
+    end = i + 8
+  } else if matches_word(chars, i, "inf") {
+    value = 1.0 / 0.0
+    end = i + 3
+  } else if matches_word(chars, i, "nan") {
+    value = 0.0 / 0.0
+    end = i + 3
+  } else if i + 1 < chars.length() &&
+    chars[i] == '0' &&
+    (chars[i + 1] == 'x' || chars[i + 1] == 'X') &&
+    i + 2 < chars.length() &&
+    (hex_val(chars[i + 2]) >= 0 || chars[i + 2] == '.') {
+    // Hexadecimal float: 0xH[.H][p[+-]D]
+    let mut j = i + 2
+    let mut m = 0.0
+    let mut any = false
+    while j < chars.length() && hex_val(chars[j]) >= 0 {
+      m = m * 16.0 + hex_val(chars[j]).to_double()
+      any = true
+      j += 1
     }
+    if j < chars.length() && chars[j] == '.' {
+      j += 1
+      let mut scale = 1.0 / 16.0
+      while j < chars.length() && hex_val(chars[j]) >= 0 {
+        m += hex_val(chars[j]).to_double() * scale
+        scale /= 16.0
+        any = true
+        j += 1
+      }
+    }
+    if !any {
+      // "0x" with no digits parses as 0 with trailing garbage.
+      value = 0.0
+      end = i + 1
+    } else {
+      if j < chars.length() && (chars[j] == 'p' || chars[j] == 'P') {
+        let mut k = j + 1
+        let mut esign = 1
+        if k < chars.length() && (chars[k] == '+' || chars[k] == '-') {
+          if chars[k] == '-' {
+            esign = -1
+          }
+          k += 1
+        }
+        let mut ev = 0
+        let mut edigits = false
+        while k < chars.length() && chars[k] is ('0'..='9') {
+          ev = ev * 10 + (chars[k].to_int() - 0x30)
+          edigits = true
+          k += 1
+        }
+        if edigits {
+          m *= pow2(esign * ev)
+          j = k
+        }
+      }
+      value = m
+      end = j
+    }
+  } else {
+    // Decimal float: D[.D][e[+-]D]
+    let mut j = i
+    let mut any = false
+    while j < chars.length() && chars[j] is ('0'..='9') {
+      any = true
+      j += 1
+    }
+    if j < chars.length() && chars[j] == '.' {
+      j += 1
+      while j < chars.length() && chars[j] is ('0'..='9') {
+        any = true
+        j += 1
+      }
+    }
+    if !any {
+      ctx.warn("printf: '\{text}': expected a numeric value")
+      return 0.0
+    }
+    if j < chars.length() && (chars[j] == 'e' || chars[j] == 'E') {
+      let mut k = j + 1
+      if k < chars.length() && (chars[k] == '+' || chars[k] == '-') {
+        k += 1
+      }
+      let mut edigits = false
+      while k < chars.length() && chars[k] is ('0'..='9') {
+        edigits = true
+        k += 1
+      }
+      if edigits {
+        j = k
+      }
+    }
+    let sb = StringBuilder()
+    sb.write_char('0')
+    for k in i..<j {
+      sb.write_char(chars[k])
+    }
+    value = @string.parse_double(sb.to_string()) catch { _ => 0.0 }
+    end = j
+  }
+  if end < chars.length() {
+    ctx.warn("printf: '\{text}': value not completely converted")
+  }
+  if neg {
+    -value
+  } else {
+    value
   }
 }
 
@@ -198,19 +412,24 @@ fn emit_float(
   zero : Bool,
   alt : Bool,
 ) -> Unit {
-  let upper = conv is ('E' | 'G')
+  let upper = conv is ('E' | 'F' | 'G')
+  let bits_neg = x.reinterpret_as_uint64() >> 63 != 0
   if x.is_nan() || x.is_inf() {
-    let mut body = if x.is_nan() {
-      "nan"
-    } else if x < 0.0 {
-      "-inf"
-    } else {
-      "inf"
-    }
+    let mut body = if x.is_nan() { "nan" } else { "inf" }
     if upper {
       body = body.to_upper()
     }
-    push_string_utf8(ctx.out, pad_text(body, width, minus))
+    let sign = if bits_neg {
+      "-"
+    } else if plus {
+      "+"
+    } else if space {
+      " "
+    } else {
+      ""
+    }
+    // The zero flag pads non-finite values with spaces, like C printf.
+    push_string_utf8(ctx.out, pad_field(sign, body, width, minus, false))
     return
   }
   let p = prec.unwrap_or(6)
@@ -233,70 +452,64 @@ fn emit_float(
 }
 
 ///|
-fn emit_b(
-  ctx : Ctx,
-  text : String,
-  width : Int?,
-  prec : Int?,
-  minus : Bool,
-) -> Unit {
+fn emit_b(ctx : Ctx, text : String) -> Unit {
   let chars : Array[Char] = text.iter().collect()
-  let bytes : Array[Byte] = []
   let mut i = 0
-  let mut stopped = false
   while i < chars.length() {
     if chars[i] == '\\' {
       let (esc, used) = decode_escape(chars, i, in_b=true)
       match esc {
-        Out(chunk) => bytes.append(chunk)
+        Out(chunk) => ctx.out.append(chunk)
         Stop => {
-          stopped = true
-          break
+          ctx.stop = true
+          return
+        }
+        Invalid(msg) => {
+          ctx.fatal = Some(msg)
+          return
         }
       }
       i += used
     } else {
-      push_char_utf8(bytes, chars[i])
+      push_char_utf8(ctx.out, chars[i])
       i += 1
     }
-  }
-  let limited = match prec {
-    Some(p) => if bytes.length() > p { bytes[0:p].to_owned() } else { bytes }
-    None => bytes
-  }
-  let pad = match width {
-    Some(w) => if w > limited.length() { w - limited.length() } else { 0 }
-    None => 0
-  }
-  if pad > 0 && !minus {
-    for _ in 0..<pad {
-      ctx.out.push(b' ')
-    }
-  }
-  ctx.out.append(limited)
-  if pad > 0 && minus {
-    for _ in 0..<pad {
-      ctx.out.push(b' ')
-    }
-  }
-  if stopped {
-    ctx.stop = true
   }
 }
 
 ///|
-fn truncate_chars(s : String, limit : Int) -> String {
-  let sb = StringBuilder()
-  let mut n = 0
-  for c in s {
-    if n >= limit {
-      break
-    }
-    sb.write_char(c)
-    n += 1
+/// GNU printf's per-conversion modifier rules, derived empirically:
+/// %b and %% take no modifiers; # is limited to o/x/X and floats; the zero
+/// flag is invalid for s/c; %c takes no precision.
+fn spec_valid(
+  conv : Char,
+  minus : Bool,
+  plus : Bool,
+  space : Bool,
+  zero : Bool,
+  alt : Bool,
+  width : Int?,
+  prec : Int?,
+) -> Bool {
+  match conv {
+    'd' | 'i' | 'u' => !alt
+    'o' | 'x' | 'X' | 'e' | 'E' | 'f' | 'F' | 'g' | 'G' => true
+    's' => !zero && !alt
+    'c' => !zero && !alt && prec is None
+    'b' | '%' =>
+      !minus &&
+      !plus &&
+      !space &&
+      !zero &&
+      !alt &&
+      width is None &&
+      prec is None
+    _ => true
   }
-  sb.to_string()
 }
+
+///|
+let max_field : Int = 0x7FFFFFFF
 
 ///|
 /// One pass over the format string; conversions consume arguments from ctx.
@@ -315,6 +528,10 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
           ctx.stop = true
           return
         }
+        Invalid(msg) => {
+          ctx.fatal = Some(msg)
+          return
+        }
       }
       i += used
       continue
@@ -324,6 +541,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
       i += 1
       continue
     }
+    let spec_start = i
     let mut j = i + 1
     let mut minus = false
     let mut plus = false
@@ -344,7 +562,12 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     let mut width : Int? = None
     if j < chars.length() && chars[j] == '*' {
       let arg = ctx.next_arg().unwrap_or("")
-      let mut w = parse_int_arg(ctx, arg).to_int()
+      let v = parse_integer(ctx, arg, unsigned=false)
+      if v > max_field.to_int64() || v < -max_field.to_int64() {
+        ctx.fatal = Some("printf: invalid field width: '\{arg}'")
+        return
+      }
+      let mut w = v.to_int()
       if w < 0 {
         minus = true
         w = -w
@@ -354,7 +577,19 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     } else {
       let mut w = 0
       let mut any = false
+      let digits_start = j
       while j < chars.length() && chars[j] is ('0'..='9') {
+        if w > (max_field - 9) / 10 {
+          let sb = StringBuilder()
+          for k in digits_start..<chars.length() {
+            if !(chars[k] is ('0'..='9')) {
+              break
+            }
+            sb.write_char(chars[k])
+          }
+          ctx.fatal = Some("printf: invalid field width: '\{sb}'")
+          return
+        }
         w = w * 10 + (chars[j].to_int() - 0x30)
         any = true
         j += 1
@@ -368,12 +603,29 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
       j += 1
       if j < chars.length() && chars[j] == '*' {
         let arg = ctx.next_arg().unwrap_or("")
-        let p = parse_int_arg(ctx, arg).to_int()
+        let v = parse_integer(ctx, arg, unsigned=false)
+        if v > max_field.to_int64() || v < -max_field.to_int64() {
+          ctx.fatal = Some("printf: invalid precision: '\{arg}'")
+          return
+        }
+        let p = v.to_int()
         prec = if p < 0 { None } else { Some(p) }
         j += 1
       } else {
         let mut p = 0
+        let digits_start = j
         while j < chars.length() && chars[j] is ('0'..='9') {
+          if p > (max_field - 9) / 10 {
+            let sb = StringBuilder()
+            for k in digits_start..<chars.length() {
+              if !(chars[k] is ('0'..='9')) {
+                break
+              }
+              sb.write_char(chars[k])
+            }
+            ctx.fatal = Some("printf: invalid precision: '\{sb}'")
+            return
+          }
           p = p * 10 + (chars[j].to_int() - 0x30)
           j += 1
         }
@@ -386,13 +638,21 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
     }
     let conv = chars[j]
     i = j + 1
+    if !spec_valid(conv, minus, plus, space, zero, alt, width, prec) {
+      let sb = StringBuilder()
+      for k in spec_start..<i {
+        sb.write_char(chars[k])
+      }
+      ctx.fatal = Some("printf: \{sb}: invalid conversion specification")
+      return
+    }
     match conv {
       '%' => ctx.out.push(b'%')
       'd' | 'i' => {
         let arg = ctx.next_arg().unwrap_or("")
         emit_signed(
           ctx,
-          parse_int_arg(ctx, arg),
+          parse_integer(ctx, arg, unsigned=false),
           width,
           prec,
           minus,
@@ -405,7 +665,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         let arg = ctx.next_arg().unwrap_or("")
         emit_unsigned(
           ctx,
-          parse_int_arg(ctx, arg).reinterpret_as_uint64(),
+          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
           10,
           false,
           false,
@@ -419,7 +679,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         let arg = ctx.next_arg().unwrap_or("")
         emit_unsigned(
           ctx,
-          parse_int_arg(ctx, arg).reinterpret_as_uint64(),
+          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
           8,
           false,
           alt,
@@ -433,7 +693,7 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         let arg = ctx.next_arg().unwrap_or("")
         emit_unsigned(
           ctx,
-          parse_int_arg(ctx, arg).reinterpret_as_uint64(),
+          parse_integer(ctx, arg, unsigned=true).reinterpret_as_uint64(),
           16,
           conv == 'X',
           alt,
@@ -444,24 +704,32 @@ fn scan_format(ctx : Ctx, chars : Array[Char]) -> Unit {
         )
       }
       's' => {
+        // GNU printf measures %s width and precision in bytes.
         let arg = ctx.next_arg().unwrap_or("")
-        let value = match prec {
-          Some(p) => truncate_chars(arg, p)
-          None => arg
+        let bytes : Array[Byte] = []
+        push_string_utf8(bytes, arg)
+        let limited = match prec {
+          Some(p) =>
+            if bytes.length() > p {
+              bytes[0:p].to_owned()
+            } else {
+              bytes
+            }
+          None => bytes
         }
-        push_string_utf8(ctx.out, pad_text(value, width, minus))
+        emit_padded_bytes(ctx.out, limited, width, minus)
       }
       'c' => {
+        // GNU printf emits only the first byte of the argument.
         let arg = ctx.next_arg().unwrap_or("")
-        let value = match arg.get_char(0) {
-          Some(ch) => ch.to_string()
-          None => ""
-        }
-        push_string_utf8(ctx.out, pad_text(value, width, minus))
+        let bytes : Array[Byte] = []
+        push_string_utf8(bytes, arg)
+        let first = if bytes.length() > 0 { [bytes[0]] } else { [] }
+        emit_padded_bytes(ctx.out, first, width, minus)
       }
       'b' => {
         let arg = ctx.next_arg().unwrap_or("")
-        emit_b(ctx, arg, width, prec, minus)
+        emit_b(ctx, arg)
       }
       'f' | 'F' | 'e' | 'E' | 'g' | 'G' => {
         let arg = ctx.next_arg().unwrap_or("")
@@ -510,7 +778,8 @@ async fn main {
     out: [],
     args: operands[1:].to_owned(),
     arg_index: 0,
-    warnings: [],
+    messages: [],
+    exit_error: false,
     stop: false,
     fatal: None,
   }
@@ -521,12 +790,18 @@ async fn main {
     if ctx.stop || !(ctx.fatal is None) {
       break
     }
-    if ctx.arg_index >= ctx.args.length() || ctx.arg_index == before {
+    if ctx.arg_index >= ctx.args.length() {
+      break
+    }
+    if ctx.arg_index == before {
+      ctx.notice(
+        "printf: warning: ignoring excess arguments, starting with '\{ctx.args[ctx.arg_index]}'",
+      )
       break
     }
   }
   @stdio.stdout.write(Bytes::from_array(ctx.out))
-  for msg in ctx.warnings {
+  for msg in ctx.messages {
     @stdio.stderr.write(msg + "\n")
   }
   match ctx.fatal {
@@ -537,7 +812,7 @@ async fn main {
     }
     None => ()
   }
-  if ctx.warnings.length() > 0 {
+  if ctx.exit_error {
     @sys.exit(1)
   }
 }

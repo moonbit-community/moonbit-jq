@@ -3,6 +3,7 @@
 priv enum EscOut {
   Out(Array[Byte])
   Stop
+  Invalid(String)
 }
 
 ///|
@@ -95,39 +96,41 @@ fn decode_escape(
       count += 1
     }
     if count == 0 {
-      return (Out([b'\\', b'x']), 2)
+      return (Invalid("printf: missing hexadecimal number in escape"), 2)
     }
     return (Out([value.to_byte()]), 2 + count)
   }
   if e == 'u' || e == 'U' {
     let need = if e == 'u' { 4 } else { 8 }
     let mut value = 0
-    let mut ok = true
     for k in 0..<need {
       let idx = start + 2 + k
       if idx >= chars.length() || hex_val(chars[idx]) < 0 {
-        ok = false
-        break
+        return (Invalid("printf: missing hexadecimal number in escape"), 2)
       }
       value = value * 16 + hex_val(chars[idx])
     }
-    if ok {
-      match value.to_char() {
-        Some(c) => {
-          let out : Array[Byte] = []
-          push_char_utf8(out, c)
-          return (Out(out), 2 + need)
-        }
-        None => ()
+    match value.to_char() {
+      Some(c) => {
+        let out : Array[Byte] = []
+        push_char_utf8(out, c)
+        (Out(out), 2 + need)
       }
+      None =>
+        (
+          Invalid(
+            "printf: invalid universal character name \\\{e}\{value.to_string(radix=16)}",
+          ),
+          2 + need,
+        )
     }
-    return (Out([b'\\', e.to_int().to_byte()]), 2)
+  } else {
+    // Unknown escape: print backslash and the character literally.
+    let out : Array[Byte] = []
+    out.push(b'\\')
+    push_char_utf8(out, e)
+    (Out(out), 2)
   }
-  // Unknown escape: print backslash and the character literally.
-  let out : Array[Byte] = []
-  out.push(b'\\')
-  push_char_utf8(out, e)
-  (Out(out), 2)
 }
 
 ///|
@@ -185,20 +188,27 @@ fn pad_field(
 }
 
 ///|
-/// Pad text by Unicode character count (used by %s and %c).
-fn pad_text(s : String, width : Int?, minus : Bool) -> String {
-  match width {
-    Some(w) => {
-      let n = s.char_length()
-      if n >= w {
-        s
-      } else if minus {
-        s + repeat_char(' ', w - n)
-      } else {
-        repeat_char(' ', w - n) + s
-      }
+/// Append raw bytes into `out`, space-padded to `width` bytes.
+fn emit_padded_bytes(
+  out : Array[Byte],
+  bytes : Array[Byte],
+  width : Int?,
+  minus : Bool,
+) -> Unit {
+  let pad = match width {
+    Some(w) => if w > bytes.length() { w - bytes.length() } else { 0 }
+    None => 0
+  }
+  if pad > 0 && !minus {
+    for _ in 0..<pad {
+      out.push(b' ')
     }
-    None => s
+  }
+  out.append(bytes)
+  if pad > 0 && minus {
+    for _ in 0..<pad {
+      out.push(b' ')
+    }
   }
 }
 
