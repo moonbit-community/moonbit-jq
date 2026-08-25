@@ -1,10 +1,11 @@
 import {
   "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/io",
   "moonbitlang/async/stdio",
   "moonbitlang/core/argparse",
   "moonbitlang/core/env",
   "moonbitlang/core/string",
-  "moonbitlang/x/fs",
   "moonbitlang/x/sys",
 }
 

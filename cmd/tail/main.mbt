@@ -12,6 +12,9 @@ priv enum CountSpec {
 }
 
 ///|
+let chunk_size : Int = 65536
+
+///|
 fn tail_command() -> @argparse.Command {
   Command(
     "tail",
@@ -79,17 +82,15 @@ fn parse_spec(text : String) -> CountSpec raise CliError {
 }
 
 ///|
-/// Select lines as raw bytes so binary or invalid-UTF-8 data passes through
-/// unchanged. A trailing newline terminates the final line rather than
-/// starting an empty one.
+/// Select lines from an in-memory buffer (used for streamed input after the
+/// ring buffer has trimmed it down). A trailing newline terminates the final
+/// line rather than starting an empty one.
 fn select_lines(data : Bytes, spec : CountSpec) -> BytesView {
   match spec {
     Last(n) => {
       if n <= 0 || data.length() == 0 {
         return data[0:0]
       }
-      // Scan backward; the trailing newline (if any) does not count as a
-      // line boundary of its own.
       let mut i = if data[data.length() - 1] is b'\n' {
         data.length() - 2
       } else {
@@ -140,11 +141,255 @@ fn select_bytes(data : Bytes, spec : CountSpec) -> BytesView {
 }
 
 ///|
-async fn read_source_bytes(path : String) -> Bytes {
-  if path == "-" {
-    @stdio.stdin.read_all().binary()
+fn count_newlines(chunk : Bytes) -> Int {
+  let mut n = 0
+  for b in chunk {
+    if b is b'\n' {
+      n += 1
+    }
+  }
+  n
+}
+
+///|
+fn concat_chunks(chunks : Array[Bytes]) -> Bytes {
+  let out : Array[Byte] = []
+  for chunk in chunks {
+    for b in chunk {
+      out.push(b)
+    }
+  }
+  Bytes::from_array(out)
+}
+
+///|
+/// Stream file bytes in [start, end) to stdout in fixed-size chunks.
+async fn stream_range(file : @fs.File, start : Int64, end : Int64) -> Unit {
+  let mut pos = start
+  while pos < end {
+    let len = if end - pos < chunk_size.to_int64() {
+      (end - pos).to_int()
+    } else {
+      chunk_size
+    }
+    @stdio.stdout.write(file.read_exactly_at(len, position=pos))
+    pos += len.to_int64()
+  }
+}
+
+///|
+/// GNU-style tail for seekable files: find the start of the selection by
+/// scanning backward (or forward for +K) in fixed-size chunks, then stream
+/// it out. Memory stays bounded by the chunk size for any file size.
+async fn tail_file(
+  file : @fs.File,
+  spec : CountSpec,
+  bytes_mode : Bool,
+) -> Unit {
+  let size = file.size()
+  if bytes_mode {
+    let start : Int64 = match spec {
+      Last(n) => {
+        let want = n.to_int64()
+        if want >= size {
+          0
+        } else {
+          size - want
+        }
+      }
+      FromStart(k) => {
+        let s = (k - 1).to_int64()
+        if s > size {
+          size
+        } else {
+          s
+        }
+      }
+    }
+    stream_range(file, start, size)
+    return
+  }
+  match spec {
+    Last(n) => {
+      if n <= 0 || size == 0 {
+        return
+      }
+      let mut newlines = 0
+      let mut start : Int64 = 0
+      let mut found = false
+      let mut pos = size
+      let mut at_file_end = true
+      while pos > 0 && !found {
+        let len = if pos < chunk_size.to_int64() {
+          pos.to_int()
+        } else {
+          chunk_size
+        }
+        let chunk = file.read_exactly_at(len, position=pos - len.to_int64())
+        let mut idx = chunk.length() - 1
+        if at_file_end && chunk[idx] is b'\n' {
+          // The trailing newline terminates the last line rather than
+          // starting an empty one.
+          idx -= 1
+        }
+        at_file_end = false
+        while idx >= 0 {
+          if chunk[idx] is b'\n' {
+            newlines += 1
+            if newlines == n {
+              start = pos - len.to_int64() + idx.to_int64() + 1
+              found = true
+              break
+            }
+          }
+          idx -= 1
+        }
+        pos -= len.to_int64()
+      }
+      stream_range(file, start, size)
+    }
+    FromStart(k) => {
+      if k <= 1 {
+        stream_range(file, 0, size)
+        return
+      }
+      // Scan forward for the (k-1)-th newline, then stream the rest.
+      let mut seen = 0
+      let mut pos : Int64 = 0
+      while pos < size {
+        let len = if size - pos < chunk_size.to_int64() {
+          (size - pos).to_int()
+        } else {
+          chunk_size
+        }
+        let chunk = file.read_exactly_at(len, position=pos)
+        for i in 0..<chunk.length() {
+          if chunk[i] is b'\n' {
+            seen += 1
+            if seen == k - 1 {
+              stream_range(file, pos + i.to_int64() + 1, size)
+              return
+            }
+          }
+        }
+        pos += len.to_int64()
+      }
+    }
+  }
+}
+
+///|
+async fn read_chunk(r : &@io.Reader, buf : FixedArray[Byte]) -> Bytes? {
+  let n = r.read(buf)
+  if n == 0 {
+    None
   } else {
-    @fs.read_file_to_bytes(path)
+    Some(Bytes::from_array(buf[0:n]))
+  }
+}
+
+///|
+/// Tail an unseekable stream (stdin, pipes). `Last` keeps a ring of chunks
+/// holding just the bytes of the selection, so memory is bounded by the
+/// output size plus one chunk; `FromStart` writes through once the start
+/// point has passed, buffering nothing.
+async fn tail_stream(
+  r : &@io.Reader,
+  spec : CountSpec,
+  bytes_mode : Bool,
+) -> Unit {
+  let buf : FixedArray[Byte] = FixedArray::make(chunk_size, 0)
+  match spec {
+    Last(n) => {
+      if n <= 0 {
+        // Drain the input like GNU tail, producing no output.
+        while true {
+          if read_chunk(r, buf) is None {
+            break
+          }
+        }
+        return
+      }
+      let chunks : Array[Bytes] = []
+      let counts : Array[Int] = []
+      let mut total_newlines = 0
+      let mut total_bytes = 0
+      for ;; {
+        match read_chunk(r, buf) {
+          Some(chunk) => {
+            chunks.push(chunk)
+            total_bytes += chunk.length()
+            if bytes_mode {
+              while chunks.length() > 1 && total_bytes - chunks[0].length() >= n {
+                total_bytes -= chunks[0].length()
+                ignore(chunks.remove(0))
+              }
+            } else {
+              let c = count_newlines(chunk)
+              counts.push(c)
+              total_newlines += c
+              // Keep at least n+1 newlines beyond the dropped prefix so the
+              // last n lines stay fully buffered.
+              while chunks.length() > 1 && total_newlines - counts[0] >= n + 1 {
+                total_newlines -= counts[0]
+                ignore(chunks.remove(0))
+                ignore(counts.remove(0))
+              }
+            }
+          }
+          None => break
+        }
+      }
+      let data = concat_chunks(chunks)
+      if bytes_mode {
+        @stdio.stdout.write(select_bytes(data, spec))
+      } else {
+        @stdio.stdout.write(select_lines(data, spec))
+      }
+    }
+    FromStart(k) =>
+      if bytes_mode {
+        let mut to_skip = if k > 1 { k - 1 } else { 0 }
+        for ;; {
+          match read_chunk(r, buf) {
+            Some(chunk) =>
+              if to_skip >= chunk.length() {
+                to_skip -= chunk.length()
+              } else if to_skip > 0 {
+                @stdio.stdout.write(chunk[to_skip:])
+                to_skip = 0
+              } else {
+                @stdio.stdout.write(chunk)
+              }
+            None => break
+          }
+        }
+      } else {
+        let mut remaining = if k > 1 { k - 1 } else { 0 }
+        for ;; {
+          match read_chunk(r, buf) {
+            Some(chunk) => {
+              if remaining == 0 {
+                @stdio.stdout.write(chunk)
+                continue
+              }
+              let mut emitted = false
+              for i in 0..<chunk.length() {
+                if chunk[i] is b'\n' {
+                  remaining -= 1
+                  if remaining == 0 {
+                    @stdio.stdout.write(chunk[i + 1:])
+                    emitted = true
+                    break
+                  }
+                }
+              }
+              ignore(emitted)
+            }
+            None => break
+          }
+        }
+      }
   }
 }
 
@@ -161,16 +406,15 @@ async fn main {
   }
   let quiet = matches.flags.get_or_default("quiet", false)
   let verbose = matches.flags.get_or_default("verbose", false)
-  let (line_spec, byte_spec) = try {
-    let byte_spec : CountSpec? = match option_value(matches, "bytes") {
-      Some(text) => Some(parse_spec(text))
-      None => None
+  let (spec, bytes_mode) = try {
+    match option_value(matches, "bytes") {
+      Some(text) => (parse_spec(text), true)
+      None =>
+        match option_value(matches, "lines") {
+          Some(text) => (parse_spec(text), false)
+          None => (Last(10), false)
+        }
     }
-    let line_spec = match option_value(matches, "lines") {
-      Some(text) => parse_spec(text)
-      None => Last(10)
-    }
-    (line_spec, byte_spec)
   } catch {
     CliError(msg) => {
       @stdio.stderr.write("\{msg}\n")
@@ -189,10 +433,17 @@ async fn main {
       @stdio.stdout.write("\{prefix}==> \{name} <==\n")
     }
     try {
-      let data = read_source_bytes(path)
-      match byte_spec {
-        Some(spec) => @stdio.stdout.write(select_bytes(data, spec))
-        None => @stdio.stdout.write(select_lines(data, line_spec))
+      if path == "-" {
+        tail_stream(@stdio.stdin, spec, bytes_mode)
+      } else {
+        let file = @fs.open(path, mode=ReadOnly)
+        if file.kind() is Regular {
+          tail_file(file, spec, bytes_mode)
+        } else {
+          // Named pipes and devices are not seekable; stream them instead.
+          tail_stream(file, spec, bytes_mode)
+        }
+        file.close()
       }
     } catch {
       err => {
