@@ -4,6 +4,9 @@ priv suberror CliError {
 }
 
 ///|
+let chunk_size : Int = 65536
+
+///|
 fn head_command() -> @argparse.Command {
   Command(
     "head",
@@ -47,8 +50,8 @@ fn option_value(matches : @argparse.Matches, name : String) -> String? {
 }
 
 ///|
-fn parse_count(text : String) -> Int raise CliError {
-  let n = @string.parse_int(text) catch {
+fn parse_count(text : String) -> Int64 raise CliError {
+  let n = @string.parse_int64(text) catch {
     _ => raise CliError("head: invalid count: '\{text}'")
   }
   if n < 0 {
@@ -58,30 +61,67 @@ fn parse_count(text : String) -> Int raise CliError {
 }
 
 ///|
-/// Take the first n lines as raw bytes so that binary or invalid-UTF-8 data
-/// passes through unchanged; a line ends at '\n' or at end of input.
-fn take_lines(data : Bytes, n : Int) -> BytesView {
-  if n <= 0 {
-    return data[0:0]
+async fn read_chunk(r : &@io.Reader, buf : FixedArray[Byte]) -> Bytes? {
+  let n = r.read(buf)
+  if n == 0 {
+    None
+  } else {
+    Some(Bytes::from_array(buf[0:n]))
   }
-  let mut seen = 0
-  for i in 0..<data.length() {
-    if data[i] is b'\n' {
-      seen += 1
-      if seen == n {
-        return data[0:i + 1]
-      }
-    }
-  }
-  data
 }
 
 ///|
-async fn read_source_bytes(path : String) -> Bytes {
-  if path == "-" {
-    @stdio.stdin.read_all().binary()
-  } else {
-    @fs.read_file_to_bytes(path)
+/// Stream the first N lines (or bytes) from a reader, stopping as soon as
+/// the quota is met so the rest of the input is never read. Binary data
+/// passes through unchanged.
+async fn head_reader(
+  r : &@io.Reader,
+  line_count : Int64,
+  byte_count : Int64?,
+) -> Unit {
+  let buf : FixedArray[Byte] = FixedArray::make(chunk_size, 0)
+  match byte_count {
+    Some(n) => {
+      let mut remaining = n
+      while remaining > 0 {
+        match read_chunk(r, buf) {
+          Some(chunk) =>
+            if chunk.length().to_int64() <= remaining {
+              @stdio.stdout.write(chunk)
+              remaining -= chunk.length().to_int64()
+            } else {
+              @stdio.stdout.write(chunk[0:remaining.to_int()])
+              remaining = 0
+            }
+          None => break
+        }
+      }
+    }
+    None => {
+      let mut remaining = line_count
+      while remaining > 0 {
+        match read_chunk(r, buf) {
+          Some(chunk) => {
+            let mut cut = -1
+            for i in 0..<chunk.length() {
+              if chunk[i] is b'\n' {
+                remaining -= 1
+                if remaining == 0 {
+                  cut = i + 1
+                  break
+                }
+              }
+            }
+            if cut >= 0 {
+              @stdio.stdout.write(chunk[0:cut])
+            } else {
+              @stdio.stdout.write(chunk)
+            }
+          }
+          None => break
+        }
+      }
+    }
   }
 }
 
@@ -99,7 +139,7 @@ async fn main {
   let quiet = matches.flags.get_or_default("quiet", false)
   let verbose = matches.flags.get_or_default("verbose", false)
   let (line_count, byte_count) = try {
-    let byte_count : Int? = match option_value(matches, "bytes") {
+    let byte_count : Int64? = match option_value(matches, "bytes") {
       Some(text) => Some(parse_count(text))
       None => None
     }
@@ -126,13 +166,12 @@ async fn main {
       @stdio.stdout.write("\{prefix}==> \{name} <==\n")
     }
     try {
-      let data = read_source_bytes(path)
-      match byte_count {
-        Some(n) => {
-          let take = if n < data.length() { n } else { data.length() }
-          @stdio.stdout.write(data[0:take])
-        }
-        None => @stdio.stdout.write(take_lines(data, line_count))
+      if path == "-" {
+        head_reader(@stdio.stdin, line_count, byte_count)
+      } else {
+        let file = @fs.open(path, mode=ReadOnly)
+        defer file.close()
+        head_reader(file, line_count, byte_count)
       }
     } catch {
       err => {
