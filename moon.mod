@@ -1,6 +1,6 @@
 name = "bobzhang/moonjq"
 
-version = "0.1.1"
+version = "0.1.2"
 
 readme = "README.mbt.md"
 
@@ -11,7 +11,7 @@ keywords = [ "jq", "json", "query" ]
 description = "A jq implementation in MoonBit"
 
 import {
-  "moonbitlang/async@0.21.0",
+  "moonbitlang/async@0.21.1",
   "moonbitlang/x@0.5.1",
 }
 
