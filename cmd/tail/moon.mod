@@ -1,6 +1,6 @@
 name = "bobzhang/tail"
 
-version = "0.1.1"
+version = "0.1.2"
 
 readme = "README.md"
 
@@ -13,7 +13,7 @@ keywords = [ "tail", "coreutils", "text", "cli", "wasm" ]
 description = "Print the last lines or bytes of inputs like tail, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.0",
+  "moonbitlang/async@0.21.1",
   "moonbitlang/x@0.5.1",
 }
 

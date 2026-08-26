@@ -1,6 +1,6 @@
 name = "bobzhang/sort"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
@@ -13,7 +13,7 @@ keywords = [ "sort", "coreutils", "text", "cli", "wasm" ]
 description = "Sort lines of text like sort, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.0",
+  "moonbitlang/async@0.21.1",
   "moonbitlang/x@0.5.1",
 }
 

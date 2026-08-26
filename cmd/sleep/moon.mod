@@ -1,6 +1,6 @@
 name = "bobzhang/sleep"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
@@ -13,7 +13,7 @@ keywords = [ "sleep", "coreutils", "timer", "cli", "wasm" ]
 description = "Pause for a number of seconds, like sleep, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.0",
+  "moonbitlang/async@0.21.1",
   "moonbitlang/x@0.5.1",
 }
 
