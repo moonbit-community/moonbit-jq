@@ -247,7 +247,7 @@ fn dec_of(x : Double) -> Dec {
     (frac | implicit_bit, biased - 1075)
   }
   if m == 0 {
-    return { neg, digs: [], exp: 0 }
+    return { neg, digs: [], exp: 0, }
   }
   let big_m = BigInt::from_uint64(m)
   let (n, point) = if e2 >= 0 {
@@ -264,7 +264,7 @@ fn dec_of(x : Double) -> Dec {
   while digs.length() > 0 && digs[digs.length() - 1] == 0 {
     ignore(digs.pop())
   }
-  { neg, digs, exp }
+  { neg, digs, exp, }
 }
 
 ///|
@@ -324,9 +324,9 @@ fn dec_round_sig(d : Dec, k : Int) -> Dec {
     ignore(kept.pop())
   }
   if kept.is_empty() {
-    { neg: d.neg, digs: [], exp: 0 }
+    { neg: d.neg, digs: [], exp: 0, }
   } else {
-    { neg: d.neg, digs: kept, exp }
+    { neg: d.neg, digs: kept, exp, }
   }
 }
 
@@ -338,15 +338,15 @@ fn fmt_f(d : Dec, p : Int, alt : Bool) -> String {
   } else {
     let k = d.exp + p
     if k < 0 {
-      { neg: d.neg, digs: [], exp: 0 }
+      { neg: d.neg, digs: [], exp: 0, }
     } else if k == 0 {
       // The value sits entirely below the rounding place; it rounds up to
       // one unit in the last place only past the halfway point (a tie
       // rounds toward the even 0).
       if rounds_up(d.digs, 0) {
-        { neg: d.neg, digs: [1], exp: -p + 1 }
+        { neg: d.neg, digs: [1], exp: -p + 1, }
       } else {
-        { neg: d.neg, digs: [], exp: 0 }
+        { neg: d.neg, digs: [], exp: 0, }
       }
     } else {
       dec_round_sig(d, k)

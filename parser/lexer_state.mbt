@@ -9,7 +9,7 @@ priv struct Lexer {
 ///|
 /// Create a new lexer
 fn Lexer::new(input : String) -> Lexer {
-  { input, pos: 0, tokens: [] }
+  { input, pos: 0, tokens: [], }
 }
 
 ///|

@@ -92,7 +92,7 @@ fn parse_cli(args : ArrayView[String]) -> CliParseResult {
     Some(source) => source
     None => Stdin
   }
-  Run({ query, input })
+  Run({ query, input, })
 }
 
 ///|

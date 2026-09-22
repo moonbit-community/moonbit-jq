@@ -8,7 +8,7 @@ priv struct Counts {
 
 ///|
 fn Counts::new() -> Counts {
-  { lines: 0, words: 0, chars: 0, bytes: 0 }
+  { lines: 0, words: 0, chars: 0, bytes: 0, }
 }
 
 ///|
@@ -186,9 +186,9 @@ async fn main {
   let chars = matches.flags.get_or_default("chars", false)
   let bytes = matches.flags.get_or_default("bytes", false)
   let selection : Selection = if lines || words || chars || bytes {
-    { lines, words, chars, bytes }
+    { lines, words, chars, bytes, }
   } else {
-    { lines: true, words: true, chars: false, bytes: true }
+    { lines: true, words: true, chars: false, bytes: true, }
   }
   let files = matches.values.get("files").unwrap_or([])
   let total = Counts::new()
