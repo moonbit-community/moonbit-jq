@@ -1,6 +1,6 @@
 name = "bobzhang/jqlog"
 
-version = "0.1.1"
+version = "0.1.2"
 
 readme = "README.md"
 
@@ -13,7 +13,7 @@ keywords = [ "jq", "json", "jsonl", "logs", "cli" ]
 description = "Run jq-compatible filters over JSON Lines input"
 
 import {
-  "bobzhang/moonjq@0.1.2",
+  "bobzhang/moonjq@0.1.3",
   "moonbitlang/async@0.21.1",
   "moonbitlang/x@0.5.1",
 }
