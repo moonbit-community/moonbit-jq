@@ -18,5 +18,5 @@ fn eval_update(
       [] => to_delete.push(pair.0)
     }
   }
-  Iter::singleton(delete_paths(updated, to_delete))
+  Iter::singleton(delete_paths(updated, to_delete.map(p => p)))
 }

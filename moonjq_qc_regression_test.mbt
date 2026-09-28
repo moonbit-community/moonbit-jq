@@ -479,3 +479,26 @@ test "regression: // yields every truthy left output" {
     _ => fail("errors on the left of // must propagate")
   }
 }
+
+///|
+test "regression: deleting duplicate or overlapping paths" {
+  // Review round 2, finding 1 on PR #30. Every expectation checked with
+  // jq 1.7.1:
+  //   [1,2,3] | (.[0], .[0]) |= empty           => [2,3]
+  //   [1,2,3] | delpaths([[0],[0]])              => [2,3]
+  //   [[1,2],[3]] | delpaths([[0,1],[0]])        => [[3]]
+  //   {"a":{"b":1}} | delpaths([["a","b"],["a"]]) => {}
+  json_inspect(regression_run("(.[0], .[0]) |= empty", "[1,2,3]"), content=[
+    [2, 3],
+  ])
+  json_inspect(regression_run("delpaths([[0],[0]])", "[1,2,3]"), content=[
+    [2, 3],
+  ])
+  json_inspect(regression_run("delpaths([[0,1],[0]])", "[[1,2],[3]]"), content=[
+    [[3]],
+  ])
+  json_inspect(
+    regression_run("delpaths([[\"a\",\"b\"],[\"a\"]])", "{\"a\":{\"b\":1}}"),
+    content=[{}],
+  )
+}
