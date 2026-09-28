@@ -149,11 +149,22 @@ fn path_each(
       })
     Comma(left, right) =>
       path_each(left, input, env, emit) && path_each(right, input, env, emit)
-    // `?` suppresses errors raised while evaluating its body (the body is
-    // evaluated first, so errors from `emit` are not caught). A non-path
-    // result is not an error here; it is rejected at the end.
+    // `?` stops its body at the first error but keeps the outputs produced
+    // before it (jq 1.7.1: `[1,2] | [path((.[], (1+"x"))?)]` is [[0],[1]]).
+    // The body runs first, so errors raised downstream by `emit` are not
+    // caught. A non-path result is not an error here; it is rejected at the
+    // end.
     Optional(inner) => {
-      let entries = path_entries(inner, input, env) catch { _ => [] }
+      let entries : Array[(Array[Json]?, Json)] = []
+      try
+        path_each(inner, input, env, entry => {
+          entries.push(entry)
+          true
+        })
+        |> ignore
+      catch {
+        _ => ()
+      }
       for entry in entries {
         if !emit(entry) {
           return false

@@ -597,3 +597,20 @@ test "regression: last(f) is not a path expression" {
   }
   json_inspect(regression_run("last(.[])", "[1,2]"), content=[2])
 }
+
+///|
+test "regression: ? in a path expression keeps outputs before the error" {
+  // Review round 3, finding 2 on PR #30. Checked with jq 1.7.1:
+  //   [1,2] | ((.[], (1+"x"))?) |= 10       => [10,10]
+  //   [1,2] | [path((.[], (1+"x"))?)]       => [[0],[1]]
+  //   {} | [path((.a, (1+"x"), .b)?)]       => [["a"]]
+  json_inspect(regression_run("((.[], (1 + \"x\"))?) |= 10", "[1,2]"), content=[
+    [10, 10],
+  ])
+  json_inspect(regression_run("[path((.[], (1 + \"x\"))?)]", "[1,2]"), content=[
+    [[0], [1]],
+  ])
+  json_inspect(regression_run("[path((.a, (1 + \"x\"), .b)?)]", "{}"), content=[
+    [["a"]],
+  ])
+}
