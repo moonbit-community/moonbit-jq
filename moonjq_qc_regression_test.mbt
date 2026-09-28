@@ -207,3 +207,17 @@ test "regression: p = v sets the paths of p instead of returning v" {
   ])
   json_inspect(regression_run(".a = empty", "{\"a\":1}"), content=[])
 }
+
+///|
+test "regression: p |= f updates every path of p in place" {
+  // `.a.b.c |= 2` returned only the innermost object, `.[] |= f` left the
+  // array unchanged and `(.a, .b) |= 3` returned 3.
+  json_inspect(regression_run(".a.b.c |= 2", "{\"a\":{\"b\":{\"c\":1}}}"), content=[
+    { "a": { "b": { "c": 2 } } },
+  ])
+  json_inspect(regression_run(".[] |= . + 1", "[1,2]"), content=[[2, 3]])
+  json_inspect(regression_run("(.a, .b) |= 3", "{}"), content=[
+    { "a": 3, "b": 3 },
+  ])
+  json_inspect(regression_run(".a.b += 1", "{}"), content=[{ "a": { "b": 1 } }])
+}
