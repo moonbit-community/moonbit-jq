@@ -31,7 +31,7 @@ test "coverage: iterator helpers and path edges" {
   assert_coverage_eval_error("any", "1")
   assert_coverage_eval_error("all", "1")
   json_inspect(coverage_eval(". >= 1", "1"), content=[true])
-  json_inspect(coverage_eval(". < []", "false"), content=[false])
+  json_inspect(coverage_eval(". < []", "false"), content=[true])
   json_inspect(coverage_eval("flatten(0)", "[1, [2]]"), content=[[1, [2]]])
   json_inspect(coverage_eval("setpath([]; 1)", "{\"a\": 1}"), content=[1])
   json_inspect(coverage_eval("setpath([{}]; 1)", "{\"a\": 1}"), content=[

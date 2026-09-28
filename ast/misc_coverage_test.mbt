@@ -29,7 +29,7 @@ test "coverage: in(array) checks index bounds" {
 
 ///|
 test "coverage: object-object comparison uses object ordering" {
-  json_inspect(coverage_eval("{\"a\":1} < {\"b\":2}", "null"), content=[false])
+  json_inspect(coverage_eval("{\"a\":1} < {\"b\":2}", "null"), content=[true])
 }
 
 ///|
