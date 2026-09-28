@@ -44,15 +44,15 @@ fn eval_alternative(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let left_results = eval_with_env(left, input, env).collect()
-  match left_results {
-    [] => eval_with_env(right, input, env)
-    [first, ..] =>
-      if @ast_internal.is_truthy(first) {
-        left_results.iter()
-      } else {
-        eval_with_env(right, input, env)
-      }
+  // jq 1.7: `a // b` yields every output of `a` that is neither false nor
+  // null, or the outputs of `b` if there are none; errors raised by `a`
+  // are suppressed.
+  let left_results = eval_with_env(left, input, env).collect() catch { _ => [] }
+  let truthy = left_results.filter(@ast_internal.is_truthy)
+  if truthy.is_empty() {
+    eval_with_env(right, input, env)
+  } else {
+    truthy.iter()
   }
 }
 

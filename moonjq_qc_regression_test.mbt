@@ -448,3 +448,22 @@ test "regression: add accepts objects like reduce .[]" {
   ])
   json_inspect(regression_run("add", "{}"), content=[null])
 }
+
+///|
+test "regression: // yields every truthy left output" {
+  // Found by "qc: path(f) as $p | getpath($p) reproduces f" with
+  // `.[]? // .` on {"a":"","b":null}: once the first left output was
+  // truthy, falsy ones were emitted too, and a falsy first output hid
+  // later truthy ones. jq 1.7.1:
+  //   [(1, null, 2) // 3]     => [1,2]
+  //   [(null, 1) // 3]        => [1]
+  //   [(false, null) // 3]    => [3]
+  //   ["x"] | [(.[0] + 1) // 3] => [3]  (the error is suppressed)
+  json_inspect(
+    regression_run(
+      "[(1, null, 2) // 3], [(null, 1) // 3], [(false, null) // 3], [(.[0] + 1) // 3]",
+      "[\"x\"]",
+    ),
+    content=[[1, 2], [1], [3], [3]],
+  )
+}
