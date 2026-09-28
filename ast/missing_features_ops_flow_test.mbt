@@ -53,7 +53,7 @@ test "missing: assignment operator =" {
   debug_inspect(
     test_feature(".a = 10", "{\"a\":5}"),
     content=(
-      #|"Number(10)"
+      #|"Object({ \"a\": Number(10) })"
     ),
   )
 }

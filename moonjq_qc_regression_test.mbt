@@ -191,3 +191,19 @@ test "regression: path(f) returns the paths f refers to" {
     _ => fail("path(1) is not a path expression")
   }
 }
+
+///|
+test "regression: p = v sets the paths of p instead of returning v" {
+  // Found while writing the path properties: `.a = 1` returned 1.
+  json_inspect(regression_run(".a = 1", "{\"b\":2}"), content=[
+    { "b": 2, "a": 1 },
+  ])
+  json_inspect(regression_run(".a = .b", "{\"b\":5}"), content=[
+    { "b": 5, "a": 5 },
+  ])
+  json_inspect(regression_run("(.a, .b) = (1, 2)", "{}"), content=[
+    { "a": 1, "b": 1 },
+    { "a": 2, "b": 2 },
+  ])
+  json_inspect(regression_run(".a = empty", "{\"a\":1}"), content=[])
+}
