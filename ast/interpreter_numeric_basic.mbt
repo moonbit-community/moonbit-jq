@@ -1,11 +1,14 @@
 ///|
 /// Evaluate array sum
 fn eval_add(input : Json) -> Iter[Json] raise InterpreterError {
-  guard input is Array(arr) else {
-    raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  // jq defines `add` as `reduce .[] as $x (null; . + $x)`, so it also
+  // accepts objects (adding their values).
+  let values : Array[Json] = match input {
+    Array(arr) => arr
+    Object(obj) => obj.values().collect()
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  // jq defines `add` as `reduce .[] as $x (null; . + $x)`.
-  Iter::singleton(arr.fold(init=Json::null(), json_add))
+  Iter::singleton(values.fold(init=Json::null(), json_add))
 }
 
 ///|

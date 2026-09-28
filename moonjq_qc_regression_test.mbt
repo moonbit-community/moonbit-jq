@@ -437,3 +437,14 @@ test "regression: compound assignment evaluates its RHS against ." {
     { "a": 2, "b": 2 },
   ])
 }
+
+///|
+test "regression: add accepts objects like reduce .[]" {
+  // Review note on PR #30. jq 1.7.1: {"a":1,"b":2} | add => 3;
+  // {"a":"x","b":"y"} | add => "xy"; {} | add => null.
+  json_inspect(regression_run("add", "{\"a\":1,\"b\":2}"), content=[3])
+  json_inspect(regression_run("add", "{\"a\":\"x\",\"b\":\"y\"}"), content=[
+    "xy",
+  ])
+  json_inspect(regression_run("add", "{}"), content=[null])
+}
