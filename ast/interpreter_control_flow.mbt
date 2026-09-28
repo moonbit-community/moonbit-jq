@@ -7,15 +7,16 @@ fn eval_if_then_else(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match eval_with_env(cond, input, env).collect() {
-    [] => eval_with_env(else_expr, input, env)
-    [first, ..] =>
-      if @ast_internal.is_truthy(first) {
-        eval_with_env(then_expr, input, env)
-      } else {
-        eval_with_env(else_expr, input, env)
-      }
+  // jq evaluates a branch for every output of the condition, so
+  // `if empty then a else b end` produces nothing.
+  let results : Array[Json] = []
+  for c in eval_with_env(cond, input, env).collect() {
+    let branch = if @ast_internal.is_truthy(c) { then_expr } else { else_expr }
+    for v in eval_with_env(branch, input, env) {
+      results.push(v)
+    }
   }
+  results.iter()
 }
 
 ///|

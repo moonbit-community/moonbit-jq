@@ -72,17 +72,27 @@ fn path_values(
     Comma(left, right) =>
       path_values(left, input, env) + path_values(right, input, env)
     Optional(inner) => path_values(inner, input, env) catch { _ => [] }
-    Select(cond) =>
-      match eval_with_env(cond, input, env).collect() {
-        [first, ..] if @ast_internal.is_truthy(first) => [([], input)]
-        _ => []
+    // Like jq, act once per output of the condition (none for `empty`).
+    Select(cond) => {
+      let out : Array[(Array[Json], Json)] = []
+      for c in eval_with_env(cond, input, env).collect() {
+        if @ast_internal.is_truthy(c) {
+          out.push(([], input))
+        }
       }
+      out
+    }
     IfThenElse(cond, then_expr, else_expr) => {
-      let branch = match eval_with_env(cond, input, env).collect() {
-        [first, ..] if @ast_internal.is_truthy(first) => then_expr
-        _ => else_expr
+      let out : Array[(Array[Json], Json)] = []
+      for c in eval_with_env(cond, input, env).collect() {
+        let branch = if @ast_internal.is_truthy(c) {
+          then_expr
+        } else {
+          else_expr
+        }
+        out.append(path_values(branch, input, env))
       }
-      path_values(branch, input, env)
+      out
     }
     Alternative(left, right) => {
       let lefts = path_values(left, input, env) catch { _ => [] }

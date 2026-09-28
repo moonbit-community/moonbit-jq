@@ -277,3 +277,26 @@ test "regression: getpath accepts negative array indices" {
     content=[2, null, [1, 3]],
   )
 }
+
+///|
+test "regression: select and if act on every condition output" {
+  // Review of PR #30 (checked against jq 1.7.1): only the first condition
+  // output was used, and an empty condition ran the else branch.
+  // jq 1.7.1: `{"a":1} | [path(select(false,true))]` => [[]]
+  json_inspect(regression_run("[path(select(false, true))]", "{\"a\":1}"), content=[
+    [[]],
+  ])
+  // jq 1.7.1: `{} | (if empty then .a else .b end) = 2` => {}
+  json_inspect(regression_run("(if empty then .a else .b end) = 2", "{}"), content=[
+    {},
+  ])
+  // jq 1.7.1: [select(true,true)] => [1,1]; [if (true,false) then 1 else 2
+  // end] => [1,2]; [if empty then 1 else 2 end] => []
+  json_inspect(
+    regression_run(
+      "[select(true, true)], [if (true, false) then 1 else 2 end], [if empty then 1 else 2 end]",
+      "1",
+    ),
+    content=[[1, 1], [1, 2], []],
+  )
+}

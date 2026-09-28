@@ -7,7 +7,7 @@ test "coverage: map and min/max edge cases" {
 
 ///|
 test "coverage: control flow fallbacks" {
-  json_inspect(coverage_eval("if empty then 1 else 2 end", "null"), content=[2])
+  json_inspect(coverage_eval("if empty then 1 else 2 end", "null"), content=[])
   json_inspect(coverage_eval("try (1 / 0)", "null"), content=[])
   json_inspect(coverage_eval("empty // 2", "null"), content=[2])
 }
