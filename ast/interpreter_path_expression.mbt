@@ -8,9 +8,10 @@ let invalid_path_expression : String = "Invalid path expression"
 /// Returns, in output order, each path `expr` refers to together with the
 /// value found there. Only filters that navigate the input are path
 /// expressions (`.`, `..`, `.k`, `.[i]`, `.[]`, pipes, commas, `select`,
-/// `if`, `//`, `?`, `empty`, `first`, `last`, `first(f)`, `last(f)`,
-/// `getpath`, `... as $x | ...` and user-defined functions built from
-/// them). Any other result raises "Invalid path expression", as in jq.
+/// `if`, `//`, `?`, `empty`, `first`, `last`, `first(f)`, `getpath`,
+/// `... as $x | ...` and user-defined functions built from them). Any other
+/// result raises "Invalid path expression", as in jq; that includes
+/// `last(f)`, which jq 1.7 defines with `reduce`.
 fn path_values(
   expr : Expr,
   input : Json,
@@ -128,11 +129,6 @@ fn path_each(
         None => true
       }
     }
-    LastGen(gen) =>
-      match path_entries(gen, input, env) {
-        [.., last] => emit(last)
-        [] => true
-      }
     Empty => true
     Pipe(FunctionDef(name, params, body), right) =>
       path_each(right, input, env.set_function(name, body, params), emit)

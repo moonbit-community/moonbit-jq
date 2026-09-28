@@ -580,3 +580,20 @@ test "regression: // in a path expression drops false/null non-path values" {
     }
   }
 }
+
+///|
+test "regression: last(f) is not a path expression" {
+  // Found while checking round 2 against jq 1.7.1, which defines last(f)
+  // with `reduce`, so it has no path:
+  //   [1,2] | [path(last(.[]))]   => error: Invalid path expression with result 2
+  //   [1,2] | last(.[]) |= 10     => error
+  // (`last(.[])` itself still evaluates to 2.)
+  for query in ["[path(last(.[]))]", "last(.[]) |= 10"] {
+    try regression_run(query, "[1,2]") catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected Invalid path expression for \{query}")
+    }
+  }
+  json_inspect(regression_run("last(.[])", "[1,2]"), content=[2])
+}
