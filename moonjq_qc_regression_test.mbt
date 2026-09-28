@@ -352,3 +352,16 @@ test "regression: first/last are .[0]/.[-1] even on empty arrays" {
     _ => fail("expected an out-of-bounds error")
   }
 }
+
+///|
+test "regression: assignment evaluates its right-hand side first" {
+  // Review finding 5 on PR #30. jq 1.7.1: `1 | length = empty` produces no
+  // output (the path is never examined); `1 | length = 2` raises
+  // "Invalid path expression".
+  json_inspect(regression_run("length = empty", "1"), content=[])
+  try regression_run("length = 2", "1") catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected Invalid path expression")
+  }
+}
