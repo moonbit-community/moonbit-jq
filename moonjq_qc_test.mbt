@@ -512,18 +512,24 @@ fn qjq(query : String, input : Json) -> Array[Json] raise {
 }
 
 ///|
-/// Outcome of a query: `None` if it raised, otherwise its outputs.
-fn jq_outcome(query : String, input : Json) -> Array[Json]? {
-  Some(qjq(query, input)) catch {
-    _ => None
+/// Outcome of a query: its outputs, or the text of the error it raised.
+fn jq_outcome(query : String, input : Json) -> Result[Array[Json], String] {
+  Ok(qjq(query, input)) catch {
+    e => Err(e.to_string())
   }
 }
 
 ///|
-fn outcome_equal(a : Array[Json]?, b : Array[Json]?) -> Bool {
+/// Two outcomes agree when both succeed with the same outputs (key order
+/// included) or both fail with the same error. Comparisons against a
+/// reference model pass `Ok(...)`, so an error never matches them.
+fn outcome_equal(
+  a : Result[Array[Json], String],
+  b : Result[Array[Json], String],
+) -> Bool {
   match (a, b) {
-    (None, None) => true
-    (Some(x), Some(y)) =>
+    (Err(x), Err(y)) => x == y
+    (Ok(x), Ok(y)) =>
       x.length() == y.length() &&
       (0).until(x.length()).all(i => same_ordered(x[i], y[i]))
     _ => false
@@ -581,26 +587,98 @@ let filter_pool : Array[String] = [
 // ---------------------------------------------------------------------------
 
 ///|
-test "qc: generator covers all JSON shapes" {
-  // Distribution check for the JSON generator itself.
+fn has_control_char(v : Json) -> Bool {
+  ref_descendants(v)
+  .iter()
+  .any(d => d is String(s) && s.iter().any(c => c.to_int() < 0x20))
+}
+
+///|
+/// Generated values must be representable as JSON text: finite numbers,
+/// strings without unpaired surrogates, bounded depth.
+fn well_formed(v : Json) -> Bool {
+  depth_of(v) <= 5 &&
+  ref_descendants(v)
+  .iter()
+  .all(d => {
+    match d {
+      Number(n, ..) => !n.is_nan() && !n.is_inf()
+      String(s) => s.iter().all(c => c.to_int() < 0xD800 || c.to_int() > 0xDFFF)
+      Object(o) =>
+        o
+        .keys()
+        .all(k => k.iter().all(c => c.to_int() < 0xD800 || c.to_int() > 0xDFFF))
+      _ => true
+    }
+  })
+}
+
+///|
+test "qc: generated JSON is well-formed and covers all shapes" {
   @quickcheck.check(
-    (_ : JV) => true,
+    (jv : JV) => well_formed(jv.v),
     observe=jv => {
       [
         @quickcheck.label(type_name(jv.v)),
         @quickcheck.classify(depth_of(jv.v) >= 2, "nested (depth >= 2)"),
         @quickcheck.classify(has_astral(jv.v), "contains astral chars"),
-        @quickcheck.classify(
-          ref_descendants(jv.v)
-          .iter()
-          .any(d => d is String(s) && s.iter().any(c => c.to_int() < 0x20)),
-          "contains control chars",
-        ),
+        @quickcheck.classify(has_control_char(jv.v), "contains control chars"),
       ]
     },
     count=300,
     seed=1,
   )
+  // The same generator, sampled over the sizes `check` uses, must hit every
+  // shape the properties rely on often enough to matter.
+  let rs = @splitmix.new(seed=1)
+  let n = 300
+  let counts : Map[String, Int] = Map([])
+  let bump = (key : String) => counts[key] = counts.get(key).unwrap_or(0) + 1
+  for i in 0..<n {
+    let size = i % 100
+    let v = gen_json(rs, size, depth_for(size))
+    bump(type_name(v))
+    if depth_of(v) >= 2 {
+      bump("nested")
+    }
+    if has_astral(v) {
+      bump("astral")
+    }
+    if has_control_char(v) {
+      bump("control")
+    }
+    for d in ref_descendants(v) {
+      match d {
+        Array([]) => bump("empty array")
+        Object(o) if o.is_empty() => bump("empty object")
+        Number(x, ..) if x.abs() >= 1.0e300 || (x != 0.0 && x.abs() <= 1.0e-300) =>
+          bump("extreme number")
+        Number(x, ..) if x != x.trunc() => bump("fraction")
+        _ => ()
+      }
+    }
+  }
+  let at_least = (key : String, min : Int) => {
+    counts.get(key).unwrap_or(0) >= min
+  }
+  for ty in ["null", "boolean", "number", "string", "array", "object"] {
+    assert_true(
+      at_least(ty, n / 20),
+      msg="too few \{ty} roots: \{@debug.to_string(counts)}",
+    )
+  }
+  for key in ["nested", "astral", "control"] {
+    assert_true(
+      at_least(key, n / 10),
+      msg="too few \{key} values: \{@debug.to_string(counts)}",
+    )
+  }
+  for key in ["empty array", "empty object", "extreme number", "fraction"] {
+    assert_true(
+      at_least(key, 5),
+      msg="too few \{key}: \{@debug.to_string(counts)}",
+    )
+  }
 }
 
 ///|
@@ -636,8 +714,9 @@ test "qc: .[] yields container values in order" {
         Object(o) => o.values().collect()
         _ => return true
       }
-      outcome_equal(jq_outcome("[.[]]", jv.v), Some([Json::array(expected)]))
+      outcome_equal(jq_outcome("[.[]]", jv.v), Ok([Json::array(expected)]))
     },
+    filter=jv => jv.v is (Array(_) | Object(_)),
     counterexample_context=jv => show(jv.v),
     count=200,
     seed=13,
@@ -651,10 +730,24 @@ test "qc: map(f) == [.[] | f]" {
       let (jv, fi) = input
       guard jv.v is (Array(_) | Object(_)) else { true }
       let f = filter_pool[pick_idx(fi, filter_pool.length())]
+      // Both sides may fail for filters that raise, but then with the same
+      // error; the observation below shows how often that happens.
       outcome_equal(
         jq_outcome("map(\{f})", jv.v),
         jq_outcome("[.[] | \{f}]", jv.v),
       )
+    },
+    filter=input => input.0.v is (Array(_) | Object(_)),
+    observe=input => {
+      let (jv, fi) = input
+      let f = filter_pool[pick_idx(fi, filter_pool.length())]
+      [
+        @quickcheck.label(type_name(jv.v)),
+        @quickcheck.classify(
+          jq_outcome("map(\{f})", jv.v) is Err(_),
+          "both raised",
+        ),
+      ]
     },
     counterexample_context=input => {
       let (jv, fi) = input
@@ -666,29 +759,44 @@ test "qc: map(f) == [.[] | f]" {
 }
 
 ///|
-test "qc: select keeps exactly the truthy elements" {
-  let preds : Array[(String, (Json) -> Bool)] = [
-    ("true", _ => true),
-    ("false", _ => false),
-    ("null", _ => false),
-    ("0", _ => true),
-    ("type == \"string\"", v => v is String(_)),
-    (". == null", v => v is Null),
-    (". != null", v => !(v is Null)),
-    ("(type == \"number\") and (. > 0)", v => v is Number(n, ..) && n > 0.0),
-    ("not", v => !ref_truthy(v)),
+test "qc: select emits . once per truthy condition output" {
+  // Reference: how many truthy outputs the condition has on a value
+  // (jq 1.7: `def select(f): if f then . else empty end`).
+  let preds : Array[(String, (Json) -> Int)] = [
+    ("true", _ => 1),
+    ("false", _ => 0),
+    ("null", _ => 0),
+    ("0", _ => 1),
+    ("empty", _ => 0),
+    ("(true, true)", _ => 2),
+    ("(false, true, null)", _ => 1),
+    ("type == \"string\"", v => if v is String(_) { 1 } else { 0 }),
+    (". == null", v => if v is Null { 1 } else { 0 }),
+    ("(. == null), (. != null)", _ => 1),
+    (
+      "(type == \"number\") and (. > 0)",
+      v => if v is Number(n, ..) && n > 0.0 { 1 } else { 0 },
+    ),
+    ("not", v => if ref_truthy(v) { 0 } else { 1 }),
   ]
   @quickcheck.check(
     (input : (JV, UInt)) => {
       let (jv, pi) = input
-      let (p, ref_pred) = preds[pick_idx(pi, preds.length())]
-      let whole = jq_outcome("select(\{p})", jv.v)
-      let expected_whole = if ref_pred(jv.v) { [jv.v] } else { [] }
-      guard outcome_equal(whole, Some(expected_whole)) else { false }
+      let (p, ref_count) = preds[pick_idx(pi, preds.length())]
+      let expected_whole = Array::make(ref_count(jv.v), jv.v)
+      guard outcome_equal(jq_outcome("select(\{p})", jv.v), Ok(expected_whole)) else {
+        false
+      }
       guard jv.v is Array(a) else { true }
+      let expected : Array[Json] = []
+      for x in a {
+        for _ in 0..<ref_count(x) {
+          expected.push(x)
+        }
+      }
       outcome_equal(
         jq_outcome("[.[] | select(\{p})]", jv.v),
-        Some([Json::array(a.filter(ref_pred))]),
+        Ok([Json::array(expected)]),
       )
     },
     counterexample_context=input => {
@@ -718,6 +826,12 @@ test "qc: pipe is associative and comma distributes over pipe" {
         jq_outcome("((\{a}) | (\{c})), ((\{b}) | (\{c}))", jv.v),
       )
     },
+    observe=input => {
+      let (jv, i, j, k) = input
+      let n = filter_pool.length()
+      let q = "((\{filter_pool[pick_idx(i, n)]}) | (\{filter_pool[pick_idx(j, n)]})) | (\{filter_pool[pick_idx(k, n)]})"
+      [@quickcheck.classify(jq_outcome(q, jv.v) is Err(_), "both raised")]
+    },
     counterexample_context=input => {
       let (jv, i, j, k) = input
       let n = filter_pool.length()
@@ -740,7 +854,10 @@ test "qc: length agrees with the value" {
         Array(a) => Some(Json::number(a.length().to_double()))
         Object(o) => Some(Json::number(o.length().to_double()))
       }
-      outcome_equal(jq_outcome("length", jv.v), expected.map(e => [e]))
+      match expected {
+        Some(e) => outcome_equal(jq_outcome("length", jv.v), Ok([e]))
+        None => jq_outcome("length", jv.v) is Err(_)
+      }
     },
     counterexample_context=jv => show(jv.v),
     count=300,
@@ -759,19 +876,19 @@ test "qc: keys lists exactly the object keys, and array indices" {
         Object(o) => {
           let expected = o.keys().map(Json::string).collect()
           let sorted = ref_sorted_keys(o).map(Json::string)
-          outcome_equal(jq_outcome("keys", jv.v), Some([Json::array(expected)])) &&
+          outcome_equal(jq_outcome("keys", jv.v), Ok([Json::array(expected)])) &&
           outcome_equal(
             jq_outcome("keys | sort", jv.v),
-            Some([Json::array(sorted)]),
+            Ok([Json::array(sorted)]),
           )
         }
         Array(a) => {
           let expected = Array::makei(a.length(), i => {
             Json::number(i.to_double())
           })
-          outcome_equal(jq_outcome("keys", jv.v), Some([Json::array(expected)]))
+          outcome_equal(jq_outcome("keys", jv.v), Ok([Json::array(expected)]))
         }
-        _ => jq_outcome("keys", jv.v) is None
+        _ => jq_outcome("keys", jv.v) is Err(_)
       }
     },
     counterexample_context=jv => show(jv.v),
@@ -789,12 +906,9 @@ test "qc: to_entries | from_entries round-trips objects" {
         .iter()
         .map(kv => Json::object({ "key": Json::string(kv.0), "value": kv.1 }))
         .collect()
-      outcome_equal(
-        jq_outcome("to_entries", jv.v),
-        Some([Json::array(entries)]),
-      ) &&
-      outcome_equal(jq_outcome("to_entries | from_entries", jv.v), Some([jv.v])) &&
-      outcome_equal(jq_outcome("with_entries(.)", jv.v), Some([jv.v]))
+      outcome_equal(jq_outcome("to_entries", jv.v), Ok([Json::array(entries)])) &&
+      outcome_equal(jq_outcome("to_entries | from_entries", jv.v), Ok([jv.v])) &&
+      outcome_equal(jq_outcome("with_entries(.)", jv.v), Ok([jv.v]))
     },
     counterexample_context=jv => show(jv.v),
     count=200,
@@ -812,7 +926,7 @@ test "qc: add over numbers equals a reference left-to-right sum" {
       } else {
         Json::number(xs.fold(init=0.0, (acc, x) => acc + x.to_double() / 8.0))
       }
-      outcome_equal(jq_outcome("add", Json::array(nums)), Some([expected]))
+      outcome_equal(jq_outcome("add", Json::array(nums)), Ok([expected]))
     },
     count=200,
     seed=20,
@@ -844,14 +958,8 @@ test "qc: add concatenates strings and arrays" {
       } else {
         Json::array(concat_arr)
       }
-      outcome_equal(
-        jq_outcome("add", Json::array(strings)),
-        Some([expected_str]),
-      ) &&
-      outcome_equal(
-        jq_outcome("add", Json::array(arrays)),
-        Some([expected_arr]),
-      )
+      outcome_equal(jq_outcome("add", Json::array(strings)), Ok([expected_str])) &&
+      outcome_equal(jq_outcome("add", Json::array(arrays)), Ok([expected_arr]))
     },
     counterexample_context=jv => show(jv.v),
     count=200,
@@ -864,14 +972,14 @@ test "qc: sort is sorted, a permutation, and idempotent" {
   @quickcheck.check(
     (jv : JV) => {
       let xs = ref_descendants(jv.v)
-      guard jq_outcome("sort", Json::array(xs)) is Some([Array(sorted)]) else {
+      guard jq_outcome("sort", Json::array(xs)) is Ok([Array(sorted)]) else {
         false
       }
       is_sorted(sorted) &&
       same_multiset(sorted, xs) &&
       outcome_equal(
         jq_outcome("sort | sort", Json::array(xs)),
-        Some([Json::array(sorted)]),
+        Ok([Json::array(sorted)]),
       )
     },
     counterexample_context=jv => show(Json::array(ref_descendants(jv.v))),
@@ -894,7 +1002,7 @@ test "qc: unique is sorted and deduplicated" {
         }
         expected.push(x)
       }
-      guard jq_outcome("unique", Json::array(xs)) is Some([Array(u)]) else {
+      guard jq_outcome("unique", Json::array(xs)) is Ok([Array(u)]) else {
         false
       }
       u.length() == expected.length() &&
@@ -917,7 +1025,7 @@ test "qc: comparison operators follow jq's total order" {
           "[.[0] < .[1], .[0] <= .[1], .[0] == .[1], .[0] != .[1], .[0] > .[1], .[0] >= .[1]]",
           input,
         ),
-        Some([
+        Ok([
           Json::array([
             Json::boolean(c < 0),
             Json::boolean(c <= 0),
@@ -930,7 +1038,7 @@ test "qc: comparison operators follow jq's total order" {
       ) &&
       outcome_equal(
         jq_outcome("[min, max]", input),
-        Some([Json::array(if c <= 0 { [p.a, p.b] } else { [p.b, p.a] })]),
+        Ok([Json::array(if c <= 0 { [p.a, p.b] } else { [p.b, p.a] })]),
       )
     },
     observe=p => {
@@ -962,11 +1070,11 @@ test "qc: comparison operators follow jq's total order" {
 test "qc: tojson | fromjson round-trips" {
   @quickcheck.check(
     (jv : JV) => {
-      guard jq_outcome("tojson", jv.v) is Some([String(text)]) else { false }
+      guard jq_outcome("tojson", jv.v) is Ok([String(text)]) else { false }
       // The text must be real JSON for the same value.
       let reparsed = @json.parse(text) catch { _ => return false }
       same_ordered(reparsed, jv.v) &&
-      outcome_equal(jq_outcome("tojson | fromjson", jv.v), Some([jv.v]))
+      outcome_equal(jq_outcome("tojson | fromjson", jv.v), Ok([jv.v]))
     },
     counterexample_context=jv => show(jv.v),
     count=300,
@@ -979,13 +1087,13 @@ test "qc: tostring is identity on strings and tojson otherwise" {
   @quickcheck.check(
     (jv : JV) => {
       match jv.v {
-        String(_) => outcome_equal(jq_outcome("tostring", jv.v), Some([jv.v]))
+        String(_) => outcome_equal(jq_outcome("tostring", jv.v), Ok([jv.v]))
         _ =>
           outcome_equal(
             jq_outcome("tostring", jv.v),
             jq_outcome("tojson", jv.v),
           ) &&
-          outcome_equal(jq_outcome("tostring | fromjson", jv.v), Some([jv.v]))
+          outcome_equal(jq_outcome("tostring | fromjson", jv.v), Ok([jv.v]))
       }
     },
     counterexample_context=jv => show(jv.v),
@@ -999,18 +1107,18 @@ test "qc: paths, path(..) and .. agree with a reference traversal" {
   @quickcheck.check(
     (jv : JV) => {
       let paths = ref_paths(jv.v).map(Json::array)
-      outcome_equal(jq_outcome("[paths]", jv.v), Some([Json::array(paths)])) &&
+      outcome_equal(jq_outcome("[paths]", jv.v), Ok([Json::array(paths)])) &&
       outcome_equal(
         jq_outcome("[path(..)]", jv.v),
-        Some([Json::array([Json::array([])] + paths)]),
+        Ok([Json::array([Json::array([])] + paths)]),
       ) &&
       outcome_equal(
         jq_outcome("[..]", jv.v),
-        Some([Json::array(ref_descendants(jv.v))]),
+        Ok([Json::array(ref_descendants(jv.v))]),
       ) &&
       outcome_equal(
         jq_outcome("[path(..) as $p | getpath($p)]", jv.v),
-        Some([Json::array(ref_descendants(jv.v))]),
+        Ok([Json::array(ref_descendants(jv.v))]),
       )
     },
     counterexample_context=jv => show(jv.v),
@@ -1025,11 +1133,11 @@ test "qc: paths(f) is paths filtered by f on the value at the path" {
     (jv : JV) => {
       let expected = ref_paths(jv.v).filter(p => {
         let q = jq_outcome("getpath(\{Json::array(p).stringify()})", jv.v)
-        q is Some([Number(_)])
+        q is Ok([Number(_)])
       })
       outcome_equal(
         jq_outcome("[paths(type == \"number\")]", jv.v),
-        Some([Json::array(expected.map(Json::array))]),
+        Ok([Json::array(expected.map(Json::array))]),
       )
     },
     counterexample_context=jv => show(jv.v),
@@ -1047,11 +1155,11 @@ test "qc: getpath after setpath on an existing path" {
         jq_outcome(
           ".p as $p | .x as $x | .v | setpath($p; $x) | getpath($p)", input,
         ),
-        Some([c.x]),
+        Ok([c.x]),
       ) &&
       outcome_equal(
         jq_outcome(".p as $p | .v | setpath($p; getpath($p))", input),
-        Some([c.v]),
+        Ok([c.v]),
       )
     },
     counterexample_context=c => {
@@ -1071,7 +1179,7 @@ test "qc: setpath on null builds the path" {
         jq_outcome(
           ".p as $p | .x as $x | null | setpath($p; $x) | getpath($p)", input,
         ),
-        Some([c.x]),
+        Ok([c.x]),
       )
     },
     observe=c => [@quickcheck.collect(c.path.length())],
@@ -1107,6 +1215,42 @@ fn ref_map_numbers(v : Json, f : (Double) -> Double) -> Json {
 }
 
 ///|
+/// Path expressions whose value and path evaluators must agree.
+let path_filter_pool : Array[String] = [
+  ".", "..", ".a", ".[0]", ".[-1]", ".[]?", ".a?", "first?", "last?", "select(type == \"number\")",
+  ".. | select(type == \"string\")", "(.a, .[0]?)", "if type == \"array\" then .[] else . end",
+  ".a // .b", "getpath([\"a\", 0])", ".[]? | select(. != null)", "first(.[]?)", ".[]? // .",
+  "select((true, false, true))", "if empty then . else . end", "if (true, false) then .[]? else . end",
+]
+
+///|
+test "qc: path(f) as $p | getpath($p) reproduces f" {
+  @quickcheck.check(
+    (input : (JV, UInt)) => {
+      let (jv, fi) = input
+      let f = path_filter_pool[pick_idx(fi, path_filter_pool.length())]
+      let via_paths = jq_outcome("[path(\{f}) as $p | getpath($p)]", jv.v)
+      match jq_outcome("[\{f}]", jv.v) {
+        Ok(values) => outcome_equal(via_paths, Ok(values))
+        // Messages may differ between the evaluators; both must fail.
+        Err(_) => via_paths is Err(_)
+      }
+    },
+    observe=input => {
+      let (jv, fi) = input
+      let f = path_filter_pool[pick_idx(fi, path_filter_pool.length())]
+      [@quickcheck.classify(jq_outcome("[\{f}]", jv.v) is Err(_), "f raised")]
+    },
+    counterexample_context=input => {
+      let (jv, fi) = input
+      "f = \{path_filter_pool[pick_idx(fi, path_filter_pool.length())]}, input = \{show(jv.v)}"
+    },
+    count=400,
+    seed=35,
+  )
+}
+
+///|
 test "qc: filters built from paths agree with getpath and path" {
   @quickcheck.check(
     (c : JPathCase) => {
@@ -1117,7 +1261,7 @@ test "qc: filters built from paths agree with getpath and path" {
         jq_outcome(f, c.v),
         jq_outcome("getpath(\{c.path.stringify()})", c.v),
       ) &&
-      outcome_equal(jq_outcome("path(\{f})", c.v), Some([c.path])) &&
+      outcome_equal(jq_outcome("path(\{f})", c.v), Ok([c.path])) &&
       outcome_equal(
         jq_outcome(".x as $x | .v | (\{f}) = $x", input),
         jq_outcome(".p as $p | .x as $x | .v | setpath($p; $x)", input),
@@ -1147,7 +1291,7 @@ test "qc: p = $x sets exactly the paths of p" {
     (jv : JV) => {
       outcome_equal(
         jq_outcome("(.. | select(type == \"number\")) = 0", jv.v),
-        Some([ref_map_numbers(jv.v, _ => 0.0)]),
+        Ok([ref_map_numbers(jv.v, _ => 0.0)]),
       )
     },
     counterexample_context=jv => show(jv.v),
@@ -1173,9 +1317,9 @@ test "qc: p |= f equals setpath over path(p)" {
       }
       outcome_equal(
         jq_outcome("(.. | select(type == \"number\")) |= . + 1", jv.v),
-        Some([ref_map_numbers(jv.v, n => n + 1.0)]),
+        Ok([ref_map_numbers(jv.v, n => n + 1.0)]),
       ) &&
-      outcome_equal(jq_outcome(".[]? |= [.]", jv.v), Some([wrapped])) &&
+      outcome_equal(jq_outcome(".[]? |= [.]", jv.v), Ok([wrapped])) &&
       outcome_equal(
         jq_outcome(".[]? |= [.]", jv.v),
         jq_outcome(

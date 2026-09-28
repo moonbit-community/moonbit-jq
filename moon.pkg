@@ -7,4 +7,5 @@ import {
 
 import {
   "moonbitlang/core/quickcheck",
+  "moonbitlang/core/quickcheck/splitmix",
 } for "test"
