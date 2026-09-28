@@ -33,7 +33,7 @@ test "missing: @csv format" {
   debug_inspect(
     test_feature("@csv", "[[1,2,3]]"),
     content=(
-      #|"String(\"Array([Number(1), Number(2), Number(3)])\")"
+      #|"String(\"[1,2,3]\")"
     ),
   )
 }
@@ -43,7 +43,7 @@ test "missing: @json format" {
   debug_inspect(
     test_feature("@json", "{\"a\":1}"),
     content=(
-      #|"String(\"Object({ \\\"a\\\": Number(1) })\")"
+      #|"String(\"{\\\"a\\\":1}\")"
     ),
   )
 }
@@ -63,7 +63,7 @@ test "missing: @text format" {
   debug_inspect(
     test_feature("@text", "\"hello\""),
     content=(
-      #|"String(\"String(\\\"hello\\\")\")"
+      #|"String(\"hello\")"
     ),
   )
 }

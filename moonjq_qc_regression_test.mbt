@@ -37,3 +37,26 @@ test "regression: strings are ordered by code point, not length first" {
     ["\u{FFFF}", "😀"],
   ])
 }
+
+///|
+test "regression: tojson produces JSON text that fromjson reads back" {
+  // Found by "qc: tojson | fromjson round-trips": tojson returned the Debug
+  // representation (`Object({ "a": Number(1) })`), which fromjson rejected.
+  json_inspect(regression_run("tojson", "{\"a\":[1,\"x\\n\",null,true]}"), content=[
+    "{\"a\":[1,\"x\\n\",null,true]}",
+  ])
+  json_inspect(regression_run("tojson | fromjson", "{\"a\":[1,null]}"), content=[
+    { "a": [1, null] },
+  ])
+  // The same Debug text leaked into interpolation, @json, @text and join.
+  json_inspect(
+    regression_run(
+      "\"\\(.a) \\(.b) \\(.c)\", @json, @text, ([.a, .c, \"s\"] | join(\"-\"))",
+      "{\"a\":1,\"b\":[true],\"c\":null}",
+    ),
+    content=[
+      "1 [true] null", "{\"a\":1,\"b\":[true],\"c\":null}", "{\"a\":1,\"b\":[true],\"c\":null}",
+      "1--s",
+    ],
+  )
+}
