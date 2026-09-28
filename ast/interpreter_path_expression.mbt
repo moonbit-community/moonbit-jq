@@ -106,15 +106,10 @@ fn path_values(
       }
       out
     }
+    // As in jq 1.7, `//` only filters out false/null results; errors from
+    // its left side (including "Invalid path expression") propagate.
     Alternative(left, right) => {
-      // `//` suppresses errors from its left side (jq's FORK_OPT), but a
-      // non-path result is still an error, as in jq 1.7:
-      // `{"a":1} | (length // .a) = 2` raises "Invalid path expression".
-      let lefts = path_values(left, input, env) catch {
-        InvalidOperation(msg) if msg == invalid_path_expression =>
-          raise InvalidOperation(msg)
-        _ => []
-      }
+      let lefts = path_values(left, input, env)
       let truthy = lefts.filter(pair => @ast_internal.is_truthy(pair.1))
       if truthy.is_empty() {
         path_values(right, input, env)

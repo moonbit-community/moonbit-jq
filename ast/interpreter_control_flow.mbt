@@ -45,9 +45,9 @@ fn eval_alternative(
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
   // jq 1.7: `a // b` yields every output of `a` that is neither false nor
-  // null, or the outputs of `b` if there are none; errors raised by `a`
-  // are suppressed.
-  let left_results = eval_with_env(left, input, env).collect() catch { _ => [] }
+  // null, or the outputs of `b` if there are none. Errors raised by `a`
+  // propagate (jq 1.7.1: `[error("x") // 3]` is an error).
+  let left_results = eval_with_env(left, input, env).collect()
   let truthy = left_results.filter(@ast_internal.is_truthy)
   if truthy.is_empty() {
     eval_with_env(right, input, env)

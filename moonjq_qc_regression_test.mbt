@@ -463,15 +463,19 @@ test "regression: // yields every truthy left output" {
   // `.[]? // .` on {"a":"","b":null}: once the first left output was
   // truthy, falsy ones were emitted too, and a falsy first output hid
   // later truthy ones. jq 1.7.1:
-  //   [(1, null, 2) // 3]     => [1,2]
-  //   [(null, 1) // 3]        => [1]
-  //   [(false, null) // 3]    => [3]
-  //   ["x"] | [(.[0] + 1) // 3] => [3]  (the error is suppressed)
+  //   [(1, null, 2) // 3]        => [1,2]
+  //   [(null, 1) // 3]           => [1]
+  //   [(false, null) // 3]       => [3]
+  //   ["x"] | [(.[0] + 1) // 3]  => error (errors are not suppressed)
   json_inspect(
     regression_run(
-      "[(1, null, 2) // 3], [(null, 1) // 3], [(false, null) // 3], [(.[0] + 1) // 3]",
-      "[\"x\"]",
+      "[(1, null, 2) // 3], [(null, 1) // 3], [(false, null) // 3]", "null",
     ),
-    content=[[1, 2], [1], [3], [3]],
+    content=[[1, 2], [1], [3]],
   )
+  try regression_run("[(.[0] + 1) // 3]", "[\"x\"]") catch {
+    _ => ()
+  } noraise {
+    _ => fail("errors on the left of // must propagate")
+  }
 }
