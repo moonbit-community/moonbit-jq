@@ -4,7 +4,8 @@ fn eval_add(input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
-  Iter::singleton(Json::number(sum_numbers(arr)))
+  // jq defines `add` as `reduce .[] as $x (null; . + $x)`.
+  Iter::singleton(arr.fold(init=Json::null(), json_add))
 }
 
 ///|
@@ -41,16 +42,6 @@ fn eval_max(input : Json) -> Iter[Json] raise InterpreterError {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
   Iter::singleton(max_in_view(arr).unwrap_or(null))
-}
-
-///|
-fn sum_numbers(arr : ArrayView[Json]) -> Double {
-  arr.fold(init=0.0, fn(total, value) {
-    match value {
-      Number(n, ..) => total + n
-      _ => total
-    }
-  })
 }
 
 ///|

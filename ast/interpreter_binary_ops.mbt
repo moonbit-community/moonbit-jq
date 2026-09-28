@@ -31,6 +31,8 @@ fn eval_binary_op(
 /// Arithmetic operations
 fn json_add(left : Json, right : Json) -> Json raise InterpreterError {
   match (left, right) {
+    // null is the identity for `+` in jq.
+    (Null, other) | (other, Null) => other
     (Number(a, ..), Number(b, ..)) => Json::number(a + b)
     (String(a), String(b)) => Json::string(a + b)
     (Array(a), Array(b)) => Json::array(a + b)

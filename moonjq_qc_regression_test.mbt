@@ -60,3 +60,19 @@ test "regression: tojson produces JSON text that fromjson reads back" {
     ],
   )
 }
+
+///|
+test "regression: add follows reduce .[] as $x (null; . + $x)" {
+  // Found by "qc: add concatenates strings and arrays": add summed only the
+  // numbers, so string/array inputs gave 0 and `[] | add` gave 0.
+  json_inspect(regression_run("add", "[\"a\",\"b\"]"), content=["ab"])
+  json_inspect(regression_run("add", "[[1],[2]]"), content=[[1, 2]])
+  json_inspect(regression_run("add", "[{\"a\":1},{\"b\":2}]"), content=[
+    { "a": 1, "b": 2 },
+  ])
+  json_inspect(regression_run("add", "[]"), content=[null])
+  // null is the identity for `+`.
+  json_inspect(regression_run("[null + 1, 1 + null, null + null]", "null"), content=[
+    [1, 1, null],
+  ])
+}
