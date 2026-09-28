@@ -519,3 +519,25 @@ test "regression: deleting negative-index paths" {
     content=[[1, 2], [1, 2], [1, 2], [2, 3], [1, 2, 3]],
   )
 }
+
+///|
+test "regression: first(f) in a path expression stops after one output" {
+  // Review round 2, finding 4 on PR #30. `error` is not a moonjq builtin,
+  // so calling it raises as well; either way it must not be reached.
+  // Checked with jq 1.7.1:
+  //   [1,2] | path(first(.[], error("x")))                => [0]
+  //   [1,2] | first(.[], error("x")) |= 10                => [10,2]
+  //   [[1],[2]] | [path(first(.[] | .[], error("x")))]    => [[0,0]]
+  //   [1,2] | [path(first(empty))]                        => []
+  json_inspect(regression_run("path(first(.[], error(\"x\")))", "[1,2]"), content=[
+    [0],
+  ])
+  json_inspect(regression_run("first(.[], error(\"x\")) |= 10", "[1,2]"), content=[
+    [10, 2],
+  ])
+  json_inspect(
+    regression_run("[path(first(.[] | .[], error(\"x\")))]", "[[1],[2]]"),
+    content=[[[0, 0]]],
+  )
+  json_inspect(regression_run("[path(first(empty))]", "[1,2]"), content=[[]])
+}
