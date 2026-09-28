@@ -28,3 +28,13 @@ test "lex: error - unexpected character" {
     _ => debug_inspect(false, content="false")
   }
 }
+
+///|
+test "lex: error - short unicode escape" {
+  try @parser.lex("\"\\u12\"") catch {
+    InvalidEscape(_, _) => ()
+    _ => fail("expected InvalidEscape error")
+  } noraise {
+    _ => fail("expected InvalidEscape error")
+  }
+}

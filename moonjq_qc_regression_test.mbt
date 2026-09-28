@@ -143,3 +143,17 @@ test "regression: query string literals may contain astral characters" {
     content=["😀", true, { "😀": 1 }],
   )
 }
+
+///|
+test "regression: query string literals accept \\f and \\uXXXX escapes" {
+  // Found by "qc: paths(f) is paths filtered by f on the value at the path"
+  // with the key "\f": JSON escapes \f and \uXXXX were rejected with
+  // InvalidEscape, so a stringified path could not be used in a query.
+  json_inspect(
+    regression_run(
+      "\"\\f\", \"\\u00e9\\u0041\", \"\\ud83d\\ude00\", \"\\ud800x\"", "null",
+    ),
+    content=["\u{0C}", "éA", "😀", "\u{FFFD}x"],
+  )
+  json_inspect(regression_run("getpath([\"\\f\"])", "{\"\\f\":0}"), content=[0])
+}
