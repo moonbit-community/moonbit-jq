@@ -1,8 +1,8 @@
 ///|
 test "coverage: paths(filter) traverses arrays" {
   json_inspect(coverage_eval("paths(type == \"number\")", "[1, [2]]"), content=[
-    ["0"],
-    ["1", "0"],
+    [0],
+    [1, 0],
   ])
 }
 

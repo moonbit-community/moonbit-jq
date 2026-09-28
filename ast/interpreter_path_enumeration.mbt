@@ -10,11 +10,6 @@ fn path_index_number(i : Int) -> Json {
 }
 
 ///|
-fn path_index_string(i : Int) -> Json {
-  Json::string(i.to_string())
-}
-
-///|
 fn push_container_frame(
   stack : Array[PathFrame],
   value : Json,
@@ -170,13 +165,7 @@ fn iter_paths_with_filter(
     }
     if root_pending.val {
       root_pending.val = false
-      match filter_matches(input, filter_expr, env) {
-        None => {
-          done.val = true
-          return None
-        }
-        Some(_) => ()
-      }
+      // `paths(f)` never yields the root path, so `f` is not applied to it.
       let root_has_children = push_container_frame(stack_ref.val, input, false)
       if !root_has_children {
         done.val = true
@@ -234,7 +223,7 @@ fn iter_paths_with_filter(
               } else {
                 let value = arr[idx]
                 stack_ref.val.push(ArrayFrame(arr, idx + 1, len, has_segment))
-                path.push(path_index_string(idx))
+                path.push(path_index_number(idx))
                 match filter_matches(value, filter_expr, env) {
                   None => {
                     ignore(path.pop())

@@ -96,3 +96,19 @@ test "regression: map works on objects like [.[] | f]" {
   ])
   json_inspect(regression_run("map(.)", "{}"), content=[[]])
 }
+
+///|
+test "regression: paths(f) yields numeric array indices" {
+  // Found by "qc: paths(f) is paths filtered by f on the value at the
+  // path": array indices came out as strings ("0"), unlike `paths`.
+  json_inspect(
+    regression_run("[paths(type == \"number\")]", "{\"a\":[1,{\"c\":2}]}"),
+    content=[[["a", 0], ["a", 1, "c"]]],
+  )
+  // The root is never a candidate, so an error from f on the root must not
+  // stop the enumeration.
+  json_inspect(
+    regression_run("[paths(ascii_downcase == \"x\")]", "{\"k\":\"X\"}"),
+    content=[[["k"]]],
+  )
+}
