@@ -300,3 +300,21 @@ test "regression: select and if act on every condition output" {
     content=[[1, 1], [1, 2], []],
   )
 }
+
+///|
+test "regression: // and ? in path expressions keep invalid-path errors" {
+  // Review finding 2 on PR #30. jq 1.7.1:
+  //   {"a":1} | (length // .a) = 2    => error: Invalid path expression
+  //   {"a":1} | path(length?)         => error: Invalid path expression
+  //   {"a":"x"} | [path(.a.b? // .c)] => [["c"]]
+  for query in ["(length // .a) = 2", "path(length?)"] {
+    try regression_run(query, "{\"a\":1}") catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected Invalid path expression for \{query}")
+    }
+  }
+  json_inspect(regression_run("[path(.a.b? // .c)]", "{\"a\":\"x\"}"), content=[
+    [["c"]],
+  ])
+}
