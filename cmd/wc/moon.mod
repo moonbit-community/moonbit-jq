@@ -13,7 +13,7 @@ keywords = [ "wc", "coreutils", "text", "cli", "wasm" ]
 description = "Count lines, words, and bytes like wc, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

@@ -13,7 +13,7 @@ keywords = [ "nl", "coreutils", "text", "cli", "wasm" ]
 description = "Number lines of inputs like nl, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

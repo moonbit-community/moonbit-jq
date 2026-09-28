@@ -13,7 +13,7 @@ keywords = [ "cut", "coreutils", "text", "cli", "wasm" ]
 description = "Select fields or characters from lines like cut, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 
