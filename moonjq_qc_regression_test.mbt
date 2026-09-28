@@ -221,3 +221,19 @@ test "regression: p |= f updates every path of p in place" {
   ])
   json_inspect(regression_run(".a.b += 1", "{}"), content=[{ "a": { "b": 1 } }])
 }
+
+///|
+test "regression: // chains right-associatively" {
+  // `.a // .b // .c // "default"` parsed only the first `//` and silently
+  // dropped the rest of the query, returning null.
+  json_inspect(regression_run(".a // .b // .c // \"default\"", "{\"c\":5}"), content=[
+    5,
+  ])
+  json_inspect(regression_run(".a // .b // \"default\"", "{}"), content=[
+    "default",
+  ])
+  json_inspect(regression_run("(.a = 1) // 2, (.a = 1 // 2)", "{}"), content=[
+    { "a": 1 },
+    { "a": 1 },
+  ])
+}
