@@ -415,3 +415,25 @@ test "regression: p |= empty deletes the paths (jq 1.7)" {
     [2, 4],
   ])
 }
+
+///|
+test "regression: compound assignment evaluates its RHS against ." {
+  // `p op= v` is jq 1.7's `v as $x | p |= . op $x`: v sees the original
+  // input, and an empty v produces no output (the |= rewrite would
+  // otherwise have deleted the path). jq 1.7.1:
+  //   {"a":1,"b":5} | .a += .b      => {"a":6,"b":5}
+  //   {"a":1} | .a += empty         => (no output)
+  //   {"a":1} | .a += (1,2)         => {"a":2}, {"a":3}
+  //   {"a":null,"b":2} | .a //= .b  => {"a":2,"b":2}
+  json_inspect(regression_run(".a += .b", "{\"a\":1,\"b\":5}"), content=[
+    { "a": 6, "b": 5 },
+  ])
+  json_inspect(regression_run(".a += empty", "{\"a\":1}"), content=[])
+  json_inspect(regression_run(".a += (1, 2)", "{\"a\":1}"), content=[
+    { "a": 2 },
+    { "a": 3 },
+  ])
+  json_inspect(regression_run(".a //= .b", "{\"a\":null,\"b\":2}"), content=[
+    { "a": 2, "b": 2 },
+  ])
+}
