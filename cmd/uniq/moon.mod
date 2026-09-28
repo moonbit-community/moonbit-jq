@@ -13,7 +13,7 @@ keywords = [ "uniq", "coreutils", "text", "cli", "wasm" ]
 description = "Filter adjacent duplicate lines like uniq, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

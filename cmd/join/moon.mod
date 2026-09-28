@@ -13,7 +13,7 @@ keywords = [ "join", "coreutils", "text", "cli", "wasm" ]
 description = "Join lines of two sorted files on a common field like join, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

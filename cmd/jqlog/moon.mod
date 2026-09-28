@@ -14,7 +14,7 @@ description = "Run jq-compatible filters over JSON Lines input"
 
 import {
   "bobzhang/moonjq@0.1.3",
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

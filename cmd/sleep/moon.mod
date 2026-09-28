@@ -13,7 +13,7 @@ keywords = [ "sleep", "coreutils", "timer", "cli", "wasm" ]
 description = "Pause for a number of seconds, like sleep, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

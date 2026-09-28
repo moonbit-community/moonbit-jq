@@ -13,7 +13,7 @@ keywords = [ "paste", "coreutils", "text", "cli", "wasm" ]
 description = "Merge lines of files like paste, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

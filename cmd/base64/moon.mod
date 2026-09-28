@@ -13,7 +13,7 @@ keywords = [ "base64", "coreutils", "encoding", "cli", "wasm" ]
 description = "Base64 encode and decode like base64, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 

@@ -13,7 +13,7 @@ keywords = [ "tail", "coreutils", "text", "cli", "wasm" ]
 description = "Print the last lines or bytes of inputs like tail, runnable via moonx"
 
 import {
-  "moonbitlang/async@0.21.1",
+  "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
 
