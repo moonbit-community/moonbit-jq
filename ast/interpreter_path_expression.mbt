@@ -38,12 +38,19 @@ fn path_entries(
   expr : Expr,
   input : Json,
   env : Env,
+  tracked? : Bool = true,
 ) -> Array[(Array[Json]?, Json)] raise InterpreterError {
   let out : Array[(Array[Json]?, Json)] = []
-  path_each(expr, input, env, entry => {
-    out.push(entry)
-    true
-  })
+  path_each(
+    expr,
+    input,
+    env,
+    entry => {
+      out.push(entry)
+      true
+    },
+    tracked~,
+  )
   |> ignore
   out
 }
@@ -54,14 +61,25 @@ fn path_entries(
 /// `first(f)` does not evaluate `f` past its first output. Returns false
 /// when evaluation was stopped. A result that is not a path is emitted
 /// with a `None` path.
+///
+/// `tracked` is false when `input` is itself such a non-path value: then
+/// navigating into it (`.k`, `.[i]`, `.[]`, `..`, `first`, `last`,
+/// `getpath`) raises "Invalid path expression" at once, as jq does
+/// ("near attempt to access ..."), even if the result would be dropped
+/// later (`null | (.a | empty)`).
 fn path_each(
   expr : Expr,
   input : Json,
   env : Env,
   emit : ((Array[Json]?, Json)) -> Bool raise InterpreterError,
+  tracked? : Bool = true,
 ) -> Bool raise InterpreterError {
+  let here : Array[Json]? = if tracked { Some([]) } else { None }
+  if !tracked && expr is (Recurse | Key(_) | Index(_) | First | Last) {
+    raise InvalidOperation(invalid_path_expression)
+  }
   match expr {
-    Identity => emit((Some([]), input))
+    Identity => emit((here, input))
     Recurse => {
       for pair in recurse_path_values(input) {
         if !emit((Some(pair.0), pair.1)) {
@@ -119,10 +137,16 @@ fn path_each(
     // Stop `gen` after its first output, as jq's `first(f)` does.
     FirstGen(gen) => {
       let mut found : (Array[Json]?, Json)? = None
-      path_each(gen, input, env, pair => {
-        found = Some(pair)
-        false
-      })
+      path_each(
+        gen,
+        input,
+        env,
+        pair => {
+          found = Some(pair)
+          false
+        },
+        tracked~,
+      )
       |> ignore
       match found {
         Some(pair) => emit(pair)
@@ -131,24 +155,39 @@ fn path_each(
     }
     Empty => true
     Pipe(FunctionDef(name, params, body), right) =>
-      path_each(right, input, env.set_function(name, body, params), emit)
+      path_each(
+        right,
+        input,
+        env.set_function(name, body, params),
+        emit,
+        tracked~,
+      )
     Pipe(left, right) =>
-      path_each(left, input, env, pair => {
-        let (prefix, value) = pair
-        path_each(right, value, env, inner => {
-          let path = match (prefix, inner.0) {
-            (Some(p), Some(q)) => Some(p + q)
-            // Navigating into a value that is not a path is an error
-            // (jq: "Invalid path expression near attempt to access ...");
-            // passing it through unchanged keeps it a non-path result.
-            (None, Some([])) | (_, None) => None
-            (None, Some(_)) => raise InvalidOperation(invalid_path_expression)
-          }
-          emit((path, inner.1))
-        })
-      })
+      path_each(
+        left,
+        input,
+        env,
+        pair => {
+          let (prefix, value) = pair
+          path_each(
+            right,
+            value,
+            env,
+            inner => {
+              let path = match (prefix, inner.0) {
+                (Some(p), Some(q)) => Some(p + q)
+                _ => None
+              }
+              emit((path, inner.1))
+            },
+            tracked=prefix is Some(_),
+          )
+        },
+        tracked~,
+      )
     Comma(left, right) =>
-      path_each(left, input, env, emit) && path_each(right, input, env, emit)
+      path_each(left, input, env, emit, tracked~) &&
+      path_each(right, input, env, emit, tracked~)
     // `?` stops its body at the first error but keeps the outputs produced
     // before it (jq 1.7.1: `[1,2] | [path((.[], (1+"x"))?)]` is [[0],[1]]).
     // The body runs first, so errors raised downstream by `emit` are not
@@ -157,10 +196,16 @@ fn path_each(
     Optional(inner) => {
       let entries : Array[(Array[Json]?, Json)] = []
       try
-        path_each(inner, input, env, entry => {
-          entries.push(entry)
-          true
-        })
+        path_each(
+          inner,
+          input,
+          env,
+          entry => {
+            entries.push(entry)
+            true
+          },
+          tracked~,
+        )
         |> ignore
       catch {
         _ => ()
@@ -175,7 +220,7 @@ fn path_each(
     // Like jq, act once per output of the condition (none for `empty`).
     Select(cond) => {
       for c in eval_with_env(cond, input, env).collect() {
-        if @ast_internal.is_truthy(c) && !emit((Some([]), input)) {
+        if @ast_internal.is_truthy(c) && !emit((here, input)) {
           return false
         }
       }
@@ -188,7 +233,7 @@ fn path_each(
         } else {
           else_expr
         }
-        if !path_each(branch, input, env, emit) {
+        if !path_each(branch, input, env, emit, tracked~) {
           return false
         }
       }
@@ -198,11 +243,11 @@ fn path_each(
     // non-path values (`path(null // .a)` is ["a"]), while a truthy
     // non-path result is still rejected at the end. Errors propagate.
     Alternative(left, right) => {
-      let truthy = path_entries(left, input, env).filter(entry => {
+      let truthy = path_entries(left, input, env, tracked~).filter(entry => {
         @ast_internal.is_truthy(entry.1)
       })
       if truthy.is_empty() {
-        path_each(right, input, env, emit)
+        path_each(right, input, env, emit, tracked~)
       } else {
         for entry in truthy {
           if !emit(entry) {
@@ -217,12 +262,14 @@ fn path_each(
         guard path is Array(segments) else {
           raise InvalidOperation("Path must be specified as an array")
         }
-        if !emit(
-            (
-              Some(segments.copy()),
-              get_at_path(input, segments).unwrap_or(null),
-            ),
-          ) {
+        let path : Array[Json]? = if tracked {
+          Some(segments.copy())
+        } else if segments.is_empty() {
+          None
+        } else {
+          raise InvalidOperation(invalid_path_expression)
+        }
+        if !emit((path, get_at_path(input, segments).unwrap_or(null))) {
           return false
         }
       }
@@ -230,7 +277,7 @@ fn path_each(
     }
     As(source, var_name, body) => {
       for value in eval_with_env(source, input, env).collect() {
-        if !path_each(body, input, env.set(var_name, value), emit) {
+        if !path_each(body, input, env.set(var_name, value), emit, tracked~) {
           return false
         }
       }
@@ -238,7 +285,7 @@ fn path_each(
     }
     FunctionCall(name, args) =>
       match env.get_function(name) {
-        Some((body, [])) => path_each(body, input, env, emit)
+        Some((body, [])) => path_each(body, input, env, emit, tracked~)
         Some((body, params)) => {
           if args.length() != params.length() {
             raise EvalError(
@@ -251,7 +298,13 @@ fn path_each(
               [first, ..] => first
             }
           })
-          path_each(body, input, bind_params(env, params, arg_values), emit)
+          path_each(
+            body,
+            input,
+            bind_params(env, params, arg_values),
+            emit,
+            tracked~,
+          )
         }
         None => raise EvalError("Undefined function: \{name}")
       }

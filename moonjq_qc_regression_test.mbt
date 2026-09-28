@@ -614,3 +614,36 @@ test "regression: ? in a path expression keeps outputs before the error" {
     [["a"]],
   ])
 }
+
+///|
+test "regression: navigating into a non-path value fails even if dropped" {
+  // Review round 3, finding 3 on PR #30. The error was only raised when a
+  // navigated path reached the end, so `empty` could hide it. Checked
+  // with jq 1.7.1:
+  //   {} | [path(null | (.a | empty))]           => error: Invalid path expression
+  //   {} | [path(null | (.a | select(false)))]   => error
+  //   {} | [path(1 | .[0])], [path(null | first)] => error
+  //   {} | [path(1 as $x | $x | .a)]             => error
+  // while dropping the non-path value before any navigation is fine:
+  //   {} | [path(null | select(false) | .a)]     => []
+  //   {} | [path(null | (.a | empty)?)]          => []
+  //   {} | [path(null // .a)]                    => [["a"]]
+  for
+    query in [
+      "[path(null | (.a | empty))]", "[path(null | (.a | select(false)))]", "[path(1 | .[0])]",
+      "[path(null | first)]", "[path(1 as $x | $x | .a)]",
+    ] {
+    try regression_run(query, "{}") catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected Invalid path expression for \{query}")
+    }
+  }
+  json_inspect(
+    regression_run(
+      "[path(null | select(false) | .a)], [path(null | (.a | empty)?)], [path(null // .a)]",
+      "{}",
+    ),
+    content=[[], [], [["a"]]],
+  )
+}
