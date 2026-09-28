@@ -250,3 +250,20 @@ test "regression: trailing tokens are a parse error" {
     }
   }
 }
+
+///|
+test "regression: .\"key\" and .[\"key\"] access object keys" {
+  // Needed to turn generated paths back into filters in "qc: filters built
+  // from paths agree with getpath and path"; `.["a"]` was a syntax error
+  // and `."a"` returned the whole input.
+  json_inspect(
+    regression_run(
+      ".\"a b\", .[\"a b\"], .x.\"k\", .x[\"k\"], .[\"x\"][\"k\"]", "{\"a b\":1,\"x\":{\"k\":2}}",
+    ),
+    content=[1, 1, 2, 2, 2],
+  )
+  json_inspect(regression_run("path(.[\"a\"][0]), (.[\"a\"] = 3)", "{}"), content=[
+    ["a", 0],
+    { "a": 3 },
+  ])
+}
