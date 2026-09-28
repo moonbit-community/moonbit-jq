@@ -174,7 +174,7 @@ test "edge: unicode string interpolation" {
   debug_inspect(
     test_query("\"Hello \\(.name) 👋\"", "{\"name\":\"世界\"}"),
     content=(
-      #|"ParseError: UnterminatedString(0)"
+      #|"String(\"Hello 世界 👋\")"
     ),
   )
 }

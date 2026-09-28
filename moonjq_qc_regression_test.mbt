@@ -132,3 +132,14 @@ test "regression: setpath creates missing structure" {
     content=[1],
   )
 }
+
+///|
+test "regression: query string literals may contain astral characters" {
+  // Found while checking the paths(f) property with keys like "😀": the
+  // lexer advanced one UTF-16 unit per character, landed inside the
+  // surrogate pair and reported UnterminatedString.
+  json_inspect(
+    regression_run("\"😀\", (. == \"a😀b\"), {\"😀\": 1}", "\"a😀b\""),
+    content=["😀", true, { "😀": 1 }],
+  )
+}
