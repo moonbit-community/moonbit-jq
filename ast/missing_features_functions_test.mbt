@@ -13,7 +13,7 @@ test "missing: user-defined functions with params" {
   debug_inspect(
     test_feature("def add(x): . + x; add(10)", "5"),
     content=(
-      #|"EvalError: TypeMismatch(\"array\", \"number\")"
+      #|"ParseError: UnexpectedToken(\"TLParen\", \"end of query\")"
     ),
   )
 }

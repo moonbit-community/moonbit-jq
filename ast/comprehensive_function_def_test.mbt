@@ -20,7 +20,7 @@ test "def: function with parameter" {
   debug_inspect(
     test_query("def add(x): . + x; add(10)", "5"),
     content=(
-      #|"EvalError: TypeMismatch(\"array\", \"number\")"
+      #|"ParseError: UnexpectedToken(\"TLParen\", \"end of query\")"
     ),
   )
 }

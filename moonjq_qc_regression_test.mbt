@@ -237,3 +237,16 @@ test "regression: // chains right-associatively" {
     { "a": 1 },
   ])
 }
+
+///|
+test "regression: trailing tokens are a parse error" {
+  // `. 1`, `.a )` and `."a"` used to parse as their first complete
+  // expression and ignore the rest (`."a"` returned the whole input).
+  for query in [". 1", ".a )", "def f: .; f g"] {
+    try @moonjq.parse(query) catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected a parse error for \{query}")
+    }
+  }
+}
