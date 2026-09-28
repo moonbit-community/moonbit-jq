@@ -76,3 +76,13 @@ test "regression: add follows reduce .[] as $x (null; . + $x)" {
     [1, 1, null],
   ])
 }
+
+///|
+test "regression: length counts code points and is abs for numbers" {
+  // Found by "qc: length agrees with the value": `0 | length` raised and an
+  // astral character counted as 2 (UTF-16 code units).
+  json_inspect(
+    regression_run("[.[] | length]", "[0, -5, 2.5, \"\\ud83d\\ude00\", \"é\"]"),
+    content=[[0, 5, 2.5, 1, 1]],
+  )
+}

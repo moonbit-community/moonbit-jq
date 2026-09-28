@@ -4,8 +4,11 @@ fn eval_length(input : Json) -> Iter[Json] raise InterpreterError {
   let len = match input {
     Array(arr) => arr.length()
     Object(obj) => obj.length()
-    String(s) => s.length()
+    // jq counts Unicode code points, not UTF-16 code units.
+    String(s) => s.char_length()
     Null => 0
+    // jq's length of a number is its absolute value.
+    Number(n, ..) => return Iter::singleton(Json::number(n.abs()))
     _ =>
       raise TypeMismatch(
         "array/object/string",
