@@ -1,0 +1,169 @@
+///|
+/// Evaluate `expr` as a jq path expression against `input`.
+///
+/// Returns, in output order, each path `expr` refers to together with the
+/// value found there. Only filters that navigate the input are path
+/// expressions (`.`, `..`, `.k`, `.[i]`, `.[]`, pipes, commas, `select`,
+/// `if`, `//`, `?`, `empty`, `first`, `last`, `first(f)`, `last(f)`,
+/// `getpath`, `... as $x | ...` and user-defined functions built from
+/// them); anything else raises "Invalid path expression", as in jq.
+fn path_values(
+  expr : Expr,
+  input : Json,
+  env : Env,
+) -> Array[(Array[Json], Json)] raise InterpreterError {
+  match expr {
+    Identity => [([], input)]
+    Recurse => recurse_path_values(input)
+    Key(key) => {
+      let value = match input {
+        Object(obj) => obj.get(key).unwrap_or(null)
+        _ => null
+      }
+      [([Json::string(key)], value)]
+    }
+    Index([]) =>
+      match input {
+        Array(arr) => arr.mapi((i, v) => ([Json::number(i.to_double())], v))
+        Object(obj) =>
+          obj.iter().map(kv => ([Json::string(kv.0)], kv.1)).collect()
+        _ => []
+      }
+    Index(indices) => {
+      let values = eval_index_access(indices, input).collect()
+      indices.mapi((i, idx) => ([Json::number(idx.to_double())], values[i]))
+    }
+    First =>
+      match input {
+        Array(arr) if arr.length() > 0 => [([Json::number(0.0)], arr[0])]
+        Array(_) => []
+        _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+      }
+    Last =>
+      match input {
+        Array(arr) if arr.length() > 0 =>
+          [([Json::number(-1.0)], arr[arr.length() - 1])]
+        Array(_) => []
+        _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
+      }
+    FirstGen(gen) =>
+      match path_values(gen, input, env) {
+        [first, ..] => [first]
+        [] => []
+      }
+    LastGen(gen) =>
+      match path_values(gen, input, env) {
+        [.., last] => [last]
+        [] => []
+      }
+    Empty => []
+    Pipe(FunctionDef(name, params, body), right) =>
+      path_values(right, input, env.set_function(name, body, params))
+    Pipe(left, right) => {
+      let out : Array[(Array[Json], Json)] = []
+      for pair in path_values(left, input, env) {
+        let (prefix, value) = pair
+        for inner in path_values(right, value, env) {
+          out.push((prefix + inner.0, inner.1))
+        }
+      }
+      out
+    }
+    Comma(left, right) =>
+      path_values(left, input, env) + path_values(right, input, env)
+    Optional(inner) => path_values(inner, input, env) catch { _ => [] }
+    Select(cond) =>
+      match eval_with_env(cond, input, env).collect() {
+        [first, ..] if @ast_internal.is_truthy(first) => [([], input)]
+        _ => []
+      }
+    IfThenElse(cond, then_expr, else_expr) => {
+      let branch = match eval_with_env(cond, input, env).collect() {
+        [first, ..] if @ast_internal.is_truthy(first) => then_expr
+        _ => else_expr
+      }
+      path_values(branch, input, env)
+    }
+    Alternative(left, right) => {
+      let lefts = path_values(left, input, env) catch { _ => [] }
+      let truthy = lefts.filter(pair => @ast_internal.is_truthy(pair.1))
+      if truthy.is_empty() {
+        path_values(right, input, env)
+      } else {
+        truthy
+      }
+    }
+    GetPath(path_expr) => {
+      let out : Array[(Array[Json], Json)] = []
+      for path in eval_with_env(path_expr, input, env) {
+        guard path is Array(segments) else {
+          raise InvalidOperation("Path must be specified as an array")
+        }
+        out.push(
+          (segments.copy(), get_at_path(input, segments).unwrap_or(null)),
+        )
+      }
+      out
+    }
+    As(source, var_name, body) => {
+      let out : Array[(Array[Json], Json)] = []
+      for value in eval_with_env(source, input, env).collect() {
+        out.append(path_values(body, input, env.set(var_name, value)))
+      }
+      out
+    }
+    FunctionCall(name, args) =>
+      match env.get_function(name) {
+        Some((body, [])) => path_values(body, input, env)
+        Some((body, params)) => {
+          if args.length() != params.length() {
+            raise EvalError(
+              "Function \{name} expects \{params.length()} arguments, got \{args.length()}",
+            )
+          }
+          let arg_values = args.map(arg => {
+            match eval_with_env(arg, input, env).collect() {
+              [] => null
+              [first, ..] => first
+            }
+          })
+          path_values(body, input, bind_params(env, params, arg_values))
+        }
+        None => raise EvalError("Undefined function: \{name}")
+      }
+    _ => raise InvalidOperation("Invalid path expression")
+  }
+}
+
+///|
+/// Paths of `..`: the input itself, then every descendant in pre-order.
+fn recurse_path_values(input : Json) -> Array[(Array[Json], Json)] {
+  let out : Array[(Array[Json], Json)] = []
+  fn go(prefix : Array[Json], value : Json) -> Unit {
+    out.push((prefix, value))
+    match value {
+      Array(arr) =>
+        for i, v in arr {
+          go(prefix + [Json::number(i.to_double())], v)
+        }
+      Object(obj) =>
+        for k, v in obj {
+          go(prefix + [Json::string(k)], v)
+        }
+      _ => ()
+    }
+  }
+
+  go([], input)
+  out
+}
+
+///|
+/// Evaluate Path: `path(f)` yields each path `f` refers to.
+fn eval_path(
+  expr : Expr,
+  input : Json,
+  env : Env,
+) -> Iter[Json] raise InterpreterError {
+  path_values(expr, input, env).map(pair => Json::array(pair.0)).iter()
+}

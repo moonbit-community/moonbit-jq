@@ -169,3 +169,25 @@ test "regression: tostring is defined" {
     content=[["a", "1", "null", "[true]", "{\"k\":\"v\"}"]],
   )
 }
+
+///|
+test "regression: path(f) returns the paths f refers to" {
+  // Found by "qc: paths, path(..) and .. agree with a reference traversal":
+  // `path` was not parsed ("Undefined function: path") and the AST node
+  // always evaluated to [].
+  json_inspect(regression_run("[path(..)]", "{\"a\":[1]}"), content=[
+    [[], ["a"], ["a", 0]],
+  ])
+  json_inspect(
+    regression_run(
+      "[path(.a[0], .[]?, (.. | select(type == \"number\")), getpath([\"x\",\"y\"]), first(.a[]))]",
+      "{\"a\":[1]}",
+    ),
+    content=[[["a", 0], ["a"], ["a", 0], ["x", "y"], ["a", 0]]],
+  )
+  try regression_run("path(1)", "null") catch {
+    _ => ()
+  } noraise {
+    _ => fail("path(1) is not a path expression")
+  }
+}

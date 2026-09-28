@@ -38,9 +38,3 @@ fn get_at_path(current : Json, path : ArrayView[Json]) -> Json? {
       }
   }
 }
-
-///|
-/// Evaluate Path (placeholder)
-fn eval_path(_expr : Expr) -> Iter[Json] {
-  Iter::singleton(Json::array([]))
-}
