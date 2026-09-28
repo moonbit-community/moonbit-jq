@@ -6,7 +6,7 @@ test "corner: interpolation with null" {
   debug_inspect(
     test_query("\"Value: \\(.missing)\"", "{}"),
     content=(
-      #|"String(\"Value: Null\")"
+      #|"String(\"Value: null\")"
     ),
   )
 }
@@ -16,7 +16,7 @@ test "corner: interpolation with nested object" {
   debug_inspect(
     test_query("\"User: \\(.user)\"", "{\"user\":{\"name\":\"Alice\"}}"),
     content=(
-      #|"String(\"User: Object({ \\\"name\\\": String(\\\"Alice\\\") })\")"
+      #|"String(\"User: {\\\"name\\\":\\\"Alice\\\"}\")"
     ),
   )
 }
@@ -38,7 +38,7 @@ test "corner: interpolation with calculation" {
   debug_inspect(
     test_query("\"Sum: \\(.a + .b + .c)\"", "{\"a\":1,\"b\":2,\"c\":3}"),
     content=(
-      #|"String(\"Sum: Number(6)\")"
+      #|"String(\"Sum: 6\")"
     ),
   )
 }

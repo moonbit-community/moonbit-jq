@@ -20,10 +20,12 @@ test "coverage: update with index left branches" {
   json_inspect(eval_expr(expr_valid, "[{\"a\":0}]"), content=[[{ "a": 1 }]])
   let path_empty : @ast.Expr = Pipe(Index([]), Key("a"))
   let expr_empty : @ast.Expr = Update(path_empty, update_expr)
-  json_inspect(eval_expr(expr_empty, "[{\"a\":0}]"), content=[[{ "a": 0 }]])
+  json_inspect(eval_expr(expr_empty, "[{\"a\":0}]"), content=[[{ "a": 1 }]])
   let path_oob : @ast.Expr = Pipe(Index([5]), Key("a"))
   let expr_oob : @ast.Expr = Update(path_oob, update_expr)
-  json_inspect(eval_expr(expr_oob, "[{\"a\":0}]"), content=[[{ "a": 0 }]])
+  json_inspect(eval_expr(expr_oob, "[{\"a\":0}]"), content=[
+    [{ "a": 0 }, null, null, null, null, { "a": 1 }],
+  ])
   let expr_non_array : @ast.Expr = Update(path_valid, update_expr)
   json_inspect(eval_expr(expr_non_array, "1"), content=[1])
 }
@@ -34,6 +36,6 @@ test "coverage: update with complex left pipe" {
   let update_expr : @ast.Expr = Literal(Number(2.0))
   let expr : @ast.Expr = Update(path, update_expr)
   json_inspect(eval_expr(expr, "{\"a\":{\"b\":{\"c\":1}}}"), content=[
-    { "c": 2 },
+    { "a": { "b": { "c": 2 } } },
   ])
 }

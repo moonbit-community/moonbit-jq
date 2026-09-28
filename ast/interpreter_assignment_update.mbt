@@ -1,98 +1,22 @@
 ///|
-/// Evaluate Update operator
+/// Evaluate Update operator: `p |= f`
 fn eval_update(
   path : Expr,
   update_expr : Expr,
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  fn apply_update(
-    obj : Json,
-    p : Expr,
-    upd : Expr,
-  ) -> Json raise InterpreterError {
-    match p {
-      Identity =>
-        match eval_with_env(upd, obj, env).collect() {
-          [first, ..] => first
-          [] => obj
-        }
-      Key(key) =>
-        match obj {
-          Object(map) => {
-            let current = map.get(key).unwrap_or(null)
-            match eval_with_env(upd, current, env).collect() {
-              [updated, ..] => {
-                let new_map = map.copy()
-                new_map[key] = updated
-                Json::object(new_map)
-              }
-              [] => obj
-            }
-          }
-          _ => obj
-        }
-      Index(indices) =>
-        match (obj, indices) {
-          (Array(arr), [idx]) =>
-            if idx < 0 || idx >= arr.length() {
-              obj
-            } else {
-              match eval_with_env(upd, arr[idx], env).collect() {
-                [updated, ..] => {
-                  let new_arr = arr.copy()
-                  new_arr[idx] = updated
-                  Json::array(new_arr)
-                }
-                [] => obj
-              }
-            }
-          _ => obj
-        }
-      Pipe(left, right) =>
-        match left {
-          Identity => apply_update(obj, right, upd)
-          Key(key) =>
-            match obj {
-              Object(map) => {
-                let current = map.get(key).unwrap_or(null)
-                let updated = apply_update(current, right, upd)
-                let new_map = map.copy()
-                new_map[key] = updated
-                Json::object(new_map)
-              }
-              _ => obj
-            }
-          Index(indices) =>
-            match (obj, indices) {
-              (Array(arr), [idx]) =>
-                if idx < 0 || idx >= arr.length() {
-                  obj
-                } else {
-                  let updated = apply_update(arr[idx], right, upd)
-                  let new_arr = arr.copy()
-                  new_arr[idx] = updated
-                  Json::array(new_arr)
-                }
-              _ => obj
-            }
-          _ =>
-            match eval_with_env(left, obj, env).collect() {
-              [navigated, ..] => apply_update(navigated, right, upd)
-              [] => obj
-            }
-        }
-      _ =>
-        match eval_with_env(p, obj, env).collect() {
-          [current, ..] =>
-            match eval_with_env(upd, current, env).collect() {
-              [updated, ..] => updated
-              [] => obj
-            }
-          [] => obj
-        }
+  // jq 1.7's `_modify(paths; update)`: for each path, replace the value
+  // with the first output of `f`; paths whose update is empty are deleted
+  // at the end (all at once, so array indices do not shift).
+  let mut updated = input
+  let to_delete : Array[Array[Json]] = []
+  for pair in path_values(path, input, env) {
+    let current = get_at_path(updated, pair.0).unwrap_or(null)
+    match eval_with_env(update_expr, current, env).collect() {
+      [first, ..] => updated = set_at_path(updated, pair.0, first)
+      [] => to_delete.push(pair.0)
     }
   }
-
-  Iter::singleton(apply_update(input, path, update_expr))
+  Iter::singleton(delete_paths(updated, to_delete.map(p => p)))
 }

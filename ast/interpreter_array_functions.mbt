@@ -5,8 +5,11 @@ fn eval_map(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  guard input is Array(arr) else {
-    raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  // jq defines `map(f)` as `[.[] | f]`, so objects map over their values.
+  let arr : Array[Json] = match input {
+    Array(arr) => arr
+    Object(obj) => obj.values().collect()
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
   let results : Array[Json] = arr.fold(init=[], fn(
     acc,
@@ -28,15 +31,15 @@ fn eval_select(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match eval_with_env(condition, input, env).collect() {
-    [] => Iter::empty()
-    [first, ..] =>
-      if @ast_internal.is_truthy(first) {
-        Iter::singleton(input)
-      } else {
-        Iter::empty()
-      }
+  // jq: `def select(f): if f then . else empty end;` -- one output of `.`
+  // per truthy output of `f`.
+  let outputs : Array[Json] = []
+  for c in eval_with_env(condition, input, env).collect() {
+    if @ast_internal.is_truthy(c) {
+      outputs.push(input)
+    }
   }
+  outputs.iter()
 }
 
 ///|

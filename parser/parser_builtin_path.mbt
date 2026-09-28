@@ -14,6 +14,12 @@ fn Parser::parse_builtin_path(
         Some(Paths)
       }
     "leaf_paths" => Some(LeafPaths)
+    "path" => {
+      self.expect(TLParen)
+      let expr = self.parse_pipe()
+      self.expect(TRParen)
+      Some(Path(expr))
+    }
     "getpath" => {
       self.expect(TLParen)
       let expr = self.parse_pipe()

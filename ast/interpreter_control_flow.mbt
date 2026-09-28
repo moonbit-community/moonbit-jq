@@ -7,15 +7,16 @@ fn eval_if_then_else(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  match eval_with_env(cond, input, env).collect() {
-    [] => eval_with_env(else_expr, input, env)
-    [first, ..] =>
-      if @ast_internal.is_truthy(first) {
-        eval_with_env(then_expr, input, env)
-      } else {
-        eval_with_env(else_expr, input, env)
-      }
+  // jq evaluates a branch for every output of the condition, so
+  // `if empty then a else b end` produces nothing.
+  let results : Array[Json] = []
+  for c in eval_with_env(cond, input, env).collect() {
+    let branch = if @ast_internal.is_truthy(c) { then_expr } else { else_expr }
+    for v in eval_with_env(branch, input, env) {
+      results.push(v)
+    }
   }
+  results.iter()
 }
 
 ///|
@@ -43,15 +44,15 @@ fn eval_alternative(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
+  // jq 1.7: `a // b` yields every output of `a` that is neither false nor
+  // null, or the outputs of `b` if there are none. Errors raised by `a`
+  // propagate (jq 1.7.1: `[error("x") // 3]` is an error).
   let left_results = eval_with_env(left, input, env).collect()
-  match left_results {
-    [] => eval_with_env(right, input, env)
-    [first, ..] =>
-      if @ast_internal.is_truthy(first) {
-        left_results.iter()
-      } else {
-        eval_with_env(right, input, env)
-      }
+  let truthy = left_results.filter(@ast_internal.is_truthy)
+  if truthy.is_empty() {
+    eval_with_env(right, input, env)
+  } else {
+    truthy.iter()
   }
 }
 

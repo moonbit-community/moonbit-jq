@@ -8,7 +8,7 @@ test "complex: data transformation pipeline" {
       ".users | map({name: .name, email: .email}) | sort_by(.name)", "{\"users\":[{\"name\":\"Bob\",\"email\":\"bob@test.com\",\"age\":30},{\"name\":\"Alice\",\"email\":\"alice@test.com\",\"age\":25}]}",
     ),
     content=(
-      #|"Array(\n  [\n    Object({ \"name\": String(\"Bob\"), \"email\": String(\"bob@test.com\") }),\n    Object({ \"name\": String(\"Alice\"), \"email\": String(\"alice@test.com\") }),\n  ],\n)"
+      #|"Array(\n  [\n    Object({ \"name\": String(\"Alice\"), \"email\": String(\"alice@test.com\") }),\n    Object({ \"name\": String(\"Bob\"), \"email\": String(\"bob@test.com\") }),\n  ],\n)"
     ),
   )
 }

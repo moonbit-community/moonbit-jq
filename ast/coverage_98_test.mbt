@@ -1,7 +1,9 @@
 ///|
 test "coverage: update operator deep branches" {
   json_inspect(coverage_eval(".[0] |= . + 1", "{\"a\":1}"), content=[{ "a": 1 }])
-  json_inspect(coverage_eval(".a.b |= . + 1", "{}"), content=[{ "a": null }])
+  json_inspect(coverage_eval(".a.b |= . + 1", "{}"), content=[
+    { "a": { "b": 1 } },
+  ])
   json_inspect(coverage_eval(".a.b |= . + 1", "1"), content=[1])
   json_inspect(
     coverage_eval("(.foo | .bar) |= . + 1", "{\"foo\":{\"bar\":1}}"),
@@ -10,10 +12,9 @@ test "coverage: update operator deep branches" {
   json_inspect(coverage_eval("(empty | .bar) |= . + 1", "{\"bar\":1}"), content=[
     { "bar": 1 },
   ])
-  json_inspect(coverage_eval("length |= empty", "{\"a\":1}"), content=[
-    { "a": 1 },
-  ])
-  json_inspect(coverage_eval("length |= 3", "[1,2]"), content=[3])
+  // `length` is not a path expression, so jq rejects updating it.
+  assert_coverage_eval_error("length |= empty", "{\"a\":1}")
+  assert_coverage_eval_error("length |= 3", "[1,2]")
   json_inspect(coverage_eval("empty |= 1", "{\"a\":1}"), content=[{ "a": 1 }])
 }
 

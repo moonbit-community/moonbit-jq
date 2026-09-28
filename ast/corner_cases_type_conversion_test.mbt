@@ -6,7 +6,7 @@ test "corner: tojson converts to JSON string" {
   debug_inspect(
     test_query("tojson", "{\"a\":1}"),
     content=(
-      #|"String(\"Object({ \\\"a\\\": Number(1) })\")"
+      #|"String(\"{\\\"a\\\":1}\")"
     ),
   )
 }
@@ -26,7 +26,7 @@ test "corner: tojson then fromjson roundtrip" {
   debug_inspect(
     test_query("tojson | fromjson", "{\"a\":1,\"b\":[2,3]}"),
     content=(
-      #|"EvalError: InvalidOperation(\"JSON parse error: Invalid character 'O' at line 1, column 0\")"
+      #|"Object({ \"a\": Number(1), \"b\": Array([Number(2), Number(3)]) })"
     ),
   )
 }

@@ -33,9 +33,13 @@ fn Lexer::peek(self : Lexer) -> Char? {
 }
 
 ///|
-/// Advance position
+/// Advance past the current character. `pos` is a UTF-16 index, so a
+/// character outside the BMP (a surrogate pair) advances by two.
 fn Lexer::advance(self : Lexer) -> Unit {
-  self.pos += 1
+  match self.current() {
+    Some(c) if c.to_int() > 0xFFFF => self.pos += 2
+    _ => self.pos += 1
+  }
 }
 
 ///|

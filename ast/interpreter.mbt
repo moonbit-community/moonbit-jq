@@ -154,7 +154,7 @@ fn eval_with_env(
     Walk(f) => eval_walk(f, input, env)
 
     // Path expression: get path to a value
-    Path(expr) => eval_path(expr)
+    Path(expr) => eval_path(expr, input, env)
 
     // Additional numeric functions
     Round => eval_round(input)

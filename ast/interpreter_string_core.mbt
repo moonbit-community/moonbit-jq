@@ -53,7 +53,8 @@ fn json_to_strings(parts : ArrayView[Json]) -> Array[String] {
   parts.map(fn(part) {
     match part {
       String(s) => s
-      _ => @debug.to_string(part)
+      Null => ""
+      _ => json_to_text(part)
     }
   })
 }

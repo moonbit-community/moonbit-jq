@@ -27,7 +27,8 @@ fn get_at_path(current : Json, path : ArrayView[Json]) -> Json? {
             None => None
           }
         (Array(arr), Number(idx, ..)) => {
-          let i = idx.to_int()
+          // Negative indices count from the end, as in `.[-1]`.
+          let i = normalize_index(idx.to_int(), arr.length())
           if i >= 0 && i < arr.length() {
             get_at_path(arr[i], rest)
           } else {
@@ -37,10 +38,4 @@ fn get_at_path(current : Json, path : ArrayView[Json]) -> Json? {
         _ => None
       }
   }
-}
-
-///|
-/// Evaluate Path (placeholder)
-fn eval_path(_expr : Expr) -> Iter[Json] {
-  Iter::singleton(Json::array([]))
 }

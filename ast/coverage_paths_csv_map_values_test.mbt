@@ -1,15 +1,15 @@
 ///|
 test "coverage: paths(filter) traverses arrays" {
   json_inspect(coverage_eval("paths(type == \"number\")", "[1, [2]]"), content=[
-    ["0"],
-    ["1", "0"],
+    [0],
+    [1, 0],
   ])
 }
 
 ///|
 test "coverage: @csv formats booleans and nulls" {
   json_inspect(coverage_eval("@csv", "[1, true, false, null, \"x\"]"), content=[
-    "1,true,false,,x",
+    "1,true,false,,\"x\"",
   ])
 }
 

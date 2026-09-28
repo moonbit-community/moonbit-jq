@@ -134,7 +134,7 @@ test "format: @csv simple array" {
   debug_inspect(
     test_query("@csv", "[\"a\",\"b\",\"c\"]"),
     content=(
-      #|"String(\"a,b,c\")"
+      #|"String(\"\\\"a\\\",\\\"b\\\",\\\"c\\\"\")"
     ),
   )
 }
@@ -144,7 +144,7 @@ test "format: @csv with quotes" {
   debug_inspect(
     test_query("@csv", "[\"hello, world\",\"test\"]"),
     content=(
-      #|"String(\"\\\"hello, world\\\",test\")"
+      #|"String(\"\\\"hello, world\\\",\\\"test\\\"\")"
     ),
   )
 }
@@ -164,7 +164,7 @@ test "format: @json stringify" {
   debug_inspect(
     test_query("@json", "{\"x\":1,\"y\":2}"),
     content=(
-      #|"String(\"Object({ \\\"x\\\": Number(1), \\\"y\\\": Number(2) })\")"
+      #|"String(\"{\\\"x\\\":1,\\\"y\\\":2}\")"
     ),
   )
 }
@@ -174,7 +174,7 @@ test "format: @text" {
   debug_inspect(
     test_query("@text", "{\"x\":42}"),
     content=(
-      #|"String(\"Object({ \\\"x\\\": Number(42) })\")"
+      #|"String(\"{\\\"x\\\":42}\")"
     ),
   )
 }

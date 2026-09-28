@@ -6,7 +6,7 @@ test "corner: multiple alternatives" {
   debug_inspect(
     test_query(".a // .b // .c // \"default\"", "{\"c\":5}"),
     content=(
-      #|"Null"
+      #|"Number(5)"
     ),
   )
 }

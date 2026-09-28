@@ -52,6 +52,11 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
           self.advance()
           Key(name)
         }
+        Some(TString(name)) => {
+          // ."key"
+          self.advance()
+          Key(name)
+        }
         Some(TLBracket) => {
           self.advance()
           self.parse_index_or_slice(Identity)

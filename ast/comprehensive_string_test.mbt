@@ -34,7 +34,7 @@ test "string interpolation: nested access" {
       "\"Name: \\(.user.name), Age: \\(.user.age)\"", "{\"user\":{\"name\":\"Bob\",\"age\":30}}",
     ),
     content=(
-      #|"String(\"Name: Bob, Age: Number(30)\")"
+      #|"String(\"Name: Bob, Age: 30\")"
     ),
   )
 }
@@ -44,7 +44,7 @@ test "string interpolation: with expressions" {
   debug_inspect(
     test_query("\"Result: \\(. * 2)\"", "5"),
     content=(
-      #|"String(\"Result: Number(10)\")"
+      #|"String(\"Result: 10\")"
     ),
   )
 }
@@ -54,7 +54,7 @@ test "string interpolation: array access" {
   debug_inspect(
     test_query("\"First: \\(.[0]), Last: \\(.[-1])\"", "[1,2,3,4,5]"),
     content=(
-      #|"String(\"First: Number(1), Last: Number(5)\")"
+      #|"String(\"First: 1, Last: 5\")"
     ),
   )
 }
@@ -66,7 +66,7 @@ test "string interpolation: complex expression" {
       "\"Sum: \\(.a + .b), Product: \\(.a * .b)\"", "{\"a\":3,\"b\":7}",
     ),
     content=(
-      #|"String(\"Sum: Number(10), Product: Number(21)\")"
+      #|"String(\"Sum: 10, Product: 21\")"
     ),
   )
 }
@@ -174,7 +174,7 @@ test "edge: unicode string interpolation" {
   debug_inspect(
     test_query("\"Hello \\(.name) 👋\"", "{\"name\":\"世界\"}"),
     content=(
-      #|"ParseError: UnterminatedString(0)"
+      #|"String(\"Hello 世界 👋\")"
     ),
   )
 }

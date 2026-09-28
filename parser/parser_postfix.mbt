@@ -34,6 +34,12 @@ fn Parser::parse_index_or_slice(
   if self.consume(TRBracket) {
     return Pipe(base, Index([]))
   }
+  if self.current() is Some(TString(key)) {
+    // .["key"]
+    self.advance()
+    self.expect(TRBracket)
+    return Pipe(base, Key(key))
+  }
   let start_or_index = self.parse_slice_part()
   if self.consume(TColon) {
     let end = self.parse_slice_part()
@@ -84,6 +90,11 @@ fn Parser::parse_field_access(
 ) -> @ast.Expr raise ParseError {
   match self.current() {
     Some(TIdentifier(name)) => {
+      self.advance()
+      Pipe(base, Key(name))
+    }
+    Some(TString(name)) => {
+      // ."key"
       self.advance()
       Pipe(base, Key(name))
     }
