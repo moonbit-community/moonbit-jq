@@ -541,3 +541,42 @@ test "regression: first(f) in a path expression stops after one output" {
   )
   json_inspect(regression_run("[path(first(empty))]", "[1,2]"), content=[[]])
 }
+
+///|
+test "regression: // in a path expression drops false/null non-path values" {
+  // Review round 2, finding 3 on PR #30. jq only rejects a non-path
+  // result when it reaches the end of the path expression, so values that
+  // `//`, `select` or `empty` drop are fine. Checked with jq 1.7.1:
+  //   {} | path(null // .a)                        => ["a"]
+  //   {} | (false // .a) = 2                       => {"a":2}
+  //   {} | [path((null, false) // .a)]             => [["a"]]
+  //   {"a":1} | [path((null, .a) // .b)]           => [["a"]]
+  //   {} | [path((1, .a) | select(. == null))]     => [["a"]]
+  //   {} | [path((null|.a)?)]                      => []
+  // while real non-path results and errors are still rejected:
+  //   {} | [path(1 // .a)], [path((null, 2) // .a)], [path(.a // null)],
+  //   [path(null | .a)], [path(1 | select(true))]  => Invalid path expression
+  json_inspect(regression_run("path(null // .a)", "{}"), content=[["a"]])
+  json_inspect(regression_run("(false // .a) = 2", "{}"), content=[{ "a": 2 }])
+  json_inspect(regression_run("[path((null, false) // .a)]", "{}"), content=[
+    [["a"]],
+  ])
+  json_inspect(regression_run("[path((null, .a) // .b)]", "{\"a\":1}"), content=[
+    [["a"]],
+  ])
+  json_inspect(regression_run("[path((1, .a) | select(. == null))]", "{}"), content=[
+    [["a"]],
+  ])
+  json_inspect(regression_run("[path((null | .a)?)]", "{}"), content=[[]])
+  for
+    query in [
+      "[path(1 // .a)]", "[path((null, 2) // .a)]", "[path(.a // null)]", "[path(null | .a)]",
+      "[path(1 | select(true))]",
+    ] {
+    try regression_run(query, "{}") catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected Invalid path expression for \{query}")
+    }
+  }
+}
