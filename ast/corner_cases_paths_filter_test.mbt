@@ -16,7 +16,7 @@ test "corner: paths scalars only" {
   debug_inspect(
     test_query("paths(scalars)", "{\"a\":1,\"b\":{\"c\":2}}"),
     content=(
-      #|""
+      #|"EvalError: EvalError(\"Undefined function: scalars\")"
     ),
   )
 }

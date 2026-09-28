@@ -105,12 +105,20 @@ test "regression: paths(f) yields numeric array indices" {
     regression_run("[paths(type == \"number\")]", "{\"a\":[1,{\"c\":2}]}"),
     content=[[["a", 0], ["a", 1, "c"]]],
   )
-  // The root is never a candidate, so an error from f on the root must not
-  // stop the enumeration.
-  json_inspect(
-    regression_run("[paths(ascii_downcase == \"x\")]", "{\"k\":\"X\"}"),
-    content=[[["k"]]],
-  )
+  // jq 1.7.1 defines paths(f) as `path(.. | select(f)) | select(length > 0)`:
+  // f also runs on the root and its errors propagate:
+  //   {"k":"X"} | [paths(ascii_downcase == "x")] => error (explode input
+  //   must be a string); [paths(1)] selects every non-root path.
+  try
+    regression_run("[paths(ascii_downcase == \"x\")]", "{\"k\":\"X\"}")
+  catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected the error from f on the root to propagate")
+  }
+  json_inspect(regression_run("[paths(1)]", "{\"a\":[2]}"), content=[
+    [["a"], ["a", 0]],
+  ])
 }
 
 ///|

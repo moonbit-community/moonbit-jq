@@ -47,13 +47,19 @@ fn eval_leaf_paths(input : Json) -> Iter[Json] {
 }
 
 ///|
-/// Evaluate PathsWithFilter
+/// Evaluate PathsWithFilter, following jq 1.7's definition
+/// `def paths(f): path(.. | select(f)) | select(length > 0);`: `f` runs on
+/// every value (the root included), errors from it propagate, and the
+/// root path itself is not produced.
 fn eval_paths_with_filter(
   filter_expr : Expr,
   input : Json,
   env : Env,
-) -> Iter[Json] {
-  iter_paths_with_filter(filter_expr, input, env)
+) -> Iter[Json] raise InterpreterError {
+  path_values(Pipe(Recurse, Select(filter_expr)), input, env)
+  .filter(pair => pair.0.length() > 0)
+  .map(pair => Json::array(pair.0))
+  .iter()
 }
 
 ///|
@@ -129,125 +135,6 @@ fn iter_paths(
                   ignore(path.pop())
                 }
                 return Some(result)
-              }
-          }
-      }
-    } nobreak {
-      None
-    }
-  })
-}
-
-///|
-fn filter_matches(value : Json, filter_expr : Expr, env : Env) -> Bool? {
-  let filter_results = eval_with_env(filter_expr, value, env) catch {
-    _ => return None
-  }
-  match filter_results.collect() {
-    [True, ..] => Some(true)
-    _ => Some(false)
-  }
-}
-
-///|
-fn iter_paths_with_filter(
-  filter_expr : Expr,
-  input : Json,
-  env : Env,
-) -> Iter[Json] {
-  let path : Array[Json] = []
-  let stack_ref : Ref[Array[PathFrame]] = Ref([])
-  let root_pending : Ref[Bool] = Ref(true)
-  let done : Ref[Bool] = Ref(false)
-  Iter::new(fn() {
-    if done.val {
-      return None
-    }
-    if root_pending.val {
-      root_pending.val = false
-      // `paths(f)` never yields the root path, so `f` is not applied to it.
-      let root_has_children = push_container_frame(stack_ref.val, input, false)
-      if !root_has_children {
-        done.val = true
-        return None
-      }
-    }
-    while true {
-      match stack_ref.val.pop() {
-        None => return None
-        Some(frame) =>
-          match frame {
-            ObjectFrame(iter, has_segment) =>
-              match iter.next() {
-                Some((key, val)) => {
-                  stack_ref.val.push(ObjectFrame(iter, has_segment))
-                  path.push(Json::string(key))
-                  match filter_matches(val, filter_expr, env) {
-                    None => {
-                      ignore(path.pop())
-                      continue
-                    }
-                    Some(matches) => {
-                      let pushed = push_container_frame(
-                        stack_ref.val,
-                        val,
-                        true,
-                      )
-                      if matches {
-                        let result = Json::array(path.copy())
-                        if !pushed {
-                          ignore(path.pop())
-                        }
-                        return Some(result)
-                      }
-                      if !pushed {
-                        ignore(path.pop())
-                      }
-                      continue
-                    }
-                  }
-                }
-                None => {
-                  if has_segment {
-                    ignore(path.pop())
-                  }
-                  continue
-                }
-              }
-            ArrayFrame(arr, idx, len, has_segment) =>
-              if idx >= len {
-                if has_segment {
-                  ignore(path.pop())
-                }
-                continue
-              } else {
-                let value = arr[idx]
-                stack_ref.val.push(ArrayFrame(arr, idx + 1, len, has_segment))
-                path.push(path_index_number(idx))
-                match filter_matches(value, filter_expr, env) {
-                  None => {
-                    ignore(path.pop())
-                    continue
-                  }
-                  Some(matches) => {
-                    let pushed = push_container_frame(
-                      stack_ref.val,
-                      value,
-                      true,
-                    )
-                    if matches {
-                      let result = Json::array(path.copy())
-                      if !pushed {
-                        ignore(path.pop())
-                      }
-                      return Some(result)
-                    }
-                    if !pushed {
-                      ignore(path.pop())
-                    }
-                    continue
-                  }
-                }
               }
           }
       }
