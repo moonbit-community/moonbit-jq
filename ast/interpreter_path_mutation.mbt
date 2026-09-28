@@ -98,7 +98,8 @@ fn eval_del_paths(
 /// shift the others, a path listed twice deletes its element once, and
 /// deleting a container also covers deletions inside it
 /// (`[1,2,3] | delpaths([[0],[0]])` is `[2,3]`). Deleting `[]` gives null.
-/// Segments of the wrong type or out of range are ignored.
+/// Negative array indices count from the end; segments of the wrong type
+/// or out of range are ignored.
 fn delete_paths(root : Json, paths : ArrayView[ArrayView[Json]]) -> Json {
   if paths.is_empty() {
     return root
@@ -137,7 +138,9 @@ fn delete_paths(root : Json, paths : ArrayView[ArrayView[Json]]) -> Json {
       let nested : Map[Int, Array[ArrayView[Json]]] = Map([])
       for p in paths {
         guard p[0] is Number(idx, ..) else { continue }
-        let i = idx.to_int()
+        // Negative indices count from the end, so `[-1]` and `[len - 1]`
+        // address the same element.
+        let i = normalize_index(idx.to_int(), arr.length())
         guard i >= 0 && i < arr.length() else { continue }
         if p.length() == 1 {
           removed[i] = true

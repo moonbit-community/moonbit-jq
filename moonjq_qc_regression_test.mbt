@@ -502,3 +502,20 @@ test "regression: deleting duplicate or overlapping paths" {
     content=[{}],
   )
 }
+
+///|
+test "regression: deleting negative-index paths" {
+  // Review round 2, finding 2 on PR #30. Checked with jq 1.7.1:
+  //   [1,2,3] | .[-1] |= empty          => [1,2]
+  //   [1,2,3] | last |= empty           => [1,2]
+  //   [1,2,3] | delpaths([[-1],[2]])    => [1,2]
+  //   [1,2,3] | delpaths([[0],[-3]])    => [2,3]
+  //   [1,2,3] | delpaths([[-5]])        => [1,2,3]
+  json_inspect(
+    regression_run(
+      "(.[-1] |= empty), (last |= empty), delpaths([[-1],[2]]), delpaths([[0],[-3]]), delpaths([[-5]])",
+      "[1,2,3]",
+    ),
+    content=[[1, 2], [1, 2], [1, 2], [2, 3], [1, 2, 3]],
+  )
+}
