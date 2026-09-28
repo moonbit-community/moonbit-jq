@@ -134,7 +134,7 @@ test "format: @csv simple array" {
   debug_inspect(
     test_query("@csv", "[\"a\",\"b\",\"c\"]"),
     content=(
-      #|"String(\"a,b,c\")"
+      #|"String(\"\\\"a\\\",\\\"b\\\",\\\"c\\\"\")"
     ),
   )
 }
@@ -144,7 +144,7 @@ test "format: @csv with quotes" {
   debug_inspect(
     test_query("@csv", "[\"hello, world\",\"test\"]"),
     content=(
-      #|"String(\"\\\"hello, world\\\",test\")"
+      #|"String(\"\\\"hello, world\\\",\\\"test\\\"\")"
     ),
   )
 }

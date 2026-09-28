@@ -365,3 +365,25 @@ test "regression: assignment evaluates its right-hand side first" {
     _ => fail("expected Invalid path expression")
   }
 }
+
+///|
+test "regression: @csv and @tsv follow jq's row formatting" {
+  // Review note on PR #30: `[[1,2,3]] | @csv` returned "[1,2,3]"; jq 1.7.1
+  // raises "array ([1,2,3]) is not valid in a csv row". jq also always
+  // quotes strings in @csv and escapes \, tab, newline, CR in @tsv:
+  //   [1,"a\"b",null,true] | @csv  => "1,\"a\"\"b\",,true"
+  //   ["a\tb","c\\d",1.5]  | @tsv  => "a\\tb\tc\\\\d\t1.5"
+  json_inspect(regression_run("@csv", "[1,\"a\\\"b\",null,true]"), content=[
+    "1,\"a\"\"b\",,true",
+  ])
+  json_inspect(regression_run("@tsv", "[\"a\\tb\",\"c\\\\d\",1.5]"), content=[
+    "a\\tb\tc\\\\d\t1.5",
+  ])
+  for input in ["[[1,2,3]]", "[{\"a\":1}]"] {
+    try regression_run("@csv", input) catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected @csv to reject \{input}")
+    }
+  }
+}

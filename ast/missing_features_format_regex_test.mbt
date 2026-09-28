@@ -33,7 +33,7 @@ test "missing: @csv format" {
   debug_inspect(
     test_feature("@csv", "[[1,2,3]]"),
     content=(
-      #|"String(\"[1,2,3]\")"
+      #|"EvalError: TypeError(\"array ([1,2,3]) is not valid in a csv row\")"
     ),
   )
 }

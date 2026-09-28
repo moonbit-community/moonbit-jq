@@ -9,7 +9,7 @@ test "coverage: paths(filter) traverses arrays" {
 ///|
 test "coverage: @csv formats booleans and nulls" {
   json_inspect(coverage_eval("@csv", "[1, true, false, null, \"x\"]"), content=[
-    "1,true,false,,x",
+    "1,true,false,,\"x\"",
   ])
 }
 

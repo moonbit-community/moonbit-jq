@@ -37,32 +37,38 @@ fn eval_format(
         }
         _ => raise TypeError("@uri requires string")
       }
-    "csv" | "tsv" =>
-      // Simple CSV/TSV formatting for arrays
-      match input {
-        Array(arr) => {
-          let sep = if format_name == "csv" { "," } else { "\t" }
-          let parts = arr.map(fn(item) {
-            match item {
-              String(s) =>
-                // Quote if contains separator or quotes
-                if s.contains(sep) || s.contains("\"") {
-                  let escaped = s.replace(old="\"", new="\"\"")
-                  "\"\{escaped}\""
-                } else {
-                  s
-                }
-              Number(n, ..) => n.to_string()
-              True => "true"
-              False => "false"
-              Null => ""
-              _ => json_to_text(item)
-            }
-          })
-          Iter::singleton(Json::string(parts.join(sep)))
-        }
-        _ => raise TypeError("@csv/@tsv requires array")
+    "csv" | "tsv" => {
+      // jq 1.7: numbers as in tojson, booleans as true/false, null as an
+      // empty field; @csv always quotes strings (doubling `"`), @tsv escapes
+      // \\, tab, newline and CR; arrays and objects are errors.
+      guard input is Array(arr) else {
+        raise TypeError("@csv/@tsv requires array")
       }
+      let csv = format_name == "csv"
+      let parts = arr.map(fn(item) raise InterpreterError {
+        match item {
+          String(s) =>
+            if csv {
+              "\"\{s.replace_all(old="\"", new="\"\"")}\""
+            } else {
+              s
+              .replace_all(old="\\", new="\\\\")
+              .replace_all(old="\t", new="\\t")
+              .replace_all(old="\n", new="\\n")
+              .replace_all(old="\r", new="\\r")
+            }
+          Number(_) => json_to_text(item)
+          True => "true"
+          False => "false"
+          Null => ""
+          Array(_) | Object(_) =>
+            raise TypeError(
+              "\{@ast_internal.json_type_name(item)} (\{json_to_text(item)}) is not valid in a csv row",
+            )
+        }
+      })
+      Iter::singleton(Json::string(parts.join(if csv { "," } else { "\t" })))
+    }
     "json" => Iter::singleton(Json::string(json_to_text(input)))
     "text" => Iter::singleton(Json::string(json_to_display_string(input)))
     "html" =>
