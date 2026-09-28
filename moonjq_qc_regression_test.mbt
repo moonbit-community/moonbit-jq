@@ -267,3 +267,13 @@ test "regression: .\"key\" and .[\"key\"] access object keys" {
     { "a": 3 },
   ])
 }
+
+///|
+test "regression: getpath accepts negative array indices" {
+  // `path(.[-1])` is [-1], but getpath([-1]) returned null, so
+  // `.[-1] |= . + 1` computed null + 1.
+  json_inspect(
+    regression_run("getpath([-1]), getpath([-3]), (.[-1] |= . + 1)", "[1,2]"),
+    content=[2, null, [1, 3]],
+  )
+}
