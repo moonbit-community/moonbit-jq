@@ -8,6 +8,15 @@ fn Parser::parse_builtin_string_codec(
     "explode" => Some(Explode)
     "implode" => Some(Implode)
     "tojson" => Some(ToJsonString)
+    // jq: `def tostring: if type == "string" then . else tojson end;`
+    "tostring" =>
+      Some(
+        IfThenElse(
+          Operation(Type, Equal, Literal(String("string"))),
+          Identity,
+          ToJsonString,
+        ),
+      )
     "fromjson" => Some(FromJsonString)
     "scan" => {
       self.expect(TLParen)

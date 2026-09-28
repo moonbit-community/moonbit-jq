@@ -157,3 +157,15 @@ test "regression: query string literals accept \\f and \\uXXXX escapes" {
   )
   json_inspect(regression_run("getpath([\"\\f\"])", "{\"\\f\":0}"), content=[0])
 }
+
+///|
+test "regression: tostring is defined" {
+  // Found by "qc: tostring is identity on strings and tojson otherwise":
+  // `tostring` raised "Undefined function: tostring".
+  json_inspect(
+    regression_run(
+      "[.[] | tostring]", "[\"a\", 1, null, [true], {\"k\":\"v\"}]",
+    ),
+    content=[["a", "1", "null", "[true]", "{\"k\":\"v\"}"]],
+  )
+}
