@@ -5,8 +5,11 @@ fn eval_map(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  guard input is Array(arr) else {
-    raise TypeMismatch("array", @ast_internal.json_type_name(input))
+  // jq defines `map(f)` as `[.[] | f]`, so objects map over their values.
+  let arr : Array[Json] = match input {
+    Array(arr) => arr
+    Object(obj) => obj.values().collect()
+    _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
   let results : Array[Json] = arr.fold(init=[], fn(
     acc,

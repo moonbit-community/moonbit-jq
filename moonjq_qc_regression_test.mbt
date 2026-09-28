@@ -86,3 +86,13 @@ test "regression: length counts code points and is abs for numbers" {
     content=[[0, 5, 2.5, 1, 1]],
   )
 }
+
+///|
+test "regression: map works on objects like [.[] | f]" {
+  // Found by "qc: map(f) == [.[] | f]" with input {}: map raised a type
+  // error for objects.
+  json_inspect(regression_run("map(. + 1)", "{\"b\":1,\"a\":2}"), content=[
+    [2, 3],
+  ])
+  json_inspect(regression_run("map(.)", "{}"), content=[[]])
+}
