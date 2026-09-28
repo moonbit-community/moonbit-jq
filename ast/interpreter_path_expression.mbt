@@ -37,17 +37,18 @@ fn path_values(
       let values = eval_index_access(indices, input).collect()
       indices.mapi((i, idx) => ([Json::number(idx.to_double())], values[i]))
     }
+    // jq: `def first: .[0]; def last: .[-1];` -- the path exists even
+    // when the array is empty.
     First =>
       match input {
-        Array(arr) if arr.length() > 0 => [([Json::number(0.0)], arr[0])]
-        Array(_) => []
+        Array(arr) => [([Json::number(0.0)], arr.get(0).unwrap_or(null))]
+        Null => [([Json::number(0.0)], null)]
         _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
       }
     Last =>
       match input {
-        Array(arr) if arr.length() > 0 =>
-          [([Json::number(-1.0)], arr[arr.length() - 1])]
-        Array(_) => []
+        Array(arr) => [([Json::number(-1.0)], arr.last().unwrap_or(null))]
+        Null => [([Json::number(-1.0)], null)]
         _ => raise TypeMismatch("array", @ast_internal.json_type_name(input))
       }
     FirstGen(gen) =>

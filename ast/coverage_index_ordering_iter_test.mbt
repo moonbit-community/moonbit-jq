@@ -24,8 +24,8 @@ test "coverage: index helpers edge cases" {
 
 ///|
 test "coverage: iterator helpers and path edges" {
-  json_inspect(coverage_eval("first", "[]"), content=[])
-  json_inspect(coverage_eval("last", "[]"), content=[])
+  json_inspect(coverage_eval("first", "[]"), content=[null])
+  json_inspect(coverage_eval("last", "[]"), content=[null])
   assert_coverage_eval_error("first", "1")
   assert_coverage_eval_error("last", "1")
   assert_coverage_eval_error("any", "1")

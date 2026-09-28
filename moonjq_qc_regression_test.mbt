@@ -318,3 +318,23 @@ test "regression: // and ? in path expressions keep invalid-path errors" {
     [["c"]],
   ])
 }
+
+///|
+test "regression: first/last are .[0]/.[-1] even on empty arrays" {
+  // Review finding 3 on PR #30. jq 1.7.1:
+  //   [] | [path(first), path(last)] => [[0],[-1]]
+  //   [] | first = 1                 => [1]
+  //   [] | last = 1                  => error: Out of bounds negative array index
+  //   [] | [first, last]             => [null,null]
+  json_inspect(
+    regression_run(
+      "[path(first), path(last)], (first = 1), [first, last]", "[]",
+    ),
+    content=[[[0], [-1]], [1], [null, null]],
+  )
+  try regression_run("last = 1", "[]") catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an out-of-bounds error")
+  }
+}
