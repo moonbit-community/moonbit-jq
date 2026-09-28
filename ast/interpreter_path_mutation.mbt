@@ -133,15 +133,30 @@ fn eval_del_paths(
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
   match eval_with_env(paths_expr, input, env).collect() {
-    [Array(paths_arr), ..] =>
-      Iter::singleton(
-        paths_arr.fold(init=input, fn(acc, path_json) {
-          match path_json {
-            Array(path) => delete_at_path(acc, path)
-            _ => acc
-          }
-        }),
-      )
+    [Array(paths_arr), ..] => {
+      let paths : Array[Array[Json]] = []
+      for path_json in paths_arr {
+        if path_json is Array(path) {
+          paths.push(path)
+        }
+      }
+      Iter::singleton(delete_paths(input, paths))
+    }
     _ => Iter::singleton(input)
   }
+}
+
+///|
+/// Delete several paths at once, as jq's `delpaths` does: the paths are
+/// sorted and deleted from the last one backwards, so deleting an array
+/// element does not shift the indices of the paths still to delete
+/// (`[1,2,3] | delpaths([[0],[1]])` is `[3]`).
+fn delete_paths(root : Json, paths : Array[Array[Json]]) -> Json {
+  let sorted = paths.copy()
+  sorted.sort_by((a, b) => compare_array_view(a, b))
+  let mut result = root
+  for i = sorted.length() - 1; i >= 0; i = i - 1 {
+    result = delete_at_path(result, sorted[i])
+  }
+  result
 }

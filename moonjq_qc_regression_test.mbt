@@ -387,3 +387,16 @@ test "regression: @csv and @tsv follow jq's row formatting" {
     }
   }
 }
+
+///|
+test "regression: delpaths deletes from the last path backwards" {
+  // Found while making `|= empty` delete (jq 1.7). delpaths applied the
+  // paths in order, so earlier deletions shifted later array indices.
+  // jq 1.7.1: [1,2,3] | delpaths([[0],[1]]) => [3]
+  //           {"a":[1,2,3]} | delpaths([["a",2],["a",0]]) => {"a":[2]}
+  json_inspect(regression_run("delpaths([[0],[1]])", "[1,2,3]"), content=[[3]])
+  json_inspect(
+    regression_run("delpaths([[\"a\",2],[\"a\",0]])", "{\"a\":[1,2,3]}"),
+    content=[{ "a": [2] }],
+  )
+}
