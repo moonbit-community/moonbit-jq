@@ -400,3 +400,18 @@ test "regression: delpaths deletes from the last path backwards" {
     content=[{ "a": [2] }],
   )
 }
+
+///|
+test "regression: p |= empty deletes the paths (jq 1.7)" {
+  // Review note on PR #30. jq 1.7.1:
+  //   {"a":1,"b":2} | .a |= empty          => {"b":2}
+  //   [1,2,3] | .[] |= empty               => []
+  //   [1,2,3,4] | .[] |= select(. % 2 == 0) => [2,4]
+  json_inspect(regression_run(".a |= empty", "{\"a\":1,\"b\":2}"), content=[
+    { "b": 2 },
+  ])
+  json_inspect(regression_run(".[] |= empty", "[1,2,3]"), content=[[]])
+  json_inspect(regression_run(".[] |= select(. % 2 == 0)", "[1,2,3,4]"), content=[
+    [2, 4],
+  ])
+}
