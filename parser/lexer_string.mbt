@@ -156,29 +156,28 @@ fn Lexer::lex_hex4(self : Lexer) -> Int raise LexError {
 }
 
 ///|
-/// Decode the rest of a `\uXXXX` escape (the `\u` is already consumed),
-/// combining a UTF-16 surrogate pair written as two escapes. Unpaired
-/// surrogates become U+FFFD, as in jq.
+/// Decode the rest of a `\uXXXX` escape (the `\u` is already consumed).
+/// As in jq 1.7 (jv_parse.c), a high surrogate must be followed by a
+/// `\uXXXX` low surrogate, otherwise the escape is invalid; a lone low
+/// surrogate becomes U+FFFD.
 fn Lexer::lex_unicode_escape(
   self : Lexer,
   buf : StringBuilder,
 ) -> Unit raise LexError {
+  let start = self.pos
   let unit = self.lex_hex4()
   if unit >= 0xD800 && unit <= 0xDBFF {
-    if self.current() == Some('\\') && self.peek() == Some('u') {
-      let saved = self.pos
-      self.advance()
-      self.advance()
-      let low = self.lex_hex4()
-      if low >= 0xDC00 && low <= 0xDFFF {
-        let code_point = 0x10000 + ((unit - 0xD800) << 10) + (low - 0xDC00)
-        buf.write_char(code_point.unsafe_to_char())
-        return
-      }
-      // Not a low surrogate: re-read it as an escape of its own.
-      self.pos = saved
+    guard self.current() == Some('\\') && self.peek() == Some('u') else {
+      raise InvalidEscape(start, 'u')
     }
-    buf.write_char('\u{FFFD}')
+    self.advance()
+    self.advance()
+    let low = self.lex_hex4()
+    guard low >= 0xDC00 && low <= 0xDFFF else {
+      raise InvalidEscape(start, 'u')
+    }
+    let code_point = 0x10000 + ((unit - 0xD800) << 10) + (low - 0xDC00)
+    buf.write_char(code_point.unsafe_to_char())
   } else if unit >= 0xDC00 && unit <= 0xDFFF {
     buf.write_char('\u{FFFD}')
   } else {

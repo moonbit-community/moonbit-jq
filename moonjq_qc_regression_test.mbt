@@ -151,11 +151,25 @@ test "regression: query string literals accept \\f and \\uXXXX escapes" {
   // InvalidEscape, so a stringified path could not be used in a query.
   json_inspect(
     regression_run(
-      "\"\\f\", \"\\u00e9\\u0041\", \"\\ud83d\\ude00\", \"\\ud800x\"", "null",
+      "\"\\f\", \"\\u00e9\\u0041\", \"\\ud83d\\ude00\", \"\\udc00x\"", "null",
     ),
     content=["\u{0C}", "éA", "😀", "\u{FFFD}x"],
   )
   json_inspect(regression_run("getpath([\"\\f\"])", "{\"\\f\":0}"), content=[0])
+}
+
+///|
+test "regression: unpaired high surrogate escapes are rejected" {
+  // Review finding 4 on PR #30: jq 1.7 (jv_parse.c) rejects a high
+  // surrogate that is not followed by a \uXXXX low surrogate, e.g.
+  // "\ud800x" and "\ud800\u0041"; they used to become U+FFFD.
+  for query in ["\"\\ud800x\"", "\"\\ud800\\u0041\"", "\"\\ud800\""] {
+    try @moonjq.parse(query) catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected a parse error for \{query}")
+    }
+  }
 }
 
 ///|
