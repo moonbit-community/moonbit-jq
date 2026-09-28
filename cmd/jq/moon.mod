@@ -1,6 +1,6 @@
 name = "bobzhang/jq"
 
-version = "0.1.3"
+version = "0.1.4"
 
 readme = "README.md"
 
@@ -13,7 +13,7 @@ keywords = [ "jq", "json", "query", "cli", "wasm" ]
 description = "Run jq-compatible JSON filters directly with moonx"
 
 import {
-  "bobzhang/moonjq@0.1.3",
+  "bobzhang/moonjq@0.1.4",
   "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
