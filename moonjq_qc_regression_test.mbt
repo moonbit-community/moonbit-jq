@@ -112,3 +112,23 @@ test "regression: paths(f) yields numeric array indices" {
     content=[[["k"]]],
   )
 }
+
+///|
+test "regression: setpath creates missing structure" {
+  // Found by "qc: setpath on null builds the path" (path [1] on null) and
+  // by probing: missing intermediate keys were replaced by null, dropping
+  // the value, and out-of-range indices were ignored.
+  json_inspect(regression_run("setpath([1]; {})", "null"), content=[[null, {}]])
+  json_inspect(regression_run("setpath([\"b\",\"c\"]; 5)", "{\"a\":[1]}"), content=[
+    { "a": [1], "b": { "c": 5 } },
+  ])
+  json_inspect(regression_run("setpath([\"a\",2]; 5)", "{\"a\":[1]}"), content=[
+    { "a": [1, null, 5] },
+  ])
+  json_inspect(
+    regression_run(
+      "setpath([\"a\",0,\"b\"]; 1) | getpath([\"a\",0,\"b\"])", "null",
+    ),
+    content=[1],
+  )
+}

@@ -1,35 +1,50 @@
 ///|
-/// Helper to set value at a path in JSON structure
-fn set_at_path(root : Json, path : ArrayView[Json], value : Json) -> Json {
+/// Largest array index `setpath` will grow an array to (jq's limit).
+const MAX_SETPATH_INDEX : Int = 536870911
+
+///|
+/// Helper to set value at a path in JSON structure.
+///
+/// Like jq, missing structure is created: a `null` becomes an object for a
+/// string segment or an array for a number segment, and arrays are padded
+/// with `null` up to the index being set. Negative indices count from the
+/// end. Other type mismatches leave the value unchanged.
+fn set_at_path(
+  root : Json,
+  path : ArrayView[Json],
+  value : Json,
+) -> Json raise InterpreterError {
   match path {
     [] => value
     [segment, .. rest] =>
       match (root, segment) {
-        (Object(obj), String(key)) => {
-          let new_obj = obj.copy()
-          let next_value = match rest {
-            [] => value
-            _ => {
-              let current = obj.get(key).unwrap_or(null)
-              set_at_path(current, rest, value)
-            }
+        (Object(_) | Null, String(key)) => {
+          let new_obj = match root {
+            Object(obj) => obj.copy()
+            _ => Map([])
           }
-          new_obj[key] = next_value
+          let current = new_obj.get(key).unwrap_or(null)
+          new_obj[key] = set_at_path(current, rest, value)
           Json::object(new_obj)
         }
-        (Array(arr), Number(idx, ..)) => {
-          let i = idx.to_int()
-          if i >= 0 && i < arr.length() {
-            let new_arr = arr.copy()
-            let next_value = match rest {
-              [] => value
-              _ => set_at_path(arr[i], rest, value)
-            }
-            new_arr[i] = next_value
-            Json::array(new_arr)
-          } else {
-            root
+        (Array(_) | Null, Number(idx, ..)) => {
+          let new_arr = match root {
+            Array(arr) => arr.copy()
+            _ => []
           }
+          let raw = idx.to_int()
+          let i = if raw < 0 { raw + new_arr.length() } else { raw }
+          if i < 0 {
+            raise InvalidOperation("Out of bounds negative array index")
+          }
+          if i > MAX_SETPATH_INDEX {
+            raise InvalidOperation("Array index too large")
+          }
+          while new_arr.length() <= i {
+            new_arr.push(null)
+          }
+          new_arr[i] = set_at_path(new_arr[i], rest, value)
+          Json::array(new_arr)
         }
         _ => root
       }
