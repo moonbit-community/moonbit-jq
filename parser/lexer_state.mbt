@@ -2,7 +2,7 @@
 /// Lexer state
 priv struct Lexer {
   input : String
-  mut pos : Int
+  mut pos : Int32
   tokens : Array[Token]
 }
 

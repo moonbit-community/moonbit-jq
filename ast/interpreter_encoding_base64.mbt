@@ -5,9 +5,9 @@ fn base64_encode(bytes : Bytes) -> String {
   let buf = StringBuilder()
   let len = bytes.length()
   for i = 0; i < len; i = i + 3 {
-    let b1 : UInt = bytes[i].to_uint()
-    let b2 : UInt = if i + 1 < len { bytes[i + 1].to_uint() } else { 0 }
-    let b3 : UInt = if i + 2 < len { bytes[i + 2].to_uint() } else { 0 }
+    let b1 : UInt32 = bytes[i].to_uint()
+    let b2 : UInt32 = if i + 1 < len { bytes[i + 1].to_uint() } else { 0 }
+    let b3 : UInt32 = if i + 2 < len { bytes[i + 2].to_uint() } else { 0 }
     let c1 = (b1 >> 2).reinterpret_as_int()
     let c2 = (((b1 & 0x03) << 4) | (b2 >> 4)).reinterpret_as_int()
     let c3 = (((b2 & 0x0f) << 2) | (b3 >> 6)).reinterpret_as_int()
@@ -42,11 +42,11 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
   if len % 4 != 0 {
     raise EvalError("Invalid base64")
   }
-  fn base64_value(ch : Char) -> Int? {
+  fn base64_value(ch : Char) -> Int32? {
     match ch {
-      'A'..='Z' => Some(ch.to_int() - 'A'.to_int())
-      'a'..='z' => Some(26 + ch.to_int() - 'a'.to_int())
-      '0'..='9' => Some(52 + ch.to_int() - '0'.to_int())
+      'A'..<='Z' => Some(ch.to_int() - 'A'.to_int())
+      'a'..<='z' => Some(26 + ch.to_int() - 'a'.to_int())
+      '0'..<='9' => Some(52 + ch.to_int() - '0'.to_int())
       '+' => Some(62)
       '/' => Some(63)
       _ => None
@@ -72,25 +72,25 @@ fn base64_decode(s : String) -> Bytes raise InterpreterError {
     if (c3 == '=' || c4 == '=') && i + 4 != len {
       raise EvalError("Invalid base64")
     }
-    let v1u : UInt = v1.reinterpret_as_uint()
-    let v2u : UInt = v2.reinterpret_as_uint()
-    let b1 : UInt = (v1u << 2) | (v2u >> 4)
+    let v1u : UInt32 = v1.reinterpret_as_uint()
+    let v2u : UInt32 = v2.reinterpret_as_uint()
+    let b1 : UInt32 = (v1u << 2) | (v2u >> 4)
     buf.push(b1.to_byte())
     if c3 != '=' {
       let v3 = match base64_value(c3) {
         Some(v) => v
         None => raise EvalError("Invalid base64")
       }
-      let v3u : UInt = v3.reinterpret_as_uint()
-      let b2 : UInt = ((v2u & 0x0f) << 4) | (v3u >> 2)
+      let v3u : UInt32 = v3.reinterpret_as_uint()
+      let b2 : UInt32 = ((v2u & 0x0f) << 4) | (v3u >> 2)
       buf.push(b2.to_byte())
       if c4 != '=' {
         let v4 = match base64_value(c4) {
           Some(v) => v
           None => raise EvalError("Invalid base64")
         }
-        let v4u : UInt = v4.reinterpret_as_uint()
-        let b3 : UInt = ((v3u & 0x03) << 6) | v4u
+        let v4u : UInt32 = v4.reinterpret_as_uint()
+        let b3 : UInt32 = ((v3u & 0x03) << 6) | v4u
         buf.push(b3.to_byte())
       }
     } else if c4 != '=' {

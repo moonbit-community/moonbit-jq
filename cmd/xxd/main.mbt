@@ -32,7 +32,7 @@ fn xxd_command() -> @argparse.Command {
 }
 
 ///|
-fn hex_digit(n : Int) -> Char {
+fn hex_digit(n : Int32) -> Char {
   if n < 10 {
     (0x30 + n).unsafe_to_char()
   } else {
@@ -47,17 +47,17 @@ fn write_hex_byte(sb : StringBuilder, b : Byte) -> Unit {
 }
 
 ///|
-fn hex_val(c : Char) -> Int {
+fn hex_val(c : Char) -> Int32 {
   match c {
-    '0'..='9' => c.to_int() - 0x30
-    'a'..='f' => c.to_int() - 0x61 + 10
-    'A'..='F' => c.to_int() - 0x41 + 10
+    '0'..<='9' => c.to_int() - 0x30
+    'a'..<='f' => c.to_int() - 0x61 + 10
+    'A'..<='F' => c.to_int() - 0x41 + 10
     _ => -1
   }
 }
 
 ///|
-fn dump(data : BytesView, cols : Int) -> String {
+fn dump(data : BytesView, cols : Int32) -> String {
   let sb = StringBuilder()
   let mut offset = 0
   while offset < data.length() {
@@ -96,7 +96,7 @@ fn dump(data : BytesView, cols : Int) -> String {
 }
 
 ///|
-fn dump_plain(data : BytesView, cols : Int) -> String {
+fn dump_plain(data : BytesView, cols : Int32) -> String {
   let sb = StringBuilder()
   for index, b in data {
     write_hex_byte(sb, b)
@@ -203,8 +203,8 @@ fn option_value(matches : @argparse.Matches, name : String) -> String? {
 fn parse_number(
   matches : @argparse.Matches,
   name : String,
-  minimum? : Int = 1,
-) -> Int? raise CliError {
+  minimum~ : Int32 = 1,
+) -> Int32? raise CliError {
   match option_value(matches, name) {
     Some(text) => {
       let n = @string.parse_int(text) catch {

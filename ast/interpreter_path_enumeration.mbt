@@ -1,11 +1,11 @@
 ///|
 priv enum PathFrame {
   ObjectFrame(Iter2[String, Json], Bool)
-  ArrayFrame(Array[Json], Int, Int, Bool)
+  ArrayFrame(Array[Json], Int32, Int32, Bool)
 }
 
 ///|
-fn path_index_number(i : Int) -> Json {
+fn path_index_number(i : Int32) -> Json {
   Json::number(i.to_double())
 }
 
@@ -66,7 +66,7 @@ fn eval_paths_with_filter(
 fn iter_paths(
   input : Json,
   leaf_only : Bool,
-  index_segment : (Int) -> Json,
+  index_segment : (Int32) -> Json,
 ) -> Iter[Json] {
   let path : Array[Json] = []
   let stack_ref : Ref[Array[PathFrame]] = Ref([])

@@ -65,7 +65,7 @@ fn eval_index_of(
 
 ///|
 /// Evaluate nth
-fn eval_nth(n : Int, input : Json) -> Iter[Json] raise InterpreterError {
+fn eval_nth(n : Int32, input : Json) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {
     raise TypeMismatch("array", @ast_internal.json_type_name(input))
   }
@@ -124,7 +124,7 @@ fn indices_of_array(arr : ArrayView[Json], needle : Json) -> Array[Json] {
 }
 
 ///|
-fn find_first_index(arr : ArrayView[Json], needle : Json) -> Int? {
+fn find_first_index(arr : ArrayView[Json], needle : Json) -> Int32? {
   for i in 0..<arr.length() {
     if arr[i] == needle {
       return Some(i)
@@ -134,7 +134,7 @@ fn find_first_index(arr : ArrayView[Json], needle : Json) -> Int? {
 }
 
 ///|
-fn find_last_index(arr : ArrayView[Json], needle : Json) -> Int? {
+fn find_last_index(arr : ArrayView[Json], needle : Json) -> Int32? {
   for i in (arr.length() - 1)>=..0 {
     if arr[i] == needle {
       return Some(i)

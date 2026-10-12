@@ -1,5 +1,5 @@
 ///|
-fn normalize_index(idx : Int, len : Int) -> Int {
+fn normalize_index(idx : Int32, len : Int32) -> Int32 {
   if idx < 0 {
     len + idx
   } else {
@@ -8,7 +8,7 @@ fn normalize_index(idx : Int, len : Int) -> Int {
 }
 
 ///|
-fn clamp_index(value : Int, len : Int) -> Int {
+fn clamp_index(value : Int32, len : Int32) -> Int32 {
   if value < 0 {
     0
   } else if value > len {
@@ -19,12 +19,12 @@ fn clamp_index(value : Int, len : Int) -> Int {
 }
 
 ///|
-fn index_in_bounds(idx : Int, len : Int) -> Bool {
+fn index_in_bounds(idx : Int32, len : Int32) -> Bool {
   idx >= 0 && idx < len
 }
 
 ///|
-fn array_index_or_null(arr : Array[Json], len : Int, idx : Int) -> Json {
+fn array_index_or_null(arr : Array[Json], len : Int32, idx : Int32) -> Json {
   let actual_idx = normalize_index(idx, len)
   if index_in_bounds(actual_idx, len) {
     arr[actual_idx]
@@ -44,7 +44,7 @@ fn eval_key_access(key : String, input : Json) -> Iter[Json] {
 
 ///|
 /// Evaluate array indexing and iteration
-fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
+fn eval_index_access(indices : Array[Int32], input : Json) -> Iter[Json] {
   match indices {
     [] =>
       // Empty index means iterate over array/object values
@@ -67,7 +67,7 @@ fn eval_index_access(indices : Array[Int], input : Json) -> Iter[Json] {
 
 ///|
 /// Evaluate array slicing
-fn eval_slice_access(start : Int?, end : Int?, input : Json) -> Iter[Json] {
+fn eval_slice_access(start : Int32?, end : Int32?, input : Json) -> Iter[Json] {
   guard input is Array(arr) else { return Iter::singleton(null) }
   let len = arr.length()
   let s = start.map(fn(n) { normalize_index(n, len) }).unwrap_or(0)

@@ -33,7 +33,7 @@ fn split_lines(text : String) -> Array[String] {
 }
 
 ///|
-fn pad_left(text : String, width : Int) -> String {
+fn pad_left(text : String, width : Int32) -> String {
   let sb = StringBuilder()
   for _ in 0..<(width - text.length()) {
     sb.write_char(' ')
@@ -77,7 +77,7 @@ async fn main {
   }
   let lines = split_lines(text)
   // Each group is the first line of an adjacent run plus its length.
-  let groups : Array[(String, Int)] = []
+  let groups : Array[(String, Int32)] = []
   for line in lines {
     let key = if ignore_case { line.to_lower() } else { line }
     if groups.length() > 0 {

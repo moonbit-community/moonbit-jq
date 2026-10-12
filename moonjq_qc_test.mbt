@@ -15,7 +15,7 @@ struct JV {
 } derive(Debug)
 
 ///|
-fn rand_below(rs : @quickcheck.RandomState, n : Int) -> Int {
+fn rand_below(rs : @quickcheck.RandomState, n : Int32) -> Int32 {
   rs.next_positive_int() % n
 }
 
@@ -32,14 +32,14 @@ let special_chars : Array[Char] = [
 ///|
 fn gen_char(rs : @quickcheck.RandomState) -> Char {
   match rand_below(rs, 10) {
-    0..=5 => ('a'.to_int() + rand_below(rs, 26)).unsafe_to_char()
+    0..<=5 => ('a'.to_int() + rand_below(rs, 26)).unsafe_to_char()
     6 => (0x20 + rand_below(rs, 95)).unsafe_to_char()
     _ => special_chars[rand_below(rs, special_chars.length())]
   }
 }
 
 ///|
-fn gen_string(rs : @quickcheck.RandomState, max_len : Int) -> String {
+fn gen_string(rs : @quickcheck.RandomState, max_len : Int32) -> String {
   let len = rand_below(rs, max_len + 1)
   let sb = StringBuilder()
   for _ in 0..<len {
@@ -57,7 +57,7 @@ let key_pool : Array[String] = [
 ]
 
 ///|
-fn gen_key(rs : @quickcheck.RandomState, size : Int) -> String {
+fn gen_key(rs : @quickcheck.RandomState, size : Int32) -> String {
   if rand_below(rs, 4) == 0 {
     gen_string(rs, size / 2 + 1)
   } else {
@@ -82,15 +82,15 @@ fn gen_number(rs : @quickcheck.RandomState) -> Double {
 }
 
 ///|
-fn gen_json(rs : @quickcheck.RandomState, size : Int, depth : Int) -> Json {
+fn gen_json(rs : @quickcheck.RandomState, size : Int32, depth : Int32) -> Json {
   let container_weight = if depth <= 0 { 0 } else { 8 }
   match rand_below(rs, 10 + container_weight) {
     0 => Json::null()
     1 => Json::boolean(true)
     2 => Json::boolean(false)
-    3..=5 => Json::number(gen_number(rs))
-    6..=9 => Json::string(gen_string(rs, size / 2 + 1))
-    10..=13 => {
+    3..<=5 => Json::number(gen_number(rs))
+    6..<=9 => Json::string(gen_string(rs, size / 2 + 1))
+    10..<=13 => {
       let len = rand_below(rs, (if size < 6 { size } else { 6 }) + 1)
       Json::array(Array::makei(len, _ => gen_json(rs, size * 2 / 3, depth - 1)))
     }
@@ -106,7 +106,7 @@ fn gen_json(rs : @quickcheck.RandomState, size : Int, depth : Int) -> Json {
 }
 
 ///|
-fn depth_for(size : Int) -> Int {
+fn depth_for(size : Int32) -> Int32 {
   let d = (size + 4) / 5
   if d > 4 {
     4
@@ -328,7 +328,7 @@ impl @quickcheck.Shrink for FreshPath with fn shrink(self) {
 // ---------------------------------------------------------------------------
 
 ///|
-fn type_rank(v : Json) -> Int {
+fn type_rank(v : Json) -> Int32 {
   match v {
     Null => 0
     False => 1
@@ -342,7 +342,7 @@ fn type_rank(v : Json) -> Int {
 
 ///|
 /// jq orders strings by Unicode code point (byte-wise on UTF-8).
-fn ref_cmp_str(a : String, b : String) -> Int {
+fn ref_cmp_str(a : String, b : String) -> Int32 {
   let ca = a.to_array()
   let cb = b.to_array()
   let n = if ca.length() < cb.length() { ca.length() } else { cb.length() }
@@ -366,7 +366,7 @@ fn ref_sorted_keys(o : Map[String, Json]) -> Array[String] {
 /// jq's documented total order: null < false < true < numbers < strings <
 /// arrays < objects; arrays lexicographically; objects first by their sorted
 /// key arrays, then value by value in sorted key order.
-fn ref_cmp(a : Json, b : Json) -> Int {
+fn ref_cmp(a : Json, b : Json) -> Int32 {
   let ra = type_rank(a)
   let rb = type_rank(b)
   if ra != rb {
@@ -549,7 +549,7 @@ fn has_astral(v : Json) -> Bool {
 }
 
 ///|
-fn depth_of(v : Json) -> Int {
+fn depth_of(v : Json) -> Int32 {
   match v {
     Array(a) =>
       1 +
@@ -630,9 +630,9 @@ test "qc: generated JSON is well-formed and covers all shapes" {
   )
   // The same generator, sampled over the sizes `check` uses, must hit every
   // shape the properties rely on often enough to matter.
-  let rs = @splitmix.new(seed=1)
+  let rs = @splitmix.RandomState(seed=1)
   let n = 300
-  let counts : Map[String, Int] = Map([])
+  let counts : Map[String, Int32] = Map([])
   let bump = (key : String) => counts[key] = counts.get(key).unwrap_or(0) + 1
   for i in 0..<n {
     let size = i % 100
@@ -658,7 +658,7 @@ test "qc: generated JSON is well-formed and covers all shapes" {
       }
     }
   }
-  let at_least = (key : String, min : Int) => {
+  let at_least = (key : String, min : Int32) => {
     counts.get(key).unwrap_or(0) >= min
   }
   for ty in ["null", "boolean", "number", "string", "array", "object"] {
@@ -726,7 +726,7 @@ test "qc: .[] yields container values in order" {
 ///|
 test "qc: map(f) == [.[] | f]" {
   @quickcheck.check(
-    (input : (JV, UInt)) => {
+    (input : (JV, UInt32)) => {
       let (jv, fi) = input
       guard jv.v is (Array(_) | Object(_)) else { true }
       let f = filter_pool[pick_idx(fi, filter_pool.length())]
@@ -762,7 +762,7 @@ test "qc: map(f) == [.[] | f]" {
 test "qc: select emits . once per truthy condition output" {
   // Reference: how many truthy outputs the condition has on a value
   // (jq 1.7: `def select(f): if f then . else empty end`).
-  let preds : Array[(String, (Json) -> Int)] = [
+  let preds : Array[(String, (Json) -> Int32)] = [
     ("true", _ => 1),
     ("false", _ => 0),
     ("null", _ => 0),
@@ -780,7 +780,7 @@ test "qc: select emits . once per truthy condition output" {
     ("not", v => if ref_truthy(v) { 0 } else { 1 }),
   ]
   @quickcheck.check(
-    (input : (JV, UInt)) => {
+    (input : (JV, UInt32)) => {
       let (jv, pi) = input
       let (p, ref_count) = preds[pick_idx(pi, preds.length())]
       let expected_whole = Array::make(ref_count(jv.v), jv.v)
@@ -811,7 +811,7 @@ test "qc: select emits . once per truthy condition output" {
 ///|
 test "qc: pipe is associative and comma distributes over pipe" {
   @quickcheck.check(
-    (input : (JV, UInt, UInt, UInt)) => {
+    (input : (JV, UInt32, UInt32, UInt32)) => {
       let (jv, i, j, k) = input
       let n = filter_pool.length()
       let a = filter_pool[pick_idx(i, n)]
@@ -919,7 +919,7 @@ test "qc: to_entries | from_entries round-trips objects" {
 ///|
 test "qc: add over numbers equals a reference left-to-right sum" {
   @quickcheck.check(
-    (xs : Array[Int]) => {
+    (xs : Array[Int32]) => {
       let nums = xs.map(x => Json::number(x.to_double() / 8.0))
       let expected = if nums.is_empty() {
         Json::null()
@@ -1226,7 +1226,7 @@ let path_filter_pool : Array[String] = [
 ///|
 test "qc: path(f) as $p | getpath($p) reproduces f" {
   @quickcheck.check(
-    (input : (JV, UInt)) => {
+    (input : (JV, UInt32)) => {
       let (jv, fi) = input
       let f = path_filter_pool[pick_idx(fi, path_filter_pool.length())]
       let via_paths = jq_outcome("[path(\{f}) as $p | getpath($p)]", jv.v)
@@ -1359,7 +1359,7 @@ let query_atoms : Array[String] = [
 /// Generate a syntactically valid jq query as a token list. Every operand
 /// of a binary operator is parenthesised, so the output is valid jq
 /// regardless of precedence.
-fn gen_query(rs : @quickcheck.RandomState, depth : Int) -> Array[String] {
+fn gen_query(rs : @quickcheck.RandomState, depth : Int32) -> Array[String] {
   if depth <= 0 || rand_below(rs, 10) < 3 {
     return [query_atoms[rand_below(rs, query_atoms.length())]]
   }
@@ -1472,6 +1472,6 @@ test "qc: generated queries parse, evaluate without aborting, and parse whole" {
 }
 
 ///|
-fn pick_idx(i : UInt, n : Int) -> Int {
+fn pick_idx(i : UInt32, n : Int32) -> Int32 {
   (i % n.reinterpret_as_uint()).reinterpret_as_int()
 }

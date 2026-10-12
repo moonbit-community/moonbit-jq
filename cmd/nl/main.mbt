@@ -64,7 +64,7 @@ fn split_lines(text : String) -> Array[String] {
 }
 
 ///|
-fn pad_left(text : String, width : Int) -> String {
+fn pad_left(text : String, width : Int32) -> String {
   let sb = StringBuilder()
   for _ in 0..<(width - text.length()) {
     sb.write_char(' ')
@@ -74,7 +74,7 @@ fn pad_left(text : String, width : Int) -> String {
 }
 
 ///|
-fn spaces(width : Int) -> String {
+fn spaces(width : Int32) -> String {
   let sb = StringBuilder()
   for _ in 0..<width {
     sb.write_char(' ')

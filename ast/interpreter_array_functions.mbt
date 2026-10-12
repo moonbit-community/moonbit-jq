@@ -65,7 +65,7 @@ fn eval_reverse(input : Json) -> Iter[Json] raise InterpreterError {
 ///|
 /// Evaluate array flatten
 fn eval_flatten(
-  depth_opt : Int?,
+  depth_opt : Int32?,
   input : Json,
 ) -> Iter[Json] raise InterpreterError {
   guard input is Array(arr) else {

@@ -8,7 +8,7 @@ priv struct Entry {
   line : String
   key : String
   numeric : Double
-  index : Int
+  index : Int32
 }
 
 ///|
@@ -111,7 +111,7 @@ fn split_fields(line : String, separator : String?) -> Array[String] {
 }
 
 ///|
-fn parse_positive(text : StringView, spec : String) -> Int raise CliError {
+fn parse_positive(text : StringView, spec : String) -> Int32 raise CliError {
   let n = @string.parse_int(text) catch {
     _ => raise CliError("sort: invalid key specification: '\{spec}'")
   }
@@ -122,7 +122,7 @@ fn parse_positive(text : StringView, spec : String) -> Int raise CliError {
 }
 
 ///|
-fn parse_key(spec : String) -> (Int, Int) raise CliError {
+fn parse_key(spec : String) -> (Int32, Int32) raise CliError {
   let pieces : Array[String] = spec.split(",").map(v => v.to_owned()).collect()
   match pieces {
     [a] => {
@@ -144,7 +144,7 @@ fn parse_key(spec : String) -> (Int, Int) raise CliError {
 ///|
 fn extract_key(
   line : String,
-  key : (Int, Int)?,
+  key : (Int32, Int32)?,
   separator : String?,
   out_sep : String,
 ) -> String {
@@ -180,7 +180,7 @@ fn numeric_prefix(key : String) -> Double {
     i += 1
   }
   let mut saw_digit = false
-  while i < chars.length() && chars[i] is ('0'..='9') {
+  while i < chars.length() && chars[i] is ('0'..<='9') {
     sb.write_char(chars[i])
     saw_digit = true
     i += 1
@@ -188,7 +188,7 @@ fn numeric_prefix(key : String) -> Double {
   if i < chars.length() && chars[i] == '.' {
     sb.write_char('.')
     i += 1
-    while i < chars.length() && chars[i] is ('0'..='9') {
+    while i < chars.length() && chars[i] is ('0'..<='9') {
       sb.write_char(chars[i])
       saw_digit = true
       i += 1
@@ -283,7 +283,7 @@ async fn main {
       index,
     })
   }
-  fn key_compare(a : Entry, b : Entry) -> Int {
+  fn key_compare(a : Entry, b : Entry) -> Int32 {
     if numeric {
       a.numeric.compare(b.numeric)
     } else {

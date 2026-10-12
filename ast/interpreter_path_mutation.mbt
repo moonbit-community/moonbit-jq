@@ -1,6 +1,6 @@
 ///|
 /// Largest array index `setpath` will grow an array to (jq's limit).
-const MAX_SETPATH_INDEX : Int = 536870911
+const MAX_SETPATH_INDEX : Int32 = 536870911
 
 ///|
 /// Helper to set value at a path in JSON structure.
@@ -134,8 +134,8 @@ fn delete_paths(root : Json, paths : ArrayView[ArrayView[Json]]) -> Json {
       Json::object(out)
     }
     Array(arr) => {
-      let removed : Map[Int, Bool] = Map([])
-      let nested : Map[Int, Array[ArrayView[Json]]] = Map([])
+      let removed : Map[Int32, Bool] = Map([])
+      let nested : Map[Int32, Array[ArrayView[Json]]] = Map([])
       for p in paths {
         guard p[0] is Number(idx, ..) else { continue }
         // Negative indices count from the end, so `[-1]` and `[len - 1]`

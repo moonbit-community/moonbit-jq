@@ -50,7 +50,7 @@ fn char_to_byte(c : Char, spec : String) -> Byte raise CliError {
 ///|
 fn class_bytes(name : String) -> Array[Byte] raise CliError {
   let out : Array[Byte] = []
-  fn push_range(lo : Int, hi : Int) {
+  fn push_range(lo : Int32, hi : Int32) {
     for code in lo..<=hi {
       out.push(code.to_byte())
     }

@@ -72,7 +72,7 @@ fn json_multiply(left : Json, right : Json) -> Json raise InterpreterError {
 }
 
 ///|
-fn repeat_string(s : String, count : Int) -> String {
+fn repeat_string(s : String, count : Int32) -> String {
   if count <= 0 {
     ""
   } else {

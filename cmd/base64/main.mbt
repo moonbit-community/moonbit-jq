@@ -29,7 +29,7 @@ fn base64_command() -> @argparse.Command {
 }
 
 ///|
-fn b64_char(v : Int) -> Char {
+fn b64_char(v : Int32) -> Char {
   if v < 26 {
     (0x41 + v).unsafe_to_char()
   } else if v < 52 {
@@ -44,11 +44,11 @@ fn b64_char(v : Int) -> Char {
 }
 
 ///|
-fn sextet(c : Char) -> Int raise CliError {
+fn sextet(c : Char) -> Int32 raise CliError {
   match c {
-    'A'..='Z' => c.to_int() - 0x41
-    'a'..='z' => c.to_int() - 0x61 + 26
-    '0'..='9' => c.to_int() - 0x30 + 52
+    'A'..<='Z' => c.to_int() - 0x41
+    'a'..<='z' => c.to_int() - 0x61 + 26
+    '0'..<='9' => c.to_int() - 0x30 + 52
     '+' => 62
     '/' => 63
     _ => raise CliError("base64: invalid input character: '\{c}'")
@@ -56,7 +56,7 @@ fn sextet(c : Char) -> Int raise CliError {
 }
 
 ///|
-fn encode(data : Bytes, wrap : Int) -> String {
+fn encode(data : Bytes, wrap : Int32) -> String {
   let sb = StringBuilder()
   let mut column = 0
   fn emit(c : Char) {
