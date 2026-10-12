@@ -38,7 +38,7 @@ fn path_entries(
   expr : Expr,
   input : Json,
   env : Env,
-  tracked? : Bool = true,
+  tracked~ : Bool = true,
 ) -> Array[(Array[Json]?, Json)] raise InterpreterError {
   let out : Array[(Array[Json]?, Json)] = []
   path_each(
@@ -72,7 +72,7 @@ fn path_each(
   input : Json,
   env : Env,
   emit : ((Array[Json]?, Json)) -> Bool raise InterpreterError,
-  tracked? : Bool = true,
+  tracked~ : Bool = true,
 ) -> Bool raise InterpreterError {
   let here : Array[Json]? = if tracked { Some([]) } else { None }
   if !tracked && expr is (Recurse | Key(_) | Index(_) | First | Last) {

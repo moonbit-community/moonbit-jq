@@ -60,7 +60,11 @@ fn eval_range_with_step(
 }
 
 ///|
-fn range_step_count(from_int : Int, to_int : Int, step_int : Int) -> Int {
+fn range_step_count(
+  from_int : Int32,
+  to_int : Int32,
+  step_int : Int32,
+) -> Int32 {
   if step_int == 0 {
     0
   } else if step_int > 0 {

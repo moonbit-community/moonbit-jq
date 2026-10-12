@@ -146,10 +146,10 @@ pub(all) enum Token {
 ```moonbit nocheck
 ///|
 pub suberror LexError {
-  UnexpectedChar(Int, Char) // Position and unexpected character
-  UnterminatedString(Int) // Position where string started
-  InvalidNumber(Int, String) // Position and invalid number text
-  InvalidEscape(Int, Char) // Position and invalid escape character
+  UnexpectedChar(Int32, Char) // Position and unexpected character
+  UnterminatedString(Int32) // Position where string started
+  InvalidNumber(Int32, String) // Position and invalid number text
+  InvalidEscape(Int32, Char) // Position and invalid escape character
 }
 ```
 

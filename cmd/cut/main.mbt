@@ -4,7 +4,7 @@ priv suberror CliError {
 }
 
 ///|
-let open_end : Int = 0x7FFFFFFF
+let open_end : Int32 = 0x7FFFFFFF
 
 ///|
 fn cut_command() -> @argparse.Command {
@@ -63,7 +63,7 @@ fn option_value(matches : @argparse.Matches, name : String) -> String? {
 }
 
 ///|
-fn parse_positive(text : String, spec : String) -> Int raise CliError {
+fn parse_positive(text : String, spec : String) -> Int32 raise CliError {
   let n = @string.parse_int(text) catch {
     _ => raise CliError("cut: invalid list: '\{spec}'")
   }
@@ -74,8 +74,8 @@ fn parse_positive(text : String, spec : String) -> Int raise CliError {
 }
 
 ///|
-fn parse_list(spec : String) -> Array[(Int, Int)] raise CliError {
-  let ranges : Array[(Int, Int)] = []
+fn parse_list(spec : String) -> Array[(Int32, Int32)] raise CliError {
+  let ranges : Array[(Int32, Int32)] = []
   for part in spec.split(",") {
     let item = part.to_owned()
     if item is "" {
@@ -109,7 +109,7 @@ fn parse_list(spec : String) -> Array[(Int, Int)] raise CliError {
 }
 
 ///|
-fn selected(ranges : Array[(Int, Int)], index : Int) -> Bool {
+fn selected(ranges : Array[(Int32, Int32)], index : Int32) -> Bool {
   for r in ranges {
     let (lo, hi) = r
     if index >= lo && index <= hi {
@@ -134,7 +134,7 @@ fn split_lines(text : String) -> Array[String] {
 ///|
 fn cut_fields(
   line : String,
-  ranges : Array[(Int, Int)],
+  ranges : Array[(Int32, Int32)],
   delimiter : String,
   only_delimited : Bool,
 ) -> String? {
@@ -159,7 +159,7 @@ fn cut_fields(
 }
 
 ///|
-fn cut_characters(line : String, ranges : Array[(Int, Int)]) -> String {
+fn cut_characters(line : String, ranges : Array[(Int32, Int32)]) -> String {
   let sb = StringBuilder()
   let mut index = 1
   for c in line {

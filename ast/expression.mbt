@@ -8,8 +8,8 @@ pub(all) enum Expr {
   Comma(Expr, Expr) // expr, expr
   // Access
   Key(String) // .foo
-  Index(Array[Int]) // .[0], .[1,2,3], .[] (empty = iterator)
-  Slice(Int?, Int?) // .[2:4], .[2:], .[:4]
+  Index(Array[Int32]) // .[0], .[1,2,3], .[] (empty = iterator)
+  Slice(Int32?, Int32?) // .[2:4], .[2:], .[:4]
   Optional(Expr) // expr?
   // Constructors
   ArrayConstruct(Expr?) // [expr] or []
@@ -29,7 +29,7 @@ pub(all) enum Expr {
   Sort // sort
   SortBy(Expr) // sort_by(expr)
   Reverse // reverse
-  Flatten(Int?) // flatten, flatten(n)
+  Flatten(Int32?) // flatten, flatten(n)
   Unique // unique
   UniqueBy(Expr) // unique_by(expr)
   GroupBy(Expr) // group_by(expr)
@@ -61,7 +61,7 @@ pub(all) enum Expr {
   WithEntries(Expr) // with_entries(expr)
   MapValues(Expr) // map_values(expr)
   // Iteration helpers
-  Range(Int) // range(n)
+  Range(Int32) // range(n)
   RangeFromTo(Expr, Expr) // range(from;to)
   RangeWithStep(Expr, Expr, Expr) // range(from;to;step)
   First // first
@@ -114,7 +114,7 @@ pub(all) enum Expr {
   ToJsonString // tojson - convert to JSON string
   FromJsonString // fromjson - parse JSON string
   // Additional array functions
-  Nth(Int) // nth(n)
+  Nth(Int32) // nth(n)
   RIndex(Expr) // rindex(value)
   // Path functions
   Paths // paths
@@ -124,7 +124,7 @@ pub(all) enum Expr {
   SetPath(Expr, Expr) // setpath(path; value)
   DelPaths(Expr) // delpaths(paths)
   // Control flow
-  Limit(Int, Expr) // limit(n; expr)
+  Limit(Int32, Expr) // limit(n; expr)
   Until(Expr, Expr) // until(cond; update)
   While(Expr, Expr) // while(cond; update)
   // Math functions

@@ -139,7 +139,7 @@ fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
 
 ///|
 /// Read exactly four hex digits of a `\uXXXX` escape.
-fn Lexer::lex_hex4(self : Lexer) -> Int raise LexError {
+fn Lexer::lex_hex4(self : Lexer) -> Int32 raise LexError {
   let mut value = 0
   for _ in 0..<4 {
     let digit = match self.current() {

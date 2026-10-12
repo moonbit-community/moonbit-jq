@@ -250,7 +250,7 @@ Binary operators for arithmetic, comparison, and logical operations.
 pub(all) suberror InterpreterError {
   TypeMismatch(String, String) // (expected, got)
   KeyNotFound(String)
-  IndexOutOfBounds(Int)
+  IndexOutOfBounds(Int32)
   InvalidOperation(String)
   DivisionByZero
   TypeError(String)

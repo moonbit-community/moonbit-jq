@@ -59,7 +59,7 @@ fn eval_alternative(
 ///|
 /// Evaluate Limit
 fn eval_limit(
-  n : Int,
+  n : Int32,
   expr : Expr,
   input : Json,
   env : Env,

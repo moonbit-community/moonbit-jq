@@ -46,7 +46,7 @@ fn Parser::parse_index_or_slice(
     self.expect(TRBracket)
     Pipe(base, Slice(start_or_index, end))
   } else {
-    let indices : Array[Int] = []
+    let indices : Array[Int32] = []
     guard start_or_index is Some(n) else {
       raise InvalidSyntax("Expected index")
     }
@@ -64,7 +64,7 @@ fn Parser::parse_index_or_slice(
 
 ///|
 /// Parse optional integer for slice
-fn Parser::parse_slice_part(self : Parser) -> Int? raise ParseError {
+fn Parser::parse_slice_part(self : Parser) -> Int32? raise ParseError {
   match self.current() {
     Some(TNumber(n)) => {
       self.advance()

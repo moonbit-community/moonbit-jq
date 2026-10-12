@@ -19,7 +19,7 @@ fn eval_implode(input : Json) -> Iter[Json] raise InterpreterError {
   }
   let chars = arr.filter_map(fn(elem) {
     match elem {
-      Number(n, ..) => Int::to_char(n.to_int())
+      Number(n, ..) => Int32::to_char(n.to_int())
       _ => None
     }
   })
@@ -45,9 +45,9 @@ fn eval_scan(
 fn scan_matches(
   s : String,
   pattern : String,
-  idx : Int,
-  slen : Int,
-  plen : Int,
+  idx : Int32,
+  slen : Int32,
+  plen : Int32,
   results : Array[Json],
 ) -> Unit {
   if plen == 0 {
@@ -68,14 +68,14 @@ fn scan_matches(
 }
 
 ///|
-fn is_string_boundary(s : String, index : Int) -> Bool {
+fn is_string_boundary(s : String, index : Int32) -> Bool {
   index == 0 ||
   index == s.length() ||
   !s.unsafe_get(index).is_trailing_surrogate()
 }
 
 ///|
-fn next_string_index(s : String, index : Int) -> Int {
+fn next_string_index(s : String, index : Int32) -> Int32 {
   if index < s.length() && s.unsafe_get(index).is_leading_surrogate() {
     index + 2
   } else {

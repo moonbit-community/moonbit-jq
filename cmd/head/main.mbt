@@ -4,7 +4,7 @@ priv suberror CliError {
 }
 
 ///|
-let chunk_size : Int = 65536
+let chunk_size : Int32 = 65536
 
 ///|
 fn head_command() -> @argparse.Command {

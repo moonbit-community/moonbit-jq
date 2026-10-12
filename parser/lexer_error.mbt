@@ -1,10 +1,10 @@
 ///|
 /// Lexer error type
 pub suberror LexError {
-  UnexpectedChar(Int, Char)
-  UnterminatedString(Int)
-  InvalidNumber(Int, String)
-  InvalidEscape(Int, Char)
+  UnexpectedChar(Int32, Char)
+  UnterminatedString(Int32)
+  InvalidNumber(Int32, String)
+  InvalidEscape(Int32, Char)
 } derive(Eq, Debug)
 
 ///|

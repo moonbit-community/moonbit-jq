@@ -58,7 +58,7 @@ fn cartesian_product(arrays : ArrayView[Array[Json]]) -> Array[Array[Json]] {
 }
 
 ///|
-fn max_row_len(rows : ArrayView[Json]) -> Int {
+fn max_row_len(rows : ArrayView[Json]) -> Int32 {
   rows.fold(init=0, fn(max_len, row) {
     match row {
       Array(inner) => @cmp.maximum(max_len, inner.length())
@@ -68,7 +68,7 @@ fn max_row_len(rows : ArrayView[Json]) -> Int {
 }
 
 ///|
-fn build_columns(rows : ArrayView[Json], max_len : Int) -> Array[Array[Json]] {
+fn build_columns(rows : ArrayView[Json], max_len : Int32) -> Array[Array[Json]] {
   let columns : Array[Array[Json]] = []
   for col in 0..<max_len {
     let column : Array[Json] = []

@@ -1,6 +1,6 @@
 ///|
 /// Evaluate range
-fn eval_range(n : Int) -> Iter[Json] {
+fn eval_range(n : Int32) -> Iter[Json] {
   if n <= 0 {
     Iter::empty()
   } else {

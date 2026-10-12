@@ -7,11 +7,11 @@ priv enum EscOut {
 }
 
 ///|
-fn hex_val(c : Char) -> Int {
+fn hex_val(c : Char) -> Int32 {
   match c {
-    '0'..='9' => c.to_int() - 0x30
-    'a'..='f' => c.to_int() - 0x61 + 10
-    'A'..='F' => c.to_int() - 0x41 + 10
+    '0'..<='9' => c.to_int() - 0x30
+    'a'..<='f' => c.to_int() - 0x61 + 10
+    'A'..<='F' => c.to_int() - 0x41 + 10
     _ => -1
   }
 }
@@ -41,14 +41,14 @@ fn push_string_utf8(out : Array[Byte], s : String) -> Unit {
 /// and `\c` stops all output. Unknown escapes pass through literally.
 fn decode_escape(
   chars : Array[Char],
-  start : Int,
-  in_b? : Bool = false,
-) -> (EscOut, Int) {
+  start : Int32,
+  in_b~ : Bool = false,
+) -> (EscOut, Int32) {
   if start + 1 >= chars.length() {
     return (Out([b'\\']), 1)
   }
   let e = chars[start + 1]
-  let simple : Int = match e {
+  let simple : Int32 = match e {
     'a' => 0x07
     'b' => 0x08
     'e' => 0x1B
@@ -68,7 +68,7 @@ fn decode_escape(
   if e == 'c' {
     return (Stop, 2)
   }
-  if e is ('0'..='7') {
+  if e is ('0'..<='7') {
     // FORMAT strings take up to three octal digits total (`\101`, and `\010`
     // leaves a following digit alone). In %b arguments a leading `0` is a
     // marker followed by up to three more digits (`\0102` is one byte), while
@@ -79,7 +79,7 @@ fn decode_escape(
     }
     let mut value = 0
     let mut count = 0
-    while i < chars.length() && count < 3 && chars[i] is ('0'..='7') {
+    while i < chars.length() && count < 3 && chars[i] is ('0'..<='7') {
       value = value * 8 + (chars[i].to_int() - 0x30)
       i += 1
       count += 1
@@ -144,7 +144,7 @@ fn decode_escape(
 }
 
 ///|
-fn repeat_char(c : Char, n : Int) -> String {
+fn repeat_char(c : Char, n : Int32) -> String {
   let sb = StringBuilder()
   for _ in 0..<n {
     sb.write_char(c)
@@ -155,7 +155,7 @@ fn repeat_char(c : Char, n : Int) -> String {
 ///|
 /// Left-pad `body` with zeros to at least `prec` digits; precision 0 renders
 /// the value 0 as an empty string, matching C printf.
-fn apply_precision(body : String, prec : Int?) -> String {
+fn apply_precision(body : String, prec : Int32?) -> String {
   match prec {
     Some(p) => {
       if body == "0" && p == 0 {
@@ -177,7 +177,7 @@ fn apply_precision(body : String, prec : Int?) -> String {
 fn pad_field(
   prefix : String,
   body : String,
-  width : Int?,
+  width : Int32?,
   minus : Bool,
   zero : Bool,
 ) -> String {
@@ -202,7 +202,7 @@ fn pad_field(
 fn emit_padded_bytes(
   out : Array[Byte],
   bytes : Array[Byte],
-  width : Int?,
+  width : Int32?,
   minus : Bool,
 ) -> Unit {
   let pad = match width {
@@ -227,8 +227,8 @@ fn emit_padded_bytes(
 /// with no leading or trailing zero digits. An empty digit array means zero.
 priv struct Dec {
   neg : Bool
-  digs : Array[Int]
-  exp : Int
+  digs : Array[Int32]
+  exp : Int32
 }
 
 ///|
@@ -256,7 +256,7 @@ fn dec_of(x : Double) -> Dec {
     (big_m * BigInt::from_int(5).pow(BigInt::from_int(-e2)), -e2)
   }
   let text = n.to_string()
-  let digs : Array[Int] = []
+  let digs : Array[Int32] = []
   for c in text {
     digs.push(c.to_int() - 0x30)
   }
@@ -270,7 +270,7 @@ fn dec_of(x : Double) -> Dec {
 ///|
 /// True when dropping digits[k..] rounds the kept prefix upward, using
 /// round-half-even on the exact expansion like C printf.
-fn rounds_up(digs : Array[Int], k : Int) -> Bool {
+fn rounds_up(digs : Array[Int32], k : Int32) -> Bool {
   if k >= digs.length() {
     return false
   }
@@ -292,11 +292,11 @@ fn rounds_up(digs : Array[Int], k : Int) -> Bool {
 
 ///|
 /// Round to at most k significant digits (half-even on the exact expansion).
-fn dec_round_sig(d : Dec, k : Int) -> Dec {
+fn dec_round_sig(d : Dec, k : Int32) -> Dec {
   if d.digs.length() <= k {
     return d
   }
-  let kept : Array[Int] = []
+  let kept : Array[Int32] = []
   for i in 0..<k {
     kept.push(d.digs[i])
   }
@@ -332,7 +332,7 @@ fn dec_round_sig(d : Dec, k : Int) -> Dec {
 
 ///|
 /// Fixed-point rendering of the magnitude with `p` fraction digits.
-fn fmt_f(d : Dec, p : Int, alt : Bool) -> String {
+fn fmt_f(d : Dec, p : Int32, alt : Bool) -> String {
   let d2 = if d.digs.is_empty() {
     d
   } else {
@@ -375,7 +375,7 @@ fn fmt_f(d : Dec, p : Int, alt : Bool) -> String {
 
 ///|
 /// Scientific rendering of the magnitude with `p` mantissa fraction digits.
-fn fmt_e(d : Dec, p : Int, alt : Bool, upper : Bool) -> String {
+fn fmt_e(d : Dec, p : Int32, alt : Bool, upper : Bool) -> String {
   let sb = StringBuilder()
   if d.digs.is_empty() {
     sb.write_char('0')
@@ -449,7 +449,7 @@ fn strip_g(s : String) -> String {
 
 ///|
 /// General rendering of the magnitude with `p0` significant digits.
-fn fmt_g(d : Dec, p0 : Int, alt : Bool, upper : Bool) -> String {
+fn fmt_g(d : Dec, p0 : Int32, alt : Bool, upper : Bool) -> String {
   let precision = if p0 == 0 { 1 } else { p0 }
   let d2 = dec_round_sig(d, precision)
   let x = if d2.digs.is_empty() { 0 } else { d2.exp - 1 }

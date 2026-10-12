@@ -58,7 +58,7 @@ fn split_fields(line : String, separator : String?) -> Array[String] {
 }
 
 ///|
-fn key_of(fields : Array[String], field : Int) -> String {
+fn key_of(fields : Array[String], field : Int32) -> String {
   if field - 1 < fields.length() {
     fields[field - 1]
   } else {
@@ -67,7 +67,7 @@ fn key_of(fields : Array[String], field : Int) -> String {
 }
 
 ///|
-fn rest_of(fields : Array[String], field : Int) -> Array[String] {
+fn rest_of(fields : Array[String], field : Int32) -> Array[String] {
   let rest : Array[String] = []
   for index, value in fields {
     if index != field - 1 {

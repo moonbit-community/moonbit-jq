@@ -2,7 +2,7 @@
 /// Flatten array to specified depth
 fn flatten_array_into(
   arr : Array[Json],
-  depth : Int,
+  depth : Int32,
   out : Array[Json],
 ) -> Unit {
   guard depth > 0 else {
@@ -20,7 +20,7 @@ fn flatten_array_into(
 }
 
 ///|
-fn flatten_array(arr : Array[Json], depth : Int) -> Array[Json] {
+fn flatten_array(arr : Array[Json], depth : Int32) -> Array[Json] {
   guard depth > 0 else { return arr }
   let result : Array[Json] = []
   flatten_array_into(arr, depth, result)

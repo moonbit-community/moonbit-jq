@@ -1,7 +1,7 @@
 ///|
 /// Rank of a JSON value's type in jq's ordering:
 /// null < false < true < numbers < strings < arrays < objects.
-fn json_type_rank(v : Json) -> Int {
+fn json_type_rank(v : Json) -> Int32 {
   match v {
     Null => 0
     False => 1
@@ -16,7 +16,7 @@ fn json_type_rank(v : Json) -> Int {
 ///|
 /// Compare JSON values using jq's total order (used by comparisons, `==`,
 /// sorting, `unique`, `min`/`max`, ...).
-fn compare_json(a : Json, b : Json) -> Int {
+fn compare_json(a : Json, b : Json) -> Int32 {
   let rank_a = json_type_rank(a)
   let rank_b = json_type_rank(b)
   if rank_a != rank_b {
@@ -35,7 +35,7 @@ fn compare_json(a : Json, b : Json) -> Int {
 ///|
 /// Compare strings lexicographically by Unicode code point, as jq does.
 /// (MoonBit's `String::compare` orders by length first.)
-fn compare_code_points(a : String, b : String) -> Int {
+fn compare_code_points(a : String, b : String) -> Int32 {
   let iter_a = a.iter()
   let iter_b = b.iter()
   while true {
@@ -59,7 +59,7 @@ fn sorted_object_keys(obj : Map[String, Json]) -> Array[String] {
 ///|
 /// Objects compare first by their sorted key arrays, then value by value in
 /// sorted key order.
-fn compare_objects(x : Map[String, Json], y : Map[String, Json]) -> Int {
+fn compare_objects(x : Map[String, Json], y : Map[String, Json]) -> Int32 {
   let keys_x = sorted_object_keys(x)
   let keys_y = sorted_object_keys(y)
   let common = if keys_x.length() < keys_y.length() {
@@ -90,7 +90,7 @@ fn compare_objects(x : Map[String, Json], y : Map[String, Json]) -> Int {
 }
 
 ///|
-fn compare_array_view(a : ArrayView[Json], b : ArrayView[Json]) -> Int {
+fn compare_array_view(a : ArrayView[Json], b : ArrayView[Json]) -> Int32 {
   match (a, b) {
     ([], []) => 0
     ([], _) => -1

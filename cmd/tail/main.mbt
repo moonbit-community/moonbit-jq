@@ -12,7 +12,7 @@ priv enum CountSpec {
 }
 
 ///|
-let chunk_size : Int = 65536
+let chunk_size : Int32 = 65536
 
 ///|
 fn tail_command() -> @argparse.Command {
@@ -142,7 +142,7 @@ fn select_bytes(data : Bytes, spec : CountSpec) -> BytesView {
 }
 
 ///|
-fn count_newlines(chunk : Bytes) -> Int {
+fn count_newlines(chunk : Bytes) -> Int32 {
   let mut n = 0
   for b in chunk {
     if b is b'\n' {
