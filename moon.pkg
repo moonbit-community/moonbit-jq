@@ -1,6 +1,6 @@
 import {
-  "bobzhang/moonjq/ast",
-  "bobzhang/moonjq/parser",
+  "moonbit-community/moonjq/ast",
+  "moonbit-community/moonjq/parser",
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
 }

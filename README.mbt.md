@@ -1,6 +1,6 @@
 # MoonJQ — jq in MoonBit
 
-[![Test Status](https://img.shields.io/badge/tests-415%20passing-brightgreen)](https://github.com/moonbit-community/moobit-jq)
+[![Test Status](https://img.shields.io/badge/tests-415%20passing-brightgreen)](https://github.com/moonbit-community/moonbit-jq)
 [![MoonBit](https://img.shields.io/badge/language-MoonBit-blue)](https://www.moonbitlang.com/)
 
 MoonJQ is a high-performance, jq-compatible JSON query interpreter written in MoonBit. It implements a complete pipeline: **lexer → parser → streaming interpreter** with lazy evaluation using `Iterator[Json]`.
@@ -49,8 +49,8 @@ MoonJQ is a high-performance, jq-compatible JSON query interpreter written in Mo
 
 ```bash
 # Clone the repository
-git clone https://github.com/moonbit-community/moobit-jq.git
-cd moobit-jq
+git clone https://github.com/moonbit-community/moonbit-jq.git
+cd moonbit-jq
 
 # Run tests to verify installation
 moon test
@@ -226,9 +226,9 @@ test "readme: recursive descent" {
 ## Project Structure
 
 ```
-moobit-jq/
+moonbit-jq/
 ├── moon.work              # Workspace listing all member modules
-├── moon.mod               # bobzhang/moonjq library module
+├── moon.mod               # moonbit-community/moonjq library module
 ├── README.mbt.md          # This file (executable documentation)
 ├── TUTORIAL.md            # CLI tutorial
 ├── ast/                   # AST + streaming evaluator + integration tests

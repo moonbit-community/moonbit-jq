@@ -1,5 +1,5 @@
 import {
-  "bobzhang/moonjq/ast/internal/helpers" @ast_internal,
+  "moonbit-community/moonjq/ast/internal/helpers" @ast_internal,
   "moonbitlang/core/cmp",
   "moonbitlang/core/encoding/utf8" @encoding/utf8,
   "moonbitlang/core/json",
@@ -9,5 +9,5 @@ import {
 }
 
 import {
-  "bobzhang/moonjq/parser",
+  "moonbit-community/moonjq/parser",
 } for "test"

@@ -1,10 +1,10 @@
-name = "bobzhang/moonjq"
+name = "moonbit-community/moonjq"
 
 version = "0.2.0"
 
 readme = "README.mbt.md"
 
-repository = "git@github.com:moonbit-community/moobit-jq.git"
+repository = "https://github.com/moonbit-community/moonbit-jq"
 
 keywords = [ "jq", "json", "query" ]
 
