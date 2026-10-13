@@ -13,7 +13,7 @@ keywords = [ "jq", "json", "query", "cli", "wasm" ]
 description = "Run jq-compatible JSON filters directly with moonx"
 
 import {
-  "bobzhang/moonjq@0.2.0",
+  "moonbit-community/moonjq@0.2.0",
   "moonbitlang/async@0.22.4",
   "moonbitlang/x@0.5.1",
 }
