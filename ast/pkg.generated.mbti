@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/moonjq/ast"
+package "moonbit-community/moonjq/ast"
 
 import {
   "moonbitlang/core/debug",

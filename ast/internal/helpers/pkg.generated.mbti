@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/moonjq/ast/internal/helpers"
+package "moonbit-community/moonjq/ast/internal/helpers"
 
 // Values
 pub fn is_truthy(Json) -> Bool

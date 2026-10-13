@@ -1,5 +1,5 @@
 import {
-  "bobzhang/moonjq",
+  "moonbit-community/moonjq",
   "moonbitlang/async",
   "moonbitlang/async/stdio",
   "moonbitlang/core/argparse",
