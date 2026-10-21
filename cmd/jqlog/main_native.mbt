@@ -106,20 +106,12 @@ async fn read_input(source : InputSource) -> String {
 
 ///|
 async fn write_results(results : Iter[Result[Json, @moonjq.EvalError]]) -> Unit {
-  let mut first = true
   for result in results {
     let value = match result {
       Ok(v) => v
       Err(err) => raise err
     }
-    if first {
-      first = false
-    } else {
-      @stdio.stdout.write("\n")
-    }
     @stdio.stdout.write(value.stringify())
-  }
-  if !first {
     @stdio.stdout.write("\n")
   }
 }
@@ -135,19 +127,27 @@ async fn main {
     Error(msg) => {
       @stdio.stderr.write("Error: " + msg + "\n")
       @stdio.stderr.write(help_message())
+      @sys.exit(2)
       return
     }
-    Run(options) =>
-      try {
-        let input = read_input(options.input)
-        let query = @moonjq.parse(options.query)
-        let results = query.eval_logs(input)
-        write_results(results)
-      } catch {
+    Run(options) => {
+      let query = @moonjq.parse(options.query) catch {
         err => {
           @stdio.stderr.write("Error: \{err}\n")
+          @sys.exit(3)
           return
         }
       }
+      try {
+        let input = read_input(options.input)
+        write_results(query.eval_logs(input))
+      } catch {
+        err => {
+          @stdio.stderr.write("Error: \{err}\n")
+          @sys.exit(5)
+          return
+        }
+      }
+    }
   }
 }

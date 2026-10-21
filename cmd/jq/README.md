@@ -18,3 +18,7 @@ Supported options:
 - `-f`, `--from-file FILE`: read the filter from `FILE`.
 - `-n`, `--null-input`: evaluate once with `null` input.
 - `-l`, `--logs`: process newline-delimited JSON and skip invalid lines.
+
+Query syntax and binding errors exit with status 3. Runtime errors print a
+diagnostic and exit with status 5, retaining results already printed. `--logs`
+skips invalid JSON lines and still reports query failures.

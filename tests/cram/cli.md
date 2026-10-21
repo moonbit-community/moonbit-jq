@@ -86,3 +86,51 @@ $ printf '{"x":1}' | jq.exe '[' >/dev/null 2>&1
 $ printf 'not json' | jq.exe '.' >/dev/null 2>&1
 [5]
 ```
+
+## Suspended Evaluation And Terminal Errors
+
+```mooncram
+$ jq.exe -n -c 'limit(3; repeat(.))'
+null
+null
+null
+```
+
+```mooncram
+$ jq.exe -n -c 'limit(1; (1, ({} + 1)))'
+1
+```
+
+```mooncram
+$ jq.exe -n -c '1, error("failed"), 2' 2>/dev/null
+1
+[5]
+```
+
+```mooncram
+$ jq.exe -n -c '"\(. 1)"' >/dev/null 2>&1
+[3]
+```
+
+```mooncram
+$ jq.exe -n -c 'missing_function' >/dev/null 2>&1
+[3]
+```
+
+```mooncram
+$ printf '%s\n' 'not json' '{"end":1}' '{"end":2}' | jqlog.exe '.end'
+1
+2
+```
+
+```mooncram
+$ printf '%s\n' 'not json' '1' '2' '3' | jqlog.exe '., if . == 2 then error("failed") else empty end' 2>/dev/null
+1
+2
+[5]
+```
+
+```mooncram
+$ jqlog.exe '.a.' 'null' >/dev/null 2>&1
+[3]
+```
