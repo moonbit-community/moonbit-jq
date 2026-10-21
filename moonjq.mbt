@@ -1,18 +1,18 @@
 ///|
 /// Compile a jq query string into a reusable Query.
 pub fn parse(query : String) -> Query raise {
-  { expr: @parser.parse(query), }
+  { plan: @runtime.compile(@parser.parse(query)), }
 }
 
 ///|
 /// Evaluate a compiled query against an input JSON value and stream results.
-pub fn eval(query : Query, input : Json) -> Iter[Json] raise {
+pub fn eval(query : Query, input : Json) -> Iter[Result[Json, EvalError]] {
   query.eval(input)
 }
 
 ///|
 /// Evaluate a compiled query and collect all results eagerly.
-pub fn eval_all(query : Query, input : Json) -> Array[Json] raise {
+pub fn eval_all(query : Query, input : Json) -> Array[Json] raise EvalError {
   query.eval_all(input)
 }
 
@@ -26,6 +26,10 @@ pub fn run(query : String, input : String) -> Array[Json] raise {
 
 ///|
 /// Evaluate a compiled query against an already parsed Json input.
-pub fn run_json(query : Query, input : Json) -> Array[Json] raise {
+pub fn run_json(query : Query, input : Json) -> Array[Json] raise EvalError {
   query.eval_all(input)
 }
+
+///|
+/// Runtime failures are explicit events in the streaming API.
+pub using @runtime {type EvalError}

@@ -1,56 +1,53 @@
 ///|
 test "coverage: .[] iterates object values" {
   // Object iteration preserves insertion order.
-  json_inspect(coverage_eval(".[]", "{\"a\": 1, \"b\": 2}"), content=[1, 2])
+  assert_reference_query(".[]", "{\"a\": 1, \"b\": 2}", "[1, 2]", 0)
 }
 
 ///|
 test "coverage: index on non-array yields nulls" {
-  json_inspect(coverage_eval(".[0, 1]", "{\"a\": 1}"), content=[null, null])
+  assert_reference_query(".[0, 1]", "{\"a\": 1}", "[]", 5)
 }
 
 ///|
 test "coverage: slice on non-array yields null" {
-  json_inspect(coverage_eval(".[1:2]", "1"), content=[null])
+  assert_reference_query(".[1:2]", "1", "[]", 5)
 }
 
 ///|
 test "coverage: optional suppresses evaluation errors" {
-  json_inspect(coverage_eval("(1 / 0)?", "null"), content=[])
+  assert_reference_query("(1 / 0)?", "null", "[]", 0)
 }
 
 ///|
 test "coverage: in(array) checks index bounds" {
-  json_inspect(coverage_eval("0 | in([10, 20])", "null"), content=[true])
-  json_inspect(coverage_eval("1 | in([10, 20])", "null"), content=[true])
-  json_inspect(coverage_eval("2 | in([10, 20])", "null"), content=[false])
-  json_inspect(coverage_eval("-1 | in([10, 20])", "null"), content=[true])
+  assert_reference_query("0 | in([10, 20])", "null", "[true]", 0)
+  assert_reference_query("1 | in([10, 20])", "null", "[true]", 0)
+  assert_reference_query("2 | in([10, 20])", "null", "[false]", 0)
+  assert_reference_query("-1 | in([10, 20])", "null", "[false]", 0)
 }
 
 ///|
 test "coverage: object-object comparison uses object ordering" {
-  json_inspect(coverage_eval("{\"a\":1} < {\"b\":2}", "null"), content=[true])
+  assert_reference_query("{\"a\":1} < {\"b\":2}", "null", "[true]", 0)
 }
 
 ///|
 test "coverage: comparisons across JSON types" {
-  json_inspect(coverage_eval("false < 0", "null"), content=[true])
-  json_inspect(coverage_eval("0 > false", "null"), content=[true])
-  json_inspect(coverage_eval("0 < \"x\"", "null"), content=[true])
-  json_inspect(coverage_eval("\"x\" > 0", "null"), content=[true])
-  json_inspect(coverage_eval("\"x\" < [0]", "null"), content=[true])
-  json_inspect(coverage_eval("[0] > \"x\"", "null"), content=[true])
-  json_inspect(coverage_eval("[0] < {\"a\":1}", "null"), content=[true])
-  json_inspect(coverage_eval("{\"a\":1} > [0]", "null"), content=[true])
+  assert_reference_query("false < 0", "null", "[true]", 0)
+  assert_reference_query("0 > false", "null", "[true]", 0)
+  assert_reference_query("0 < \"x\"", "null", "[true]", 0)
+  assert_reference_query("\"x\" > 0", "null", "[true]", 0)
+  assert_reference_query("\"x\" < [0]", "null", "[true]", 0)
+  assert_reference_query("[0] > \"x\"", "null", "[true]", 0)
+  assert_reference_query("[0] < {\"a\":1}", "null", "[true]", 0)
+  assert_reference_query("{\"a\":1} > [0]", "null", "[true]", 0)
 }
 
 ///|
 test "coverage: foreach copies env bindings and functions" {
-  json_inspect(
-    coverage_eval(
-      "def f: $x; 10 as $x | foreach .[] as $y (0; . + $y + f)", "[1, 2]",
-    ),
-    content=[11, 23],
+  assert_reference_query(
+    "def f: $x; 10 as $x | foreach .[] as $y (0; . + $y + f)", "[1, 2]", "[]", 3,
   )
 }
 

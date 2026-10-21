@@ -1,28 +1,28 @@
 ///|
 /// Test basic identity and field access
 test "integration: basic queries" {
-  json_inspect(jq(".", "42"), content=[42])
-  json_inspect(jq(".foo", "{\"foo\": \"bar\"}"), content=["bar"])
-  json_inspect(jq(".a.b", "{\"a\": {\"b\": 123}}"), content=[123])
+  assert_reference_query(".", "42", "[42]", 0)
+  assert_reference_query(".foo", "{\"foo\": \"bar\"}", "[\"bar\"]", 0)
+  assert_reference_query(".a.b", "{\"a\": {\"b\": 123}}", "[123]", 0)
 }
 
 ///|
 /// Test array operations
 test "integration: array operations" {
-  json_inspect(jq(".[]", "[1,2,3]"), content=[1, 2, 3])
-  json_inspect(jq(".[1]", "[10,20,30]"), content=[20])
-  json_inspect(jq(".[-1]", "[10,20,30]"), content=[30])
-  json_inspect(jq(".[1:3]", "[1,2,3,4,5]"), content=[[2, 3]])
+  assert_reference_query(".[]", "[1,2,3]", "[1, 2, 3]", 0)
+  assert_reference_query(".[1]", "[10,20,30]", "[20]", 0)
+  assert_reference_query(".[-1]", "[10,20,30]", "[30]", 0)
+  assert_reference_query(".[1:3]", "[1,2,3,4,5]", "[[2, 3]]", 0)
 }
 
 ///|
 /// Test string operations
 test "integration: strings" {
-  json_inspect(jq("\"hello\" + \" \" + \"world\"", "null"), content=[
-    "hello world",
-  ])
-  json_inspect(
-    jq(".first + .last", "{\"first\": \"Hello\", \"last\": \" MoonBit\"}"),
-    content=["Hello MoonBit"],
+  assert_reference_query(
+    "\"hello\" + \" \" + \"world\"", "null", "[\"hello world\"]", 0,
+  )
+  assert_reference_query(
+    ".first + .last", "{\"first\": \"Hello\", \"last\": \" MoonBit\"}", "[\"Hello MoonBit\"]",
+    0,
   )
 }

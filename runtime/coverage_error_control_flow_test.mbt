@@ -1,15 +1,15 @@
 ///|
 test "coverage: map and min/max edge cases" {
   assert_coverage_eval_error("map(.)", "1")
-  json_inspect(coverage_eval("min", "[]"), content=[null])
-  json_inspect(coverage_eval("max", "[]"), content=[null])
+  assert_reference_query("min", "[]", "[null]", 0)
+  assert_reference_query("max", "[]", "[null]", 0)
 }
 
 ///|
 test "coverage: control flow fallbacks" {
-  json_inspect(coverage_eval("if empty then 1 else 2 end", "null"), content=[])
-  json_inspect(coverage_eval("try (1 / 0)", "null"), content=[])
-  json_inspect(coverage_eval("empty // 2", "null"), content=[2])
+  assert_reference_query("if empty then 1 else 2 end", "null", "[]", 0)
+  assert_reference_query("try (1 / 0)", "null", "[]", 0)
+  assert_reference_query("empty // 2", "null", "[2]", 0)
 }
 
 ///|
@@ -20,13 +20,11 @@ test "coverage: undefined variable" {
 ///|
 test "coverage: function argument handling" {
   assert_coverage_eval_error("def f(x; y): $x + $y; f(1)", "null")
-  json_inspect(coverage_eval("def id(x): $x; id(empty)", "null"), content=[null])
+  assert_reference_query("def id(x): $x; id(empty)", "null", "[]", 3)
 }
 
 ///|
 test "coverage: reduce and assignment edges" {
-  json_inspect(coverage_eval("reduce .[] as $x (empty; . + $x)", "[1, 2]"), content=[
-    null,
-  ])
-  json_inspect(coverage_eval(".a = empty", "{\"a\": 1}"), content=[])
+  assert_reference_query("reduce .[] as $x (empty; . + $x)", "[1, 2]", "[]", 0)
+  assert_reference_query(".a = empty", "{\"a\": 1}", "[]", 0)
 }

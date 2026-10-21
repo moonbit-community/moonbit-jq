@@ -1,13 +1,11 @@
 ///|
 test "coverage: flatten default depth flattens all" {
-  json_inspect(coverage_eval("flatten", "[1, [2, [3]]]"), content=[[1, 2, 3]])
+  assert_reference_query("flatten", "[1, [2, [3]]]", "[[1, 2, 3]]", 0)
 }
 
 ///|
 test "coverage: flatten(n) flattens one level" {
-  json_inspect(coverage_eval("flatten(1)", "[1, [2, [3]]]"), content=[
-    [1, 2, [3]],
-  ])
+  assert_reference_query("flatten(1)", "[1, [2, [3]]]", "[[1, 2, [3]]]", 0)
 }
 
 ///|
@@ -17,14 +15,15 @@ test "coverage: flatten rejects non-array" {
 
 ///|
 test "coverage: unique sorts and removes duplicates" {
-  json_inspect(coverage_eval("unique", "[3, 1, 3, 2]"), content=[[1, 2, 3]])
+  assert_reference_query("unique", "[3, 1, 3, 2]", "[[1, 2, 3]]", 0)
 }
 
 ///|
 test "coverage: to_entries supports arrays" {
-  json_inspect(coverage_eval("to_entries", "[\"a\", \"b\"]"), content=[
-    [{ "key": 0, "value": "a" }, { "key": 1, "value": "b" }],
-  ])
+  assert_reference_query(
+    "to_entries", "[\"a\", \"b\"]", "[[{\"key\": 0, \"value\": \"a\"}, {\"key\": 1, \"value\": \"b\"}]]",
+    0,
+  )
 }
 
 ///|
@@ -32,15 +31,14 @@ test "coverage: from_entries supports numeric keys and name fallback" {
   json_inspect(coverage_eval("from_entries", "[{\"key\":0,\"value\":\"a\"}]"), content=[
     { "0": "a" },
   ])
-  json_inspect(
-    coverage_eval("from_entries", "[{\"name\":\"a\",\"value\":1}]"),
-    content=[{ "a": 1 }],
+  assert_reference_query(
+    "from_entries", "[{\"name\":\"a\",\"value\":1}]", "[{\"a\": 1}]", 0,
   )
 }
 
 ///|
 test "coverage: with_entries round-trips object" {
-  json_inspect(coverage_eval("with_entries(.)", "{\"a\": 1, \"b\": 2}"), content=[
-    { "a": 1, "b": 2 },
-  ])
+  assert_reference_query(
+    "with_entries(.)", "{\"a\": 1, \"b\": 2}", "[{\"a\": 1, \"b\": 2}]", 0,
+  )
 }

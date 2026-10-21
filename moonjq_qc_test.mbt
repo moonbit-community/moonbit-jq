@@ -867,14 +867,12 @@ test "qc: length agrees with the value" {
 
 ///|
 test "qc: keys lists exactly the object keys, and array indices" {
-  // Note: moonjq documents that `keys` keeps insertion order (FEATURES.md and
-  // integration_builtins_test), unlike jq which sorts. The order-independent
-  // part of the contract is asserted here; `keys | sort` must be sorted.
+  // jq keys uses Unicode code-point order; keys_unsorted retains insertion order.
   @quickcheck.check(
     (jv : JV) => {
       match jv.v {
         Object(o) => {
-          let expected = o.keys().map(Json::string).collect()
+          let expected = ref_sorted_keys(o).map(Json::string)
           let sorted = ref_sorted_keys(o).map(Json::string)
           outcome_equal(jq_outcome("keys", jv.v), Ok([Json::array(expected)])) &&
           outcome_equal(
@@ -1437,7 +1435,7 @@ impl @quickcheck.Shrink for QuerySrc with fn shrink(self) {
 
 ///|
 fn parses(query : String) -> Bool {
-  try @moonjq.parse(query) catch {
+  try @parser.parse(query) catch {
     _ => false
   } noraise {
     _ => true

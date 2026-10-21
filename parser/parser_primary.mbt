@@ -1,6 +1,6 @@
 ///|
 /// Parse primary expressions
-fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_primary_inner(self : Parser) -> @ast.Expr raise ParseError {
   match self.current() {
     Some(TNull) => {
       self.advance()
@@ -18,45 +18,19 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
       self.advance()
       Literal(Number(n))
     }
-    Some(TString(s)) => {
+    Some(TStringStart) => self.parse_string()
+    Some(TField(name)) => {
       self.advance()
-      Literal(String(s))
-    }
-    Some(TStringInterpolation(parts)) => {
-      self.advance()
-      let parsed_parts : Array[(String, @ast.Expr?)] = []
-      for pair in parts {
-        let (text, expr_opt) = pair
-        match expr_opt {
-          Some(expr_str) => {
-            let expr_tokens = lex(expr_str) catch {
-              _ => raise InvalidExpression("Failed to parse interpolation")
-            }
-            let expr_parser = Parser::new(expr_tokens)
-            let expr = expr_parser.parse_pipe()
-            parsed_parts.push((text, Some(expr)))
-          }
-          None => parsed_parts.push((text, None))
-        }
-      }
-      StringInterpolation(parsed_parts)
+      Key(name)
     }
     Some(TDotDot) => {
       self.advance()
-      Recurse
+      FunctionCall("recurse", [])
     }
     Some(TDot) => {
       self.advance()
       match self.current() {
-        Some(TIdentifier(name)) => {
-          self.advance()
-          Key(name)
-        }
-        Some(TString(name)) => {
-          // ."key"
-          self.advance()
-          Key(name)
-        }
+        Some(TStringStart) => Access(self.parse_string())
         Some(TLBracket) => {
           self.advance()
           self.parse_index_or_slice(Identity)
@@ -74,7 +48,7 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
     }
     Some(TLParen) => {
       self.advance()
-      let expr = self.parse_pipe()
+      let expr = self.parse_definitions()
       self.expect(TRParen)
       expr
     }
@@ -83,7 +57,7 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
       if self.consume(TRBracket) {
         ArrayConstruct(None)
       } else {
-        let expr = self.parse_pipe()
+        let expr = self.parse_definitions()
         self.expect(TRBracket)
         ArrayConstruct(Some(expr))
       }
@@ -103,4 +77,39 @@ fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
     Some(t) => raise UnexpectedToken(t.to_string(), "expression")
     None => raise UnexpectedEnd("expression")
   }
+}
+
+///|
+fn Parser::parse_string(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.expect(TStringStart)
+  let parts : Array[(String, @ast.Expr?)] = []
+  while !self.check(TStringEnd) {
+    match self.current() {
+      Some(TStringText(text)) => {
+        self.advance()
+        parts.push((text, None))
+      }
+      Some(TInterpolationStart) => {
+        self.advance()
+        let expr = self.parse_definitions()
+        self.expect(TInterpolationEnd)
+        parts.push(("", Some(expr)))
+      }
+      _ => raise InvalidSyntax("Expected string text or interpolation")
+    }
+  }
+  self.expect(TStringEnd)
+  let expr : @ast.Expr = match parts {
+    [] => Literal(String(""))
+    [(text, None)] => Literal(String(text))
+    _ => StringInterpolation(parts)
+  }
+  self.located(start, expr)
+}
+
+///|
+fn Parser::parse_primary(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_primary_inner())
 }

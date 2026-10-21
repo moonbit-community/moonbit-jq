@@ -1,139 +1,65 @@
 ///|
-/// Lex a string (with interpolation support)
-fn Lexer::lex_string(self : Lexer) -> Unit raise LexError {
+fn Lexer::lex_string(self : Lexer) -> Unit {
   let start = self.pos
   self.advance()
-  let parts : Array[(String, String?)] = []
+  self.add_token(TStringStart)
+  self.modes.push(StringMode(start))
+}
+
+///|
+fn Lexer::lex_string_text(self : Lexer, start : Int32) -> Unit raise LexError {
   let buf = StringBuilder()
   while true {
     match self.current() {
       None => raise UnterminatedString(start)
       Some('"') => {
+        if !buf.is_empty() {
+          self.add_token(TStringText(buf.to_string()))
+        }
+        self.start = self.pos
         self.advance()
-        break
+        self.add_token(TStringEnd)
+        self.modes.pop() |> ignore
+        return
       }
       Some('\\') => {
+        let escape_start = self.pos
+        if self.peek() == Some('(') {
+          if !buf.is_empty() {
+            self.add_token(TStringText(buf.to_string()))
+          }
+          self.start = escape_start
+          self.advance()
+          self.advance()
+          self.add_token(TInterpolationStart)
+          self.modes.push(Code(TInterpolationEnd))
+          return
+        }
         self.advance()
         match self.current() {
-          None => raise UnterminatedString(start)
-          Some('(') => {
-            // String interpolation: \\(expr)
-            self.advance()
-            parts.push((buf.to_string(), None))
-            buf.reset()
-            // Find the matching closing paren
-            let expr_start = self.pos
-            let mut paren_depth = 1
-            while true {
-              match self.current() {
-                None => raise UnterminatedString(start)
-                Some('(') => {
-                  self.advance()
-                  paren_depth += 1
-                  continue
-                }
-                Some(')') => {
-                  paren_depth -= 1
-                  if paren_depth == 0 {
-                    let expr_text = self.input[expr_start:self.pos].to_owned()
-                    parts.push(("", Some(expr_text)))
-                    self.advance()
-                    break
-                  } else {
-                    self.advance()
-                    continue
-                  }
-                }
-                Some('"') => {
-                  // Skip nested strings
-                  self.advance()
-                  while true {
-                    match self.current() {
-                      Some('"') => {
-                        self.advance()
-                        break
-                      }
-                      Some('\\') => {
-                        self.advance()
-                        self.advance()
-                        continue
-                      }
-                      None => raise UnterminatedString(start)
-                      _ => {
-                        self.advance()
-                        continue
-                      }
-                    }
-                  }
-                  continue
-                }
-                _ => {
-                  self.advance()
-                  continue
-                }
-              }
-            }
-            continue
-          }
-          Some('n') => {
-            buf.write_char('\n')
-            self.advance()
-            continue
-          }
-          Some('r') => {
-            buf.write_char('\r')
-            self.advance()
-            continue
-          }
-          Some('t') => {
-            buf.write_char('\t')
-            self.advance()
-            continue
-          }
-          Some('\\') => {
-            buf.write_char('\\')
-            self.advance()
-            continue
-          }
-          Some('"') => {
-            buf.write_char('"')
-            self.advance()
-            continue
-          }
-          Some('/') => {
-            buf.write_char('/')
-            self.advance()
-            continue
-          }
-          Some('b') => {
-            buf.write_char('\b')
-            self.advance()
-            continue
-          }
-          Some('f') => {
-            buf.write_char('\u{0C}')
-            self.advance()
-            continue
-          }
+          Some('n') => buf.write_char('\n')
+          Some('r') => buf.write_char('\r')
+          Some('t') => buf.write_char('\t')
+          Some('b') => buf.write_char('\b')
+          Some('f') => buf.write_char('\u{0C}')
+          Some('\\') => buf.write_char('\\')
+          Some('"') => buf.write_char('"')
+          Some('/') => buf.write_char('/')
           Some('u') => {
             self.advance()
             self.lex_unicode_escape(buf)
             continue
           }
           Some(c) => raise InvalidEscape(self.pos, c)
+          None => raise UnterminatedString(start)
         }
+        self.advance()
       }
       Some(c) => {
         buf.write_char(c)
         self.advance()
-        continue
       }
     }
-  }
-  parts.push((buf.to_string(), None))
-  match parts {
-    [(s, None)] => self.add_token(TString(s))
-    _ => self.add_token(TStringInterpolation(parts))
   }
 }
 

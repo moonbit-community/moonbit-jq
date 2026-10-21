@@ -1,6 +1,7 @@
 ///|
 /// Parser error types
 pub(all) suberror ParseError {
+  Diagnostic(String, @ast.Span)
   UnexpectedToken(String, String) // (found, expected) - using String to avoid ToJson requirement
   UnexpectedEnd(String) // (expected)
   InvalidSyntax(String)

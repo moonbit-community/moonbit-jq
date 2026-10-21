@@ -1,14 +1,14 @@
 ///|
 fn eval_expr(expr : @ast.Expr, input : String) -> Array[Json] raise {
   let json_input = @json.parse(input)
-  @runtime.eval(expr, json_input).collect()
+  @runtime.eval_all(@runtime.compile(expr), json_input)
 }
 
 ///|
 test "coverage: eval functiondef and path expr" {
   let fn_expr : @ast.Expr = FunctionDef("f", [], Identity)
   json_inspect(eval_expr(fn_expr, "1"), content=[1])
-  let path_expr : @ast.Expr = Path(Identity)
+  let path_expr : @ast.Expr = FunctionCall("path", [Identity])
   json_inspect(eval_expr(path_expr, "{\"a\":1}"), content=[[]])
 }
 
@@ -27,7 +27,11 @@ test "coverage: update with index left branches" {
     [{ "a": 0 }, null, null, null, null, { "a": 1 }],
   ])
   let expr_non_array : @ast.Expr = Update(path_valid, update_expr)
-  json_inspect(eval_expr(expr_non_array, "1"), content=[1])
+  try eval_expr(expr_non_array, "1") catch {
+    _ => ()
+  } noraise {
+    _ => fail("scalar indexing must fail")
+  }
 }
 
 ///|

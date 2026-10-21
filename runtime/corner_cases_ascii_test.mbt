@@ -3,20 +3,10 @@
 
 ///|
 test "corner: ascii_downcase preserves non-ASCII" {
-  debug_inspect(
-    test_query("ascii_downcase", "\"CAFÉ\""),
-    content=(
-      #|"String(\"cafÉ\")"
-    ),
-  )
+  assert_reference_query("ascii_downcase", "\"CAFÉ\"", "[\"cafÉ\"]", 0)
 }
 
 ///|
 test "corner: ascii_upcase preserves non-ASCII" {
-  debug_inspect(
-    test_query("ascii_upcase", "\"café\""),
-    content=(
-      #|"String(\"CAFé\")"
-    ),
-  )
+  assert_reference_query("ascii_upcase", "\"café\"", "[\"CAFé\"]", 0)
 }

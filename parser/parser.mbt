@@ -1,28 +1,38 @@
 ///|
-/// Parse entry point
+/// Parse exactly one query, retaining original UTF-16 source locations.
 pub fn parse(input : String) -> @ast.Expr raise {
-  let tokens = lex(input)
-  let parser = Parser::new(tokens)
-  parser.parse_definitions()
+  let tokens = lex_spanned(input)
+  let parser = Parser::new(
+    tokens.map(t => t.token),
+    spans=tokens.map(t => t.span),
+  )
+  try {
+    let expr = parser.parse_definitions()
+    parser.expect(TEof)
+    complete_locations(expr, { start: 0, end: input.length(), })
+  } catch {
+    err =>
+      raise Diagnostic(
+        err.to_string(),
+        parser.spans
+        .get(parser.pos)
+        .unwrap_or({ start: input.length(), end: input.length(), }),
+      )
+  }
 }
 
 ///|
-/// Parse function definitions followed by expression
 fn Parser::parse_definitions(self : Parser) -> @ast.Expr raise ParseError {
-  let defs : Array[@ast.Expr] = []
-  while self.current() == Some(TDef) {
-    defs.push(self.parse_function_def())
-  }
-  let main_expr = self.parse_pipe()
-  // The whole query must be consumed; otherwise `. 1` or `."a"` would
-  // silently parse as `.`.
-  if self.current() is Some(t) && !(t is TEof) {
-    raise UnexpectedToken(t.to_string(), "end of query")
-  }
-  // Chain definitions with main expression so they execute in order
-  match defs {
-    [] => main_expr
-    // Fold defs from right to left so they execute in order
-    _ => defs.rev().fold(init=main_expr, fn(expr, def) { Pipe(def, expr) })
+  if self.current() == Some(TDef) {
+    let start = self.pos
+    let def = self.parse_function_def()
+    let rest = self.parse_definitions()
+    match def {
+      FunctionDef(name, params, body) =>
+        self.located(start, Scope(name, params, body, rest))
+      _ => raise InvalidSyntax("Expected function definition")
+    }
+  } else {
+    self.parse_pipe()
   }
 }

@@ -13,20 +13,20 @@ fn parse_ok(query : String) -> Unit raise {
 }
 
 ///|
-test "coverage: parse errors for string-arg builtins" {
-  assert_true(parse_err("test(1)"))
-  assert_true(parse_err("match(1)"))
-  assert_true(parse_err("capture(1)"))
-  assert_true(parse_err("splits(1)"))
-  assert_true(parse_err("scan(1)"))
+test "coverage: generic syntax accepts string-arg builtins" {
+  parse_ok("test(1)")
+  parse_ok("match(1)")
+  parse_ok("capture(1)")
+  parse_ok("splits(1)")
+  parse_ok("scan(1)")
 }
 
 ///|
-test "coverage: parse errors for sub/gsub argument types" {
-  assert_true(parse_err("sub(1; \"x\")"))
-  assert_true(parse_err("sub(\"x\"; 1)"))
-  assert_true(parse_err("gsub(1; \"x\")"))
-  assert_true(parse_err("gsub(\"x\"; 1)"))
+test "coverage: generic syntax accepts sub/gsub argument types" {
+  parse_ok("sub(1; \"x\")")
+  parse_ok("sub(\"x\"; 1)")
+  parse_ok("gsub(1; \"x\")")
+  parse_ok("gsub(\"x\"; 1)")
 }
 
 ///|
@@ -43,14 +43,14 @@ test "coverage: parse errors for function definitions" {
 }
 
 ///|
-test "coverage: parse errors for limit argument" {
-  assert_true(parse_err("limit(\"2\"; .)"))
+test "coverage: generic syntax accepts limit argument" {
+  parse_ok("limit(\"2\"; .)")
 }
 
 ///|
 test "coverage: parse field access variants" {
   parse_ok("1.[0]")
-  parse_ok("1. .")
+  assert_true(parse_err("1. ."))
   parse_ok("1.")
 }
 
@@ -79,18 +79,18 @@ test "coverage: parse errors for as and index edge cases" {
 }
 
 ///|
-test "coverage: parse errors for builtin argument validation" {
-  assert_true(parse_err("split(1)"))
-  assert_true(parse_err("join(1)"))
-  assert_true(parse_err("startswith(1)"))
-  assert_true(parse_err("endswith(1)"))
-  assert_true(parse_err("has(true)"))
-  assert_true(parse_err("range(.a)"))
-  assert_true(parse_err("any(.[])"))
-  assert_true(parse_err("all(.[])"))
-  assert_true(parse_err("ltrimstr(1)"))
-  assert_true(parse_err("rtrimstr(1)"))
-  assert_true(parse_err("nth(\"x\")"))
+test "coverage: generic syntax accepts builtin argument validation" {
+  parse_ok("split(1)")
+  parse_ok("join(1)")
+  parse_ok("startswith(1)")
+  parse_ok("endswith(1)")
+  parse_ok("has(true)")
+  parse_ok("range(.a)")
+  parse_ok("any(.[])")
+  parse_ok("all(.[])")
+  parse_ok("ltrimstr(1)")
+  parse_ok("rtrimstr(1)")
+  parse_ok("nth(\"x\")")
 }
 
 ///|

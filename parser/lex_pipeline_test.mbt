@@ -6,13 +6,11 @@ test "lex: complex expression" {
     tokens,
     content=(
       #|[
-      #|  TDot,
-      #|  TIdentifier("foo"),
+      #|  TField("foo"),
       #|  TPipe,
       #|  TIdentifier("map"),
       #|  TLParen,
-      #|  TDot,
-      #|  TIdentifier("bar"),
+      #|  TField("bar"),
       #|  TRParen,
       #|  TPipe,
       #|  TIdentifier("select"),

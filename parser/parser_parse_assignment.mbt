@@ -4,7 +4,7 @@
 /// As in jq, `//` is right-associative and binds more loosely than the
 /// assignment operators: `a // b // c` is `a // (b // c)` and
 /// `.a = 1 // 2` is `(.a = 1) // 2`.
-fn Parser::parse_assignment(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_assignment_inner(self : Parser) -> @ast.Expr raise ParseError {
   let expr = self.parse_assignment_op()
   if self.consume(TAlternative) {
     Alternative(expr, self.parse_assignment())
@@ -52,4 +52,10 @@ fn Parser::parse_assignment_op(self : Parser) -> @ast.Expr raise ParseError {
     }
     _ => expr
   }
+}
+
+///|
+fn Parser::parse_assignment(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_assignment_inner())
 }

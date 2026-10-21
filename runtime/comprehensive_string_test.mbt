@@ -7,67 +7,45 @@
 
 ///|
 test "string interpolation: basic" {
-  debug_inspect(
-    test_query("\"Hello \\(.name)!\"", "{\"name\":\"Alice\"}"),
-    content=(
-      #|"String(\"Hello Alice!\")"
-    ),
+  assert_reference_query(
+    "\"Hello \\(.name)!\"", "{\"name\":\"Alice\"}", "[\"Hello Alice!\"]", 0,
   )
 }
 
 ///|
 test "string interpolation: multiple expressions" {
-  debug_inspect(
-    test_query(
-      "\"\\(.first) \\(.last)\"", "{\"first\":\"John\",\"last\":\"Doe\"}",
-    ),
-    content=(
-      #|"String(\"John Doe\")"
-    ),
+  assert_reference_query(
+    "\"\\(.first) \\(.last)\"", "{\"first\":\"John\",\"last\":\"Doe\"}", "[\"John Doe\"]",
+    0,
   )
 }
 
 ///|
 test "string interpolation: nested access" {
-  debug_inspect(
-    test_query(
-      "\"Name: \\(.user.name), Age: \\(.user.age)\"", "{\"user\":{\"name\":\"Bob\",\"age\":30}}",
-    ),
-    content=(
-      #|"String(\"Name: Bob, Age: 30\")"
-    ),
+  assert_reference_query(
+    "\"Name: \\(.user.name), Age: \\(.user.age)\"", "{\"user\":{\"name\":\"Bob\",\"age\":30}}",
+    "[\"Name: Bob, Age: 30\"]", 0,
   )
 }
 
 ///|
 test "string interpolation: with expressions" {
-  debug_inspect(
-    test_query("\"Result: \\(. * 2)\"", "5"),
-    content=(
-      #|"String(\"Result: 10\")"
-    ),
-  )
+  assert_reference_query("\"Result: \\(. * 2)\"", "5", "[\"Result: 10\"]", 0)
 }
 
 ///|
 test "string interpolation: array access" {
-  debug_inspect(
-    test_query("\"First: \\(.[0]), Last: \\(.[-1])\"", "[1,2,3,4,5]"),
-    content=(
-      #|"String(\"First: 1, Last: 5\")"
-    ),
+  assert_reference_query(
+    "\"First: \\(.[0]), Last: \\(.[-1])\"", "[1,2,3,4,5]", "[\"First: 1, Last: 5\"]",
+    0,
   )
 }
 
 ///|
 test "string interpolation: complex expression" {
-  debug_inspect(
-    test_query(
-      "\"Sum: \\(.a + .b), Product: \\(.a * .b)\"", "{\"a\":3,\"b\":7}",
-    ),
-    content=(
-      #|"String(\"Sum: 10, Product: 21\")"
-    ),
+  assert_reference_query(
+    "\"Sum: \\(.a + .b), Product: \\(.a * .b)\"", "{\"a\":3,\"b\":7}", "[\"Sum: 10, Product: 21\"]",
+    0,
   )
 }
 
@@ -77,91 +55,60 @@ test "string interpolation: complex expression" {
 
 ///|
 test "ltrimstr: remove prefix" {
-  debug_inspect(
-    test_query("ltrimstr(\"Hello \")", "\"Hello World\""),
-    content=(
-      #|"String(\"World\")"
-    ),
+  assert_reference_query(
+    "ltrimstr(\"Hello \")", "\"Hello World\"", "[\"World\"]", 0,
   )
 }
 
 ///|
 test "rtrimstr: remove suffix" {
-  debug_inspect(
-    test_query("rtrimstr(\" World\")", "\"Hello World\""),
-    content=(
-      #|"String(\"Hello\")"
-    ),
+  assert_reference_query(
+    "rtrimstr(\" World\")", "\"Hello World\"", "[\"Hello\"]", 0,
   )
 }
 
 ///|
 test "ascii_upcase: uppercase conversion" {
-  debug_inspect(
-    test_query("ascii_upcase", "\"hello world\""),
-    content=(
-      #|"String(\"HELLO WORLD\")"
-    ),
+  assert_reference_query(
+    "ascii_upcase", "\"hello world\"", "[\"HELLO WORLD\"]", 0,
   )
 }
 
 ///|
 test "ascii_downcase: lowercase conversion" {
-  debug_inspect(
-    test_query("ascii_downcase", "\"HELLO WORLD\""),
-    content=(
-      #|"String(\"hello world\")"
-    ),
+  assert_reference_query(
+    "ascii_downcase", "\"HELLO WORLD\"", "[\"hello world\"]", 0,
   )
 }
 
 ///|
 test "startswith: prefix check" {
-  debug_inspect(
-    test_query("startswith(\"Hello\")", "\"Hello World\""),
-    content=(
-      #|"True"
-    ),
+  assert_reference_query(
+    "startswith(\"Hello\")", "\"Hello World\"", "[true]", 0,
   )
 }
 
 ///|
 test "endswith: suffix check" {
-  debug_inspect(
-    test_query("endswith(\"World\")", "\"Hello World\""),
-    content=(
-      #|"True"
-    ),
-  )
+  assert_reference_query("endswith(\"World\")", "\"Hello World\"", "[true]", 0)
 }
 
 ///|
 test "contains: substring check" {
-  debug_inspect(
-    test_query("contains(\"lo Wo\")", "\"Hello World\""),
-    content=(
-      #|"True"
-    ),
-  )
+  assert_reference_query("contains(\"lo Wo\")", "\"Hello World\"", "[true]", 0)
 }
 
 ///|
 test "split: split string" {
-  debug_inspect(
-    test_query("split(\",\")", "\"a,b,c\""),
-    content=(
-      #|"Array([String(\"a\"), String(\"b\"), String(\"c\")])"
-    ),
+  assert_reference_query(
+    "split(\",\")", "\"a,b,c\"", "[[\"a\", \"b\", \"c\"]]", 0,
   )
 }
 
 ///|
 test "join: join array elements" {
-  debug_inspect(
-    test_query("join(\"-\")", "[\"2024\",\"12\",\"13\"]"),
-    content=(
-      #|"String(\"2024-12-13\")"
-    ),
+  assert_reference_query(
+    "join(\"-\")", "[\"2024\",\"12\",\"13\"]", "[\"2024-12-13\"]", 0,
   )
 }
 
@@ -171,10 +118,8 @@ test "join: join array elements" {
 
 ///|
 test "edge: unicode string interpolation" {
-  debug_inspect(
-    test_query("\"Hello \\(.name) 👋\"", "{\"name\":\"世界\"}"),
-    content=(
-      #|"String(\"Hello 世界 👋\")"
-    ),
+  assert_reference_query(
+    "\"Hello \\(.name) 👋\"", "{\"name\":\"世界\"}", "[\"Hello 世界 👋\"]",
+    0,
   )
 }

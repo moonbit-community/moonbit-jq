@@ -1,23 +1,23 @@
 ///|
 test "coverage: range variants" {
-  json_inspect(coverage_eval("range(1; 4)", "null"), content=[1, 2, 3])
-  json_inspect(coverage_eval("range(0; 5; 2)", "null"), content=[0, 2, 4])
-  json_inspect(coverage_eval("range(5; 0; -2)", "null"), content=[5, 3, 1])
+  assert_reference_query("range(1; 4)", "null", "[1, 2, 3]", 0)
+  assert_reference_query("range(0; 5; 2)", "null", "[0, 2, 4]", 0)
+  assert_reference_query("range(5; 0; -2)", "null", "[5, 3, 1]", 0)
   assert_coverage_eval_error("range(\"a\"; 4)", "null")
 }
 
 ///|
 test "coverage: first/last with generator" {
-  json_inspect(coverage_eval("first(.[])", "[1, 2, 3]"), content=[1])
-  json_inspect(coverage_eval("last(.[])", "[1, 2, 3]"), content=[3])
-  json_inspect(coverage_eval("first(empty)", "null"), content=[])
-  json_inspect(coverage_eval("last(empty)", "null"), content=[])
+  assert_reference_query("first(.[])", "[1, 2, 3]", "[1]", 0)
+  assert_reference_query("last(.[])", "[1, 2, 3]", "[3]", 0)
+  assert_reference_query("first(empty)", "null", "[]", 0)
+  assert_reference_query("last(empty)", "null", "[null]", 0)
 }
 
 ///|
 test "coverage: any/all generator variants" {
-  json_inspect(coverage_eval("any(.[]; . > 2)", "[1, 3]"), content=[true])
-  json_inspect(coverage_eval("all(.[]; . > 2)", "[1, 3]"), content=[false])
-  json_inspect(coverage_eval("any(.[]; empty)", "[1, 3]"), content=[false])
-  json_inspect(coverage_eval("all(.[]; empty)", "[1, 3]"), content=[false])
+  assert_reference_query("any(.[]; . > 2)", "[1, 3]", "[true]", 0)
+  assert_reference_query("all(.[]; . > 2)", "[1, 3]", "[false]", 0)
+  assert_reference_query("any(.[]; empty)", "[1, 3]", "[false]", 0)
+  assert_reference_query("all(.[]; empty)", "[1, 3]", "[true]", 0)
 }

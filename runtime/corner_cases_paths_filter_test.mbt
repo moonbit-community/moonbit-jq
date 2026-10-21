@@ -3,20 +3,15 @@
 
 ///|
 test "corner: paths with type filter" {
-  debug_inspect(
-    test_query("paths(type == \"number\")", "{\"a\":{\"b\":1,\"c\":\"x\"}}"),
-    content=(
-      #|"Array([String(\"a\"), String(\"b\")])"
-    ),
+  assert_reference_query(
+    "paths(type == \"number\")", "{\"a\":{\"b\":1,\"c\":\"x\"}}", "[[\"a\", \"b\"]]",
+    0,
   )
 }
 
 ///|
 test "corner: paths scalars only" {
-  debug_inspect(
-    test_query("paths(scalars)", "{\"a\":1,\"b\":{\"c\":2}}"),
-    content=(
-      #|"EvalError: EvalError(\"Undefined function: scalars\")"
-    ),
+  assert_reference_query(
+    "paths(scalars)", "{\"a\":1,\"b\":{\"c\":2}}", "[[\"a\"], [\"b\", \"c\"]]", 0,
   )
 }

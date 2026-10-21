@@ -7,6 +7,12 @@ fn Lexer::lex_symbol(self : Lexer, c : Char) -> Unit raise LexError {
       if self.current() == Some('.') {
         self.advance()
         self.add_token(TDotDot)
+      } else if self.current().map(is_alpha).unwrap_or(false) {
+        let start = self.pos
+        while self.current().map(is_alnum).unwrap_or(false) {
+          self.advance()
+        }
+        self.add_token(TField(self.input[start:self.pos].to_owned()))
       } else {
         self.add_token(TDot)
       }

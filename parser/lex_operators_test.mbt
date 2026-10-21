@@ -5,7 +5,7 @@ test "lex: pipe operator" {
   debug_inspect(
     tokens,
     content=(
-      #|[TDot, TIdentifier("foo"), TPipe, TDot, TIdentifier("bar"), TEof]
+      #|[TField("foo"), TPipe, TField("bar"), TEof]
     ),
   )
 }
@@ -72,7 +72,7 @@ test "lex: optional operator" {
   debug_inspect(
     tokens,
     content=(
-      #|[TDot, TIdentifier("foo"), TQuestion, TEof]
+      #|[TField("foo"), TQuestion, TEof]
     ),
   )
 }

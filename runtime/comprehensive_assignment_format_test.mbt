@@ -7,81 +7,48 @@
 
 ///|
 test "compound assignment: += with number" {
-  debug_inspect(
-    test_query(".x += 5", "{\"x\":10}"),
-    content=(
-      #|"Object({ \"x\": Number(15) })"
-    ),
-  )
+  assert_reference_query(".x += 5", "{\"x\":10}", "[{\"x\": 15}]", 0)
 }
 
 ///|
 test "compound assignment: -= with number" {
-  debug_inspect(
-    test_query(".x -= 3", "{\"x\":10}"),
-    content=(
-      #|"Object({ \"x\": Number(7) })"
-    ),
-  )
+  assert_reference_query(".x -= 3", "{\"x\":10}", "[{\"x\": 7}]", 0)
 }
 
 ///|
 test "compound assignment: *= with number" {
-  debug_inspect(
-    test_query(".x *= 3", "{\"x\":4}"),
-    content=(
-      #|"Object({ \"x\": Number(12) })"
-    ),
-  )
+  assert_reference_query(".x *= 3", "{\"x\":4}", "[{\"x\": 12}]", 0)
 }
 
 ///|
 test "compound assignment: /= with number" {
-  debug_inspect(
-    test_query(".x /= 2", "{\"x\":20}"),
-    content=(
-      #|"Object({ \"x\": Number(10) })"
-    ),
-  )
+  assert_reference_query(".x /= 2", "{\"x\":20}", "[{\"x\": 10}]", 0)
 }
 
 ///|
 test "compound assignment: %= modulo" {
-  debug_inspect(
-    test_query(".x %= 3", "{\"x\":10}"),
-    content=(
-      #|"Object({ \"x\": Number(1) })"
-    ),
-  )
+  assert_reference_query(".x %= 3", "{\"x\":10}", "[{\"x\": 1}]", 0)
 }
 
 ///|
 test "compound assignment: //= alternative" {
-  debug_inspect(
-    test_query(".x //= 42", "{\"y\":10}"),
-    content=(
-      #|"Object({ \"y\": Number(10), \"x\": Number(42) })"
-    ),
+  assert_reference_query(
+    ".x //= 42", "{\"y\":10}", "[{\"y\": 10, \"x\": 42}]", 0,
   )
 }
 
 ///|
 test "compound assignment: += with array concat" {
-  debug_inspect(
-    test_query(".items += [4,5]", "{\"items\":[1,2,3]}"),
-    content=(
-      #|"Object({ \"items\": Array([Number(1), Number(2), Number(3), Number(4), Number(5)]) })"
-    ),
+  assert_reference_query(
+    ".items += [4,5]", "{\"items\":[1,2,3]}", "[{\"items\": [1, 2, 3, 4, 5]}]", 0,
   )
 }
 
 ///|
 test "compound assignment: += with string concat" {
-  debug_inspect(
-    test_query(".msg += \" World\"", "{\"msg\":\"Hello\"}"),
-    content=(
-      #|"Object({ \"msg\": String(\"Hello World\") })"
-    ),
+  assert_reference_query(
+    ".msg += \" World\"", "{\"msg\":\"Hello\"}", "[{\"msg\": \"Hello World\"}]",
+    0,
   )
 }
 
@@ -91,90 +58,54 @@ test "compound assignment: += with string concat" {
 
 ///|
 test "format: @base64 encoding" {
-  debug_inspect(
-    test_query("@base64", "\"Hello\""),
-    content=(
-      #|"String(\"SGVsbG8=\")"
-    ),
-  )
+  assert_reference_query("@base64", "\"Hello\"", "[\"SGVsbG8=\"]", 0)
 }
 
 ///|
 test "format: @base64d decoding" {
-  debug_inspect(
-    test_query("@base64d", "\"SGVsbG8=\""),
-    content=(
-      #|"String(\"Hello\")"
-    ),
-  )
+  assert_reference_query("@base64d", "\"SGVsbG8=\"", "[\"Hello\"]", 0)
 }
 
 ///|
 test "format: @uri encoding" {
-  debug_inspect(
-    test_query("@uri", "\"hello world\""),
-    content=(
-      #|"String(\"hello%20world\")"
-    ),
-  )
+  assert_reference_query("@uri", "\"hello world\"", "[\"hello%20world\"]", 0)
 }
 
 ///|
 test "format: @html escaping" {
-  debug_inspect(
-    test_query("@html", "\"<div>Test</div>\""),
-    content=(
-      #|"String(\"&lt;div&gt;Test&lt;/div&gt;\")"
-    ),
+  assert_reference_query(
+    "@html", "\"<div>Test</div>\"", "[\"&lt;div&gt;Test&lt;/div&gt;\"]", 0,
   )
 }
 
 ///|
 test "format: @csv simple array" {
-  debug_inspect(
-    test_query("@csv", "[\"a\",\"b\",\"c\"]"),
-    content=(
-      #|"String(\"\\\"a\\\",\\\"b\\\",\\\"c\\\"\")"
-    ),
+  assert_reference_query(
+    "@csv", "[\"a\",\"b\",\"c\"]", "[\"\\\"a\\\",\\\"b\\\",\\\"c\\\"\"]", 0,
   )
 }
 
 ///|
 test "format: @csv with quotes" {
-  debug_inspect(
-    test_query("@csv", "[\"hello, world\",\"test\"]"),
-    content=(
-      #|"String(\"\\\"hello, world\\\",\\\"test\\\"\")"
-    ),
+  assert_reference_query(
+    "@csv", "[\"hello, world\",\"test\"]", "[\"\\\"hello, world\\\",\\\"test\\\"\"]",
+    0,
   )
 }
 
 ///|
 test "format: @tsv tab separated" {
-  debug_inspect(
-    test_query("@tsv", "[\"a\",\"b\",\"c\"]"),
-    content=(
-      #|"String(\"a\\tb\\tc\")"
-    ),
-  )
+  assert_reference_query("@tsv", "[\"a\",\"b\",\"c\"]", "[\"a\\tb\\tc\"]", 0)
 }
 
 ///|
 test "format: @json stringify" {
-  debug_inspect(
-    test_query("@json", "{\"x\":1,\"y\":2}"),
-    content=(
-      #|"String(\"{\\\"x\\\":1,\\\"y\\\":2}\")"
-    ),
+  assert_reference_query(
+    "@json", "{\"x\":1,\"y\":2}", "[\"{\\\"x\\\":1,\\\"y\\\":2}\"]", 0,
   )
 }
 
 ///|
 test "format: @text" {
-  debug_inspect(
-    test_query("@text", "{\"x\":42}"),
-    content=(
-      #|"String(\"{\\\"x\\\":42}\")"
-    ),
-  )
+  assert_reference_query("@text", "{\"x\":42}", "[\"{\\\"x\\\":42}\"]", 0)
 }

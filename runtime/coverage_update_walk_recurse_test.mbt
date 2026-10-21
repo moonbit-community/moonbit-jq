@@ -1,36 +1,39 @@
 ///|
 test "coverage: update operator branches" {
-  json_inspect(coverage_eval(". |= empty", "1"), content=[null])
-  json_inspect(coverage_eval(". |= 2", "1"), content=[2])
-  json_inspect(coverage_eval(".a |= empty", "{\"a\": 1}"), content=[{}])
-  json_inspect(coverage_eval(".a |= . + 1", "1"), content=[1])
-  json_inspect(coverage_eval(".[0] |= empty", "[1]"), content=[[]])
-  json_inspect(coverage_eval(".[10] |= . + 1", "[1]"), content=[
-    [1, null, null, null, null, null, null, null, null, null, 1],
-  ])
-  json_inspect(coverage_eval(".[] |= .", "[1, 2]"), content=[[1, 2]])
-  json_inspect(coverage_eval(".a[10] |= . + 1", "{\"a\": [1]}"), content=[
-    { "a": [1, null, null, null, null, null, null, null, null, null, 1] },
-  ])
-  json_inspect(coverage_eval(".foo.bar |= . + 1", "{\"foo\": {\"bar\": 1}}"), content=[
-    { "foo": { "bar": 2 } },
-  ])
-  json_inspect(coverage_eval(".foo[0] |= . + 1", "{\"foo\": [1]}"), content=[
-    { "foo": [2] },
-  ])
+  assert_reference_query(". |= empty", "1", "[null]", 0)
+  assert_reference_query(". |= 2", "1", "[2]", 0)
+  assert_reference_query(".a |= empty", "{\"a\": 1}", "[{}]", 0)
+  assert_reference_query(".a |= . + 1", "1", "[]", 5)
+  assert_reference_query(".[0] |= empty", "[1]", "[[]]", 0)
+  assert_reference_query(
+    ".[10] |= . + 1", "[1]", "[[1, null, null, null, null, null, null, null, null, null, 1]]",
+    0,
+  )
+  assert_reference_query(".[] |= .", "[1, 2]", "[[1, 2]]", 0)
+  assert_reference_query(
+    ".a[10] |= . + 1", "{\"a\": [1]}", "[{\"a\": [1, null, null, null, null, null, null, null, null, null, 1]}]",
+    0,
+  )
+  assert_reference_query(
+    ".foo.bar |= . + 1", "{\"foo\": {\"bar\": 1}}", "[{\"foo\": {\"bar\": 2}}]",
+    0,
+  )
+  assert_reference_query(
+    ".foo[0] |= . + 1", "{\"foo\": [1]}", "[{\"foo\": [2]}]", 0,
+  )
 }
 
 ///|
 test "coverage: walk empty results and recurse safety" {
-  json_inspect(coverage_eval("walk(empty)", "[1, 2]"), content=[[1, 2]])
-  json_inspect(coverage_eval("walk(empty)", "{\"a\": 1}"), content=[{ "a": 1 }])
-  json_inspect(coverage_eval("walk(empty)", "1"), content=[1])
+  assert_reference_query("walk(empty)", "[1, 2]", "[]", 0)
+  assert_reference_query("walk(empty)", "{\"a\": 1}", "[]", 0)
+  assert_reference_query("walk(empty)", "1", "[]", 0)
   let nums : Array[String] = []
   for i in 0..<101 {
     nums.push(i.to_string())
   }
   let sep = ","
   let input = "[\{nums.join(sep)}]"
-  let results = coverage_eval("recurse(.[]; . != null)", input)
+  let results = coverage_eval("recurse(.[]?; . != null)", input)
   debug_inspect(results.length(), content="102")
 }

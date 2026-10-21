@@ -6,32 +6,22 @@ fn Lexer::lex_identifier(self : Lexer) -> Unit {
     self.advance()
   }
   let text = self.input[start:self.pos].to_owned()
-  match text {
-    "true" => self.add_token(TTrue)
-    "false" => self.add_token(TFalse)
-    "null" => self.add_token(TNull)
-    "and" => self.add_token(TAnd)
-    "or" => self.add_token(TOr)
-    "not" => self.add_token(TNot)
-    "if" => self.add_token(TIf)
-    "then" => self.add_token(TThen)
-    "else" => self.add_token(TElse)
-    "elif" => self.add_token(TElif)
-    "end" => self.add_token(TEnd)
-    "as" => self.add_token(TAs)
-    "reduce" => self.add_token(TReduce)
-    "foreach" => self.add_token(TForeach)
-    "try" => self.add_token(TTry)
-    "catch" => self.add_token(TCatch)
-    "def" => self.add_token(TDef)
-    _ => self.add_token(TIdentifier(text))
-  }
+  let token = keywords
+    .iter()
+    .find_first(pair => pair.0 == text)
+    .map(pair => pair.1)
+    .unwrap_or(TIdentifier(text))
+  self.add_token(token)
 }
 
 ///|
 /// Lex a variable ($name)
-fn Lexer::lex_variable(self : Lexer) -> Unit {
+fn Lexer::lex_variable(self : Lexer) -> Unit raise LexError {
+  let marker = self.pos
   self.advance() // skip $
+  guard self.current().map(is_alpha).unwrap_or(false) else {
+    raise UnexpectedChar(marker, '$')
+  }
   let start = self.pos
   while self.current().map(is_alnum).unwrap_or(false) {
     self.advance()
@@ -42,8 +32,12 @@ fn Lexer::lex_variable(self : Lexer) -> Unit {
 
 ///|
 /// Lex a format (@name)
-fn Lexer::lex_format(self : Lexer) -> Unit {
+fn Lexer::lex_format(self : Lexer) -> Unit raise LexError {
+  let marker = self.pos
   self.advance() // skip @
+  guard self.current().map(is_alnum).unwrap_or(false) else {
+    raise UnexpectedChar(marker, '@')
+  }
   let start = self.pos
   while self.current().map(is_alnum).unwrap_or(false) {
     self.advance()
@@ -51,3 +45,33 @@ fn Lexer::lex_format(self : Lexer) -> Unit {
   let name = self.input[start:self.pos].to_owned()
   self.add_token(TFormat(name))
 }
+
+///|
+/// The same spelling table is used for names in object keys.
+fn Token::name(self : Token) -> String? {
+  match self {
+    TIdentifier(name) => Some(name)
+    _ => keywords.iter().find_first(pair => pair.1 == self).map(pair => pair.0)
+  }
+}
+
+///|
+/// One spelling table for code keywords and unquoted object names.
+let keywords : Array[(String, Token)] = [
+  ("true", TTrue),
+  ("false", TFalse),
+  ("null", TNull),
+  ("and", TAnd),
+  ("or", TOr),
+  ("if", TIf),
+  ("then", TThen),
+  ("else", TElse),
+  ("elif", TElif),
+  ("end", TEnd),
+  ("as", TAs),
+  ("reduce", TReduce),
+  ("foreach", TForeach),
+  ("try", TTry),
+  ("catch", TCatch),
+  ("def", TDef),
+]

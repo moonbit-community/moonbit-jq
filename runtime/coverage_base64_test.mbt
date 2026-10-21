@@ -1,7 +1,7 @@
 ///|
 test "coverage: base64 padding and decode edge cases" {
-  json_inspect(coverage_eval("@base64", "\"A\""), content=["QQ=="])
-  json_inspect(coverage_eval("@base64", "\"AB\""), content=["QUI="])
+  assert_reference_query("@base64", "\"A\"", "[\"QQ==\"]", 0)
+  assert_reference_query("@base64", "\"AB\"", "[\"QUI=\"]", 0)
   // Exercise '+' and '/' decode table and fail at UTF-8 decoding.
   assert_coverage_eval_error("@base64d", "\"++//\"")
   // Invalid padding sequence.

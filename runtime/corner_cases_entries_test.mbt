@@ -3,62 +3,44 @@
 
 ///|
 test "corner: map_values on object" {
-  debug_inspect(
-    test_query("map_values(. * 2)", "{\"a\":1,\"b\":2,\"c\":3}"),
-    content=(
-      #|"Object({ \"a\": Number(2), \"b\": Number(4), \"c\": Number(6) })"
-    ),
+  assert_reference_query(
+    "map_values(. * 2)", "{\"a\":1,\"b\":2,\"c\":3}", "[{\"a\": 2, \"b\": 4, \"c\": 6}]",
+    0,
   )
 }
 
 ///|
 test "corner: map_values on empty object" {
-  debug_inspect(
-    test_query("map_values(. * 2)", "{}"),
-    content=(
-      #|"Object({})"
-    ),
-  )
+  assert_reference_query("map_values(. * 2)", "{}", "[{}]", 0)
 }
 
 ///|
 test "corner: to_entries converts object to key-value pairs" {
-  debug_inspect(
-    test_query("to_entries", "{\"a\":1,\"b\":2}"),
-    content=(
-      #|"Array(\n  [\n    Object({ \"key\": String(\"a\"), \"value\": Number(1) }),\n    Object({ \"key\": String(\"b\"), \"value\": Number(2) }),\n  ],\n)"
-    ),
+  assert_reference_query(
+    "to_entries", "{\"a\":1,\"b\":2}", "[[{\"key\": \"a\", \"value\": 1}, {\"key\": \"b\", \"value\": 2}]]",
+    0,
   )
 }
 
 ///|
 test "corner: from_entries converts back to object" {
-  debug_inspect(
-    test_query(
-      "from_entries", "[{\"key\":\"a\",\"value\":1},{\"key\":\"b\",\"value\":2}]",
-    ),
-    content=(
-      #|"Object({ \"a\": Number(1), \"b\": Number(2) })"
-    ),
+  assert_reference_query(
+    "from_entries", "[{\"key\":\"a\",\"value\":1},{\"key\":\"b\",\"value\":2}]",
+    "[{\"a\": 1, \"b\": 2}]", 0,
   )
 }
 
 ///|
 test "corner: with_entries transforms object entries" {
-  debug_inspect(
-    test_query("with_entries(.value *= 2)", "{\"a\":1,\"b\":2}"),
-    content=(
-      #|"Object({ \"a\": Number(2), \"b\": Number(4) })"
-    ),
+  assert_reference_query(
+    "with_entries(.value *= 2)", "{\"a\":1,\"b\":2}", "[{\"a\": 2, \"b\": 4}]", 0,
   )
 }
 
 ///|
 test "corner: with_entries filters entries" {
-  debug_inspect(
-    test_query("with_entries(select(.value > 1))", "{\"a\":1,\"b\":2,\"c\":3}"),
-    content=(
-      #|"Object({ \"b\": Number(2), \"c\": Number(3) })"
-    ),
+  assert_reference_query(
+    "with_entries(select(.value > 1))", "{\"a\":1,\"b\":2,\"c\":3}", "[{\"b\": 2, \"c\": 3}]",
+    0,
   )
 }

@@ -3,40 +3,20 @@
 
 ///|
 test "corner: indices finds all occurrences" {
-  debug_inspect(
-    test_query("indices(2)", "[1,2,3,2,1]"),
-    content=(
-      #|"Array([Number(1), Number(3)])"
-    ),
-  )
+  assert_reference_query("indices(2)", "[1,2,3,2,1]", "[[1, 3]]", 0)
 }
 
 ///|
 test "corner: indices with no matches" {
-  debug_inspect(
-    test_query("indices(99)", "[1,2,3]"),
-    content=(
-      #|"Array([])"
-    ),
-  )
+  assert_reference_query("indices(99)", "[1,2,3]", "[[]]", 0)
 }
 
 ///|
 test "corner: inside checks array containment" {
-  debug_inspect(
-    test_query("inside([1,2,3,4,5])", "[1,2]"),
-    content=(
-      #|"True"
-    ),
-  )
+  assert_reference_query("inside([1,2,3,4,5])", "[1,2]", "[true]", 0)
 }
 
 ///|
 test "corner: inside with non-subset" {
-  debug_inspect(
-    test_query("inside([1,2,3])", "[1,2,4]"),
-    content=(
-      #|"False"
-    ),
-  )
+  assert_reference_query("inside([1,2,3])", "[1,2,4]", "[false]", 0)
 }

@@ -1,13 +1,13 @@
 ///|
 test "coverage: math functions" {
   json_inspect(coverage_eval("pow(3)", "2"), content=[8])
-  json_inspect(coverage_eval("log", "1"), content=[0])
-  json_inspect(coverage_eval("exp", "0"), content=[1])
-  json_inspect(coverage_eval("sin", "0"), content=[0])
-  json_inspect(coverage_eval("cos", "0"), content=[1])
-  json_inspect(coverage_eval("tan", "0"), content=[0])
-  json_inspect(coverage_eval("asin", "0"), content=[0])
-  json_inspect(coverage_eval("acos", "1"), content=[0])
-  json_inspect(coverage_eval("atan", "0"), content=[0])
+  assert_reference_query("log", "1", "[0]", 0)
+  assert_reference_query("exp", "0", "[1]", 0)
+  assert_reference_query("sin", "0", "[0]", 0)
+  assert_reference_query("cos", "0", "[1]", 0)
+  assert_reference_query("tan", "0", "[0]", 0)
+  assert_reference_query("asin", "0", "[0]", 0)
+  assert_reference_query("acos", "1", "[0]", 0)
+  assert_reference_query("atan", "0", "[0]", 0)
   assert_coverage_eval_error("sin", "\"x\"")
 }

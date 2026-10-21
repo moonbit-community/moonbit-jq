@@ -1,35 +1,35 @@
 ///|
 /// Test pipe and comma
 test "integration: pipe and comma" {
-  json_inspect(jq(". | . + 1", "5"), content=[6])
-  json_inspect(jq(".a | .b", "{\"a\": {\"b\": 42}}"), content=[42])
-  json_inspect(jq(".a, .b", "{\"a\": 1, \"b\": 2}"), content=[1, 2])
+  assert_reference_query(". | . + 1", "5", "[6]", 0)
+  assert_reference_query(".a | .b", "{\"a\": {\"b\": 42}}", "[42]", 0)
+  assert_reference_query(".a, .b", "{\"a\": 1, \"b\": 2}", "[1, 2]", 0)
 }
 
 ///|
 /// Test arithmetic
 test "integration: arithmetic" {
-  json_inspect(jq("1 + 2", "null"), content=[3])
-  json_inspect(jq("10 - 3", "null"), content=[7])
-  json_inspect(jq("6 * 7", "null"), content=[42])
-  json_inspect(jq("20 / 4", "null"), content=[5])
-  json_inspect(jq("17 % 5", "null"), content=[2])
+  assert_reference_query("1 + 2", "null", "[3]", 0)
+  assert_reference_query("10 - 3", "null", "[7]", 0)
+  assert_reference_query("6 * 7", "null", "[42]", 0)
+  assert_reference_query("20 / 4", "null", "[5]", 0)
+  assert_reference_query("17 % 5", "null", "[2]", 0)
 }
 
 ///|
 /// Test comparisons
 test "integration: comparisons" {
-  json_inspect(jq("1 < 2", "null"), content=[true])
-  json_inspect(jq("5 > 10", "null"), content=[false])
-  json_inspect(jq("3 == 3", "null"), content=[true])
-  json_inspect(jq("4 != 5", "null"), content=[true])
+  assert_reference_query("1 < 2", "null", "[true]", 0)
+  assert_reference_query("5 > 10", "null", "[false]", 0)
+  assert_reference_query("3 == 3", "null", "[true]", 0)
+  assert_reference_query("4 != 5", "null", "[true]", 0)
 }
 
 ///|
 /// Test logical operators
 test "integration: logical operators" {
-  json_inspect(jq("true and false", "null"), content=[false])
-  json_inspect(jq("true or false", "null"), content=[true])
-  json_inspect(jq("not", "true"), content=[false])
-  json_inspect(jq("not", "false"), content=[true])
+  assert_reference_query("true and false", "null", "[false]", 0)
+  assert_reference_query("true or false", "null", "[true]", 0)
+  assert_reference_query("not", "true", "[false]", 0)
+  assert_reference_query("not", "false", "[true]", 0)
 }

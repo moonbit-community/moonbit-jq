@@ -3,50 +3,29 @@
 
 ///|
 test "edge: empty array operations" {
-  debug_inspect(
-    test_query(".[] | . * 2", "[]"),
-    content=(
-      #|""
-    ),
-  )
+  assert_reference_query(".[] | . * 2", "[]", "[]", 0)
 }
 
 ///|
 test "edge: null handling" {
-  debug_inspect(
-    test_query(".x // \"default\"", "null"),
-    content=(
-      #|"String(\"default\")"
-    ),
-  )
+  assert_reference_query(".x // \"default\"", "null", "[\"default\"]", 0)
 }
 
 ///|
 test "edge: deeply nested access" {
-  debug_inspect(
-    test_query(".a.b.c.d.e", "{\"a\":{\"b\":{\"c\":{\"d\":{\"e\":42}}}}}"),
-    content=(
-      #|"Number(42)"
-    ),
+  assert_reference_query(
+    ".a.b.c.d.e", "{\"a\":{\"b\":{\"c\":{\"d\":{\"e\":42}}}}}", "[42]", 0,
   )
 }
 
 ///|
 test "edge: array bounds" {
-  debug_inspect(
-    test_query(".[100] // \"out of bounds\"", "[1,2,3]"),
-    content=(
-      #|"String(\"out of bounds\")"
-    ),
+  assert_reference_query(
+    ".[100] // \"out of bounds\"", "[1,2,3]", "[\"out of bounds\"]", 0,
   )
 }
 
 ///|
 test "edge: type mixing" {
-  debug_inspect(
-    test_query("type", "null"),
-    content=(
-      #|"String(\"null\")"
-    ),
-  )
+  assert_reference_query("type", "null", "[\"null\"]", 0)
 }

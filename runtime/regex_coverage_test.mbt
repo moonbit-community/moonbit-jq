@@ -1,7 +1,7 @@
 ///|
 test "coverage: test(pattern) returns boolean" {
-  json_inspect(coverage_eval("test(\"foo\")", "\"foobar\""), content=[true])
-  json_inspect(coverage_eval("test(\"baz\")", "\"foobar\""), content=[false])
+  assert_reference_query("test(\"foo\")", "\"foobar\"", "[true]", 0)
+  assert_reference_query("test(\"baz\")", "\"foobar\"", "[false]", 0)
 }
 
 ///|
@@ -15,31 +15,27 @@ test "coverage: match(pattern) returns match object or empty" {
       "captures": [],
     },
   ])
-  json_inspect(coverage_eval("match(\"zzz\")", "\"foobar\""), content=[])
+  assert_reference_query("match(\"zzz\")", "\"foobar\"", "[]", 0)
 }
 
 ///|
 test "coverage: capture(pattern) returns object" {
-  json_inspect(coverage_eval("capture(\"foo\")", "\"foobar\""), content=[
-    Json::empty_object(),
-  ])
+  assert_reference_query("capture(\"foo\")", "\"foobar\"", "[{}]", 0)
 }
 
 ///|
 test "coverage: splits(pattern) yields segments" {
-  json_inspect(coverage_eval("splits(\"-\")", "\"a-b-c\""), content=[
-    "a", "b", "c",
-  ])
+  assert_reference_query(
+    "splits(\"-\")", "\"a-b-c\"", "[\"a\", \"b\", \"c\"]", 0,
+  )
 }
 
 ///|
 test "coverage: sub/gsub replace text" {
-  json_inspect(coverage_eval("sub(\"world\"; \"moon\")", "\"hello world\""), content=[
-    "hello moon",
-  ])
-  json_inspect(coverage_eval("gsub(\"a\"; \"b\")", "\"a a a\""), content=[
-    "b b b",
-  ])
+  assert_reference_query(
+    "sub(\"world\"; \"moon\")", "\"hello world\"", "[\"hello moon\"]", 0,
+  )
+  assert_reference_query("gsub(\"a\"; \"b\")", "\"a a a\"", "[\"b b b\"]", 0)
 }
 
 ///|

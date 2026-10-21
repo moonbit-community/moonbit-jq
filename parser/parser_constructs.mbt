@@ -7,11 +7,9 @@ fn Parser::parse_object(self : Parser) -> @ast.Expr raise ParseError {
   let pairs : Array[(@ast.Expr, @ast.Expr?)] = []
   while true {
     let key : @ast.Expr = match self.current() {
-      Some(TIdentifier(name)) => {
-        self.advance()
-        Literal(String(name))
-      }
-      Some(TString(name)) => {
+      Some(TStringStart) => self.parse_string()
+      Some(t) if t.name() is Some(_) => {
+        let name = t.name().unwrap()
         self.advance()
         Literal(String(name))
       }
@@ -24,7 +22,7 @@ fn Parser::parse_object(self : Parser) -> @ast.Expr raise ParseError {
       _ => raise InvalidSyntax("Expected object key")
     }
     let value = if self.consume(TColon) {
-      Some(self.parse_assignment())
+      Some(self.parse_object_value())
     } else {
       None
     }
@@ -43,10 +41,17 @@ fn Parser::parse_if(self : Parser) -> @ast.Expr raise ParseError {
   self.advance()
   let cond = self.parse_pipe()
   self.expect(TThen)
-  let then_expr = self.parse_pipe()
-  self.expect(TElse)
-  let else_expr = self.parse_pipe()
-  self.expect(TEnd)
+  let then_expr = self.parse_definitions()
+  let else_expr = if self.consume(TElse) {
+    let expr = self.parse_definitions()
+    self.expect(TEnd)
+    expr
+  } else if self.check(TElif) {
+    self.parse_if()
+  } else {
+    self.expect(TEnd)
+    Identity
+  }
   IfThenElse(cond, then_expr, else_expr)
 }
 
@@ -111,4 +116,15 @@ fn Parser::parse_foreach(self : Parser) -> @ast.Expr raise ParseError {
   }
   self.expect(TRParen)
   Foreach(gen_expr, var_name, init_expr, update_expr, extract_expr)
+}
+
+///|
+fn Parser::parse_object_value(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  let left = self.parse_assignment()
+  if self.consume(TPipe) {
+    self.located(start, Pipe(left, self.parse_object_value()))
+  } else {
+    left
+  }
 }

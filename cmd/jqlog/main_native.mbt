@@ -105,9 +105,13 @@ async fn read_input(source : InputSource) -> String {
 }
 
 ///|
-async fn write_results(results : Iter[Json]) -> Unit {
+async fn write_results(results : Iter[Result[Json, @moonjq.EvalError]]) -> Unit {
   let mut first = true
-  for value in results {
+  for result in results {
+    let value = match result {
+      Ok(v) => v
+      Err(err) => raise err
+    }
     if first {
       first = false
     } else {
