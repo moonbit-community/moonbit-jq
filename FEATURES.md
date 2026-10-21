@@ -29,7 +29,7 @@
 
 ### Built-in Functions
 - ✅ `length` - array/string/object length
-- ✅ `keys` - object keys (preserves insertion order)
+- ✅ `keys` - object keys sorted by Unicode code point; `keys_unsorted` leaves keys unsorted (roughly insertion order)
 - ✅ `values` - object values
 - ✅ `type` - get type name
 - ✅ `empty` - produce no results
