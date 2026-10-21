@@ -6,24 +6,8 @@ import {
 }
 
 // Values
-pub fn eval(Expr, Json) -> Iter[Json] raise
 
 // Errors
-pub(all) suberror InterpreterError {
-  TypeMismatch(String, String)
-  KeyNotFound(String)
-  IndexOutOfBounds(Int32)
-  InvalidOperation(String)
-  DivisionByZero
-  TypeError(String)
-  EvalError(String)
-} derive(Eq, @debug.Debug)
-pub fn InterpreterError::equal(Self, Self) -> Bool
-pub fn InterpreterError::not_equal(Self, Self) -> Bool
-pub fn InterpreterError::output(Self, &Logger) -> Unit
-pub fn InterpreterError::to_repr(Self) -> @debug.Repr
-pub fn InterpreterError::to_string(Self) -> String
-pub impl Show for InterpreterError
 
 // Types and methods
 pub(all) enum BinaryOp {
