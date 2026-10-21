@@ -1,0 +1,110 @@
+[
+  {
+    "query": ". 1",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?) at <top-level>, line 1:\n. 1  \njq: error: try .[\"field\"] instead of .field for unusually named fields at <top-level>, line 1:\n. 1\njq: 2 compile errors\n",
+    "status": 3
+  },
+  {
+    "query": ".a.",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected $end, expecting FORMAT or QQSTRING_START (Unix shell quoting issues?) at <top-level>, line 1:\n.a.  \njq: 1 compile error\n",
+    "status": 3
+  },
+  {
+    "query": ".a.)",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting FORMAT or QQSTRING_START (Unix shell quoting issues?) at <top-level>, line 1:\n.a.)   \njq: 1 compile error\n",
+    "status": 3
+  },
+  {
+    "query": "\"\\(. 1)\"",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?) at <top-level>, line 1:\n\"\\(. 1)\"     \njq: error: try .[\"field\"] instead of .field for unusually named fields at <top-level>, line 1:\n\"\\(. 1)\"   \njq: 2 compile errors\n",
+    "status": 3
+  },
+  {
+    "query": "\"\\(.a.)\"",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected QQSTRING_INTERP_END, expecting FORMAT or QQSTRING_START (Unix shell quoting issues?) at <top-level>, line 1:\n\"\\(.a.)\"      \njq: 1 compile error\n",
+    "status": 3
+  },
+  {
+    "query": ".",
+    "stdout": "null\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "1.",
+    "stdout": "1\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\(empty)\"",
+    "stdout": "",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\((1,2))\"",
+    "stdout": "\"1\"\n\"2\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"a\\((1,2))b\\((3,4))\"",
+    "stdout": "\"a1b3\"\n\"a2b3\"\n\"a1b4\"\n\"a2b4\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\(\"\\((1,2))\")\"",
+    "stdout": "\"1\"\n\"2\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\(1 # ) ignored\n)\"",
+    "stdout": "\"1\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"😀\\(. 1)\"",
+    "stdout": "",
+    "stderr": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?) at <top-level>, line 1:\n\"😀\\(. 1)\"         \njq: error: try .[\"field\"] instead of .field for unusually named fields at <top-level>, line 1:\n\"😀\\(. 1)\"       \njq: 2 compile errors\n",
+    "status": 3
+  },
+  {
+    "query": "\"\\(\"(\")\"",
+    "stdout": "\"(\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\(\"\\\"\")\"",
+    "stdout": "\"\\\"\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\(null)\"",
+    "stdout": "\"null\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\([1,2])\"",
+    "stdout": "\"[1,2]\"\n",
+    "stderr": "",
+    "status": 0
+  },
+  {
+    "query": "\"\\({a:1})\"",
+    "stdout": "\"{\\\"a\\\":1}\"\n",
+    "stderr": "",
+    "status": 0
+  }
+]
