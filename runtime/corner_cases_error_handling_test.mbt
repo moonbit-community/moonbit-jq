@@ -3,30 +3,15 @@
 
 ///|
 test "corner: error in pipeline stops execution" {
-  debug_inspect(
-    test_query(".x | . * 2", "{}"),
-    content=(
-      #|"EvalError: InvalidOperation(\"Cannot multiply null and number\")"
-    ),
-  )
+  assert_reference_query(".x | . * 2", "{}", "[]", 5)
 }
 
 ///|
 test "corner: try catches errors" {
-  debug_inspect(
-    test_query("try .x catch \"error\"", "{}"),
-    content=(
-      #|"Null"
-    ),
-  )
+  assert_reference_query("try .x catch \"error\"", "{}", "[null]", 0)
 }
 
 ///|
 test "corner: try with successful operation" {
-  debug_inspect(
-    test_query("try .x catch \"error\"", "{\"x\":42}"),
-    content=(
-      #|"Number(42)"
-    ),
-  )
+  assert_reference_query("try .x catch \"error\"", "{\"x\":42}", "[42]", 0)
 }

@@ -3,30 +3,17 @@
 
 ///|
 test "corner: multiple variable bindings" {
-  debug_inspect(
-    test_query(". as $x | 10 as $y | $x + $y", "5"),
-    content=(
-      #|"Number(15)"
-    ),
-  )
+  assert_reference_query(". as $x | 10 as $y | $x + $y", "5", "[15]", 0)
 }
 
 ///|
 test "corner: variable shadowing" {
-  debug_inspect(
-    test_query(". as $x | (20 as $x | $x)", "10"),
-    content=(
-      #|"Number(20)"
-    ),
-  )
+  assert_reference_query(". as $x | (20 as $x | $x)", "10", "[20]", 0)
 }
 
 ///|
 test "corner: variable in nested context" {
-  debug_inspect(
-    test_query(". as $x | [1,2,3] | map(. + $x)", "10"),
-    content=(
-      #|"Array([Number(11), Number(12), Number(13)])"
-    ),
+  assert_reference_query(
+    ". as $x | [1,2,3] | map(. + $x)", "10", "[[11, 12, 13]]", 0,
   )
 }

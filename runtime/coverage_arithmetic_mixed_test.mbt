@@ -1,6 +1,6 @@
 ///|
 test "coverage: arithmetic array subtraction and string repetition" {
-  json_inspect(coverage_eval("[1,2,3] - [2]", "null"), content=[[1, 3]])
-  json_inspect(coverage_eval("\"ab\" * 3", "null"), content=["ababab"])
-  json_inspect(coverage_eval("3 * \"ab\"", "null"), content=["ababab"])
+  assert_reference_query("[1,2,3] - [2]", "null", "[[1, 3]]", 0)
+  assert_reference_query("\"ab\" * 3", "null", "[\"ababab\"]", 0)
+  assert_reference_query("3 * \"ab\"", "null", "[\"ababab\"]", 0)
 }

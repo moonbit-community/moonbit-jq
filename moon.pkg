@@ -1,6 +1,5 @@
 import {
   "moonbit-community/moonjq/runtime",
-  "moonbit-community/moonjq/ast",
   "moonbit-community/moonjq/parser",
   "moonbitlang/core/debug",
   "moonbitlang/core/json",

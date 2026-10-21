@@ -1,14 +1,13 @@
 ///|
 test "coverage: foreach extract empty falls back to accumulator" {
-  json_inspect(
-    coverage_eval("foreach .[] as $x (0; . + $x; empty)", "[1, 2]"),
-    content=[1, 3],
+  assert_reference_query(
+    "foreach .[] as $x (0; . + $x; empty)", "[1, 2]", "[]", 0,
   )
 }
 
 ///|
 test "coverage: scan has misses and type mismatch" {
-  json_inspect(coverage_eval("scan(\"aa\")", "\"abaaa\""), content=["aa"])
+  assert_reference_query("scan(\"aa\")", "\"abaaa\"", "[\"aa\"]", 0)
   assert_coverage_eval_error("scan(\"a\")", "1")
 }
 
@@ -21,27 +20,27 @@ test "coverage: scan skips invalid slice boundaries" {
 
 ///|
 test "coverage: compare_json remaining base cases" {
-  json_inspect(coverage_eval("1 > null", "null"), content=[true])
-  json_inspect(coverage_eval("false < false", "null"), content=[false])
-  json_inspect(coverage_eval("true < true", "null"), content=[false])
+  assert_reference_query("1 > null", "null", "[true]", 0)
+  assert_reference_query("false < false", "null", "[false]", 0)
+  assert_reference_query("true < true", "null", "[false]", 0)
 }
 
 ///|
 test "coverage: and/or truthiness behavior" {
-  json_inspect(coverage_eval("false and 1", "null"), content=[false])
-  json_inspect(coverage_eval("null and 1", "null"), content=[false])
-  json_inspect(coverage_eval("1 and 2", "null"), content=[2])
-  json_inspect(coverage_eval("false or 2", "null"), content=[2])
-  json_inspect(coverage_eval("null or 2", "null"), content=[2])
-  json_inspect(coverage_eval("1 or 2", "null"), content=[1])
+  assert_reference_query("false and 1", "null", "[false]", 0)
+  assert_reference_query("null and 1", "null", "[false]", 0)
+  assert_reference_query("1 and 2", "null", "[true]", 0)
+  assert_reference_query("false or 2", "null", "[true]", 0)
+  assert_reference_query("null or 2", "null", "[true]", 0)
+  assert_reference_query("1 or 2", "null", "[true]", 0)
 }
 
 ///|
 test "coverage: delpaths and setpath edge cases" {
-  json_inspect(coverage_eval("delpaths([[]])", "[1]"), content=[null])
+  assert_reference_query("delpaths([[]])", "[1]", "[null]", 0)
   json_inspect(coverage_eval("delpaths([[\"a\"]])", "[1]"), content=[[1]])
-  json_inspect(coverage_eval("delpaths([[10]])", "[1]"), content=[[1]])
-  json_inspect(coverage_eval("delpaths([[1, 0]])", "[1]"), content=[[1]])
+  assert_reference_query("delpaths([[10]])", "[1]", "[[1]]", 0)
+  assert_reference_query("delpaths([[1, 0]])", "[1]", "[[1]]", 0)
   json_inspect(coverage_eval("setpath([\"a\"]; 1)", "[0]"), content=[[0]])
 }
 

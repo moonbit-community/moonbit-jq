@@ -1,43 +1,43 @@
 ///|
 /// Test built-ins: length, keys, type
 test "integration: built-in functions" {
-  json_inspect(jq("length", "[1,2,3,4,5]"), content=[5])
-  json_inspect(jq("length", "\"hello\""), content=[5])
-  json_inspect(jq("keys", "{\"b\": 1, \"a\": 2}"), content=[["b", "a"]])
-  json_inspect(jq("type", "42"), content=["number"])
-  json_inspect(jq("type", "\"hi\""), content=["string"])
+  assert_reference_query("length", "[1,2,3,4,5]", "[5]", 0)
+  assert_reference_query("length", "\"hello\"", "[5]", 0)
+  assert_reference_query("keys", "{\"b\": 1, \"a\": 2}", "[[\"a\", \"b\"]]", 0)
+  assert_reference_query("type", "42", "[\"number\"]", 0)
+  assert_reference_query("type", "\"hi\"", "[\"string\"]", 0)
 }
 
 ///|
 /// Test map function
 test "integration: map function" {
-  json_inspect(jq("map(. + 10)", "[1, 2, 3]"), content=[[11, 12, 13]])
-  json_inspect(jq("map(. * 2)", "[5, 10, 15]"), content=[[10, 20, 30]])
+  assert_reference_query("map(. + 10)", "[1, 2, 3]", "[[11, 12, 13]]", 0)
+  assert_reference_query("map(. * 2)", "[5, 10, 15]", "[[10, 20, 30]]", 0)
 }
 
 ///|
 /// Test select function
 test "integration: select function" {
-  json_inspect(jq(".[] | select(. > 3)", "[1, 2, 3, 4, 5]"), content=[4, 5])
-  json_inspect(jq(".[] | select(. < 0)", "[1, 2, 3]"), content=[])
+  assert_reference_query(".[] | select(. > 3)", "[1, 2, 3, 4, 5]", "[4, 5]", 0)
+  assert_reference_query(".[] | select(. < 0)", "[1, 2, 3]", "[]", 0)
 }
 
 ///|
 /// Test array functions
 test "integration: array functions" {
-  json_inspect(jq("sort", "[3, 1, 4, 1, 5, 9, 2, 6]"), content=[
-    [1, 1, 2, 3, 4, 5, 6, 9],
-  ])
-  json_inspect(jq("reverse", "[1, 2, 3]"), content=[[3, 2, 1]])
-  json_inspect(jq("unique", "[1, 2, 1, 3, 2]"), content=[[1, 2, 3]])
+  assert_reference_query(
+    "sort", "[3, 1, 4, 1, 5, 9, 2, 6]", "[[1, 1, 2, 3, 4, 5, 6, 9]]", 0,
+  )
+  assert_reference_query("reverse", "[1, 2, 3]", "[[3, 2, 1]]", 0)
+  assert_reference_query("unique", "[1, 2, 1, 3, 2]", "[[1, 2, 3]]", 0)
 }
 
 ///|
 /// Test numeric functions
 test "integration: numeric functions" {
-  json_inspect(jq("add", "[1, 2, 3, 4, 5]"), content=[15])
-  json_inspect(jq("min", "[5, 2, 8, 1]"), content=[1])
-  json_inspect(jq("max", "[5, 2, 8, 1]"), content=[8])
-  json_inspect(jq("floor", "3.7"), content=[3])
-  json_inspect(jq("sqrt", "16"), content=[4])
+  assert_reference_query("add", "[1, 2, 3, 4, 5]", "[15]", 0)
+  assert_reference_query("min", "[5, 2, 8, 1]", "[1]", 0)
+  assert_reference_query("max", "[5, 2, 8, 1]", "[8]", 0)
+  assert_reference_query("floor", "3.7", "[3]", 0)
+  assert_reference_query("sqrt", "16", "[4]", 0)
 }

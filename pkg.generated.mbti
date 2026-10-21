@@ -2,32 +2,33 @@
 package "moonbit-community/moonjq"
 
 import {
-  "moonbit-community/moonjq/ast",
+  "moonbit-community/moonjq/runtime",
   "moonbitlang/core/debug",
 }
 
 // Values
-pub fn eval(Query, Json) -> Iter[Json] raise
+pub fn eval(Query, Json) -> Iter[Result[Json, @runtime.EvalError]]
 
-pub fn eval_all(Query, Json) -> Array[Json] raise
+pub fn eval_all(Query, Json) -> Array[Json] raise @runtime.EvalError
 
 pub fn parse(String) -> Query raise
 
 pub fn run(String, String) -> Array[Json] raise
 
-pub fn run_json(Query, Json) -> Array[Json] raise
+pub fn run_json(Query, Json) -> Array[Json] raise @runtime.EvalError
 
 // Errors
 
 // Types and methods
 pub struct Query {
-  expr : @ast.Expr
+  // private fields
 } derive(@debug.Debug)
-pub fn Query::eval(Self, Json) -> Iter[Json] raise
-pub fn Query::eval_all(Self, Json) -> Array[Json] raise
-pub fn Query::eval_logs(Self, String) -> Iter[Json] raise
+pub fn Query::eval(Self, Json) -> Iter[Result[Json, @runtime.EvalError]]
+pub fn Query::eval_all(Self, Json) -> Array[Json] raise @runtime.EvalError
+pub fn Query::eval_logs(Self, String) -> Iter[Result[Json, @runtime.EvalError]]
 pub fn Query::to_repr(Self) -> @debug.Repr
 
 // Type aliases
+pub using @runtime {type EvalError}
 
 // Traits

@@ -1,5 +1,5 @@
 ///|
 test "coverage: combinations empty and type mismatch" {
-  json_inspect(coverage_eval("combinations", "[]"), content=[])
+  assert_reference_query("combinations", "[]", "[[]]", 0)
   assert_coverage_eval_error("combinations", "1")
 }

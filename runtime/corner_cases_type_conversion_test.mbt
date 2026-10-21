@@ -3,90 +3,48 @@
 
 ///|
 test "corner: tojson converts to JSON string" {
-  debug_inspect(
-    test_query("tojson", "{\"a\":1}"),
-    content=(
-      #|"String(\"{\\\"a\\\":1}\")"
-    ),
-  )
+  assert_reference_query("tojson", "{\"a\":1}", "[\"{\\\"a\\\":1}\"]", 0)
 }
 
 ///|
 test "corner: fromjson parses JSON string" {
-  debug_inspect(
-    test_query("fromjson", "\"{\\\"a\\\":1}\""),
-    content=(
-      #|"Object({ \"a\": Number(1) })"
-    ),
-  )
+  assert_reference_query("fromjson", "\"{\\\"a\\\":1}\"", "[{\"a\": 1}]", 0)
 }
 
 ///|
 test "corner: tojson then fromjson roundtrip" {
-  debug_inspect(
-    test_query("tojson | fromjson", "{\"a\":1,\"b\":[2,3]}"),
-    content=(
-      #|"Object({ \"a\": Number(1), \"b\": Array([Number(2), Number(3)]) })"
-    ),
+  assert_reference_query(
+    "tojson | fromjson", "{\"a\":1,\"b\":[2,3]}", "[{\"a\": 1, \"b\": [2, 3]}]",
+    0,
   )
 }
 
 ///|
 test "corner: type of various values" {
-  debug_inspect(
-    test_query("type", "null"),
-    content=(
-      #|"String(\"null\")"
-    ),
-  )
+  assert_reference_query("type", "null", "[\"null\"]", 0)
 }
 
 ///|
 test "corner: type of number" {
-  debug_inspect(
-    test_query("type", "42"),
-    content=(
-      #|"String(\"number\")"
-    ),
-  )
+  assert_reference_query("type", "42", "[\"number\"]", 0)
 }
 
 ///|
 test "corner: type of string" {
-  debug_inspect(
-    test_query("type", "\"hello\""),
-    content=(
-      #|"String(\"string\")"
-    ),
-  )
+  assert_reference_query("type", "\"hello\"", "[\"string\"]", 0)
 }
 
 ///|
 test "corner: type of array" {
-  debug_inspect(
-    test_query("type", "[]"),
-    content=(
-      #|"String(\"array\")"
-    ),
-  )
+  assert_reference_query("type", "[]", "[\"array\"]", 0)
 }
 
 ///|
 test "corner: type of object" {
-  debug_inspect(
-    test_query("type", "{}"),
-    content=(
-      #|"String(\"object\")"
-    ),
-  )
+  assert_reference_query("type", "{}", "[\"object\"]", 0)
 }
 
 ///|
 test "corner: type of boolean" {
-  debug_inspect(
-    test_query("type", "true"),
-    content=(
-      #|"String(\"boolean\")"
-    ),
-  )
+  assert_reference_query("type", "true", "[\"boolean\"]", 0)
 }

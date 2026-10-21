@@ -6,34 +6,34 @@ test "coverage: ordering helper mismatches" {
 
 ///|
 test "coverage: index helpers edge cases" {
-  json_inspect(coverage_eval("indices(empty)", "[1, 2]"), content=[[]])
-  json_inspect(coverage_eval("indices(1)", "\"abc\""), content=[[]])
+  assert_reference_query("indices(empty)", "[1, 2]", "[]", 0)
+  assert_reference_query("indices(1)", "\"abc\"", "[]", 5)
   assert_coverage_eval_error("indices(1)", "{}")
-  json_inspect(coverage_eval("index(empty)", "[1, 2]"), content=[null])
-  json_inspect(coverage_eval("index(\"z\")", "\"abc\""), content=[null])
-  json_inspect(coverage_eval("index(1)", "\"abc\""), content=[null])
+  assert_reference_query("index(empty)", "[1, 2]", "[]", 0)
+  assert_reference_query("index(\"z\")", "\"abc\"", "[null]", 0)
+  assert_reference_query("index(1)", "\"abc\"", "[]", 5)
   assert_coverage_eval_error("index(1)", "{}")
-  json_inspect(coverage_eval("nth(5)", "[1]"), content=[])
+  assert_reference_query("nth(5)", "[1]", "[null]", 0)
   assert_coverage_eval_error("nth(1)", "1")
-  json_inspect(coverage_eval("rindex(empty)", "[1]"), content=[null])
-  json_inspect(coverage_eval("rindex(9)", "[1, 2]"), content=[null])
-  json_inspect(coverage_eval("rindex(\"z\")", "\"abc\""), content=[null])
-  json_inspect(coverage_eval("rindex(1)", "\"abc\""), content=[null])
+  assert_reference_query("rindex(empty)", "[1]", "[]", 0)
+  assert_reference_query("rindex(9)", "[1, 2]", "[null]", 0)
+  assert_reference_query("rindex(\"z\")", "\"abc\"", "[null]", 0)
+  assert_reference_query("rindex(1)", "\"abc\"", "[]", 5)
   assert_coverage_eval_error("rindex(1)", "{}")
 }
 
 ///|
 test "coverage: iterator helpers and path edges" {
-  json_inspect(coverage_eval("first", "[]"), content=[null])
-  json_inspect(coverage_eval("last", "[]"), content=[null])
+  assert_reference_query("first", "[]", "[null]", 0)
+  assert_reference_query("last", "[]", "[null]", 0)
   assert_coverage_eval_error("first", "1")
   assert_coverage_eval_error("last", "1")
   assert_coverage_eval_error("any", "1")
   assert_coverage_eval_error("all", "1")
-  json_inspect(coverage_eval(". >= 1", "1"), content=[true])
-  json_inspect(coverage_eval(". < []", "false"), content=[true])
-  json_inspect(coverage_eval("flatten(0)", "[1, [2]]"), content=[[1, [2]]])
-  json_inspect(coverage_eval("setpath([]; 1)", "{\"a\": 1}"), content=[1])
+  assert_reference_query(". >= 1", "1", "[true]", 0)
+  assert_reference_query(". < []", "false", "[true]", 0)
+  assert_reference_query("flatten(0)", "[1, [2]]", "[[1, [2]]]", 0)
+  assert_reference_query("setpath([]; 1)", "{\"a\": 1}", "[1]", 0)
   json_inspect(coverage_eval("setpath([{}]; 1)", "{\"a\": 1}"), content=[
     { "a": 1 },
   ])
@@ -42,5 +42,5 @@ test "coverage: iterator helpers and path edges" {
 ///|
 test "coverage: parse_slice_part handles spaced negative index" {
   // Cover parser branch where '-' is tokenized separately from the number.
-  json_inspect(coverage_eval(".[- 1]", "[10, 20, 30]"), content=[30])
+  assert_reference_query(".[- 1]", "[10, 20, 30]", "[30]", 0)
 }

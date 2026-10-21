@@ -10,13 +10,10 @@ test "coverage: unique_by/min_by/max_by" {
 
 ///|
 test "coverage: combinations and transpose" {
-  json_inspect(coverage_eval("combinations", "[[1,2],[3,4]]"), content=[
-    [1, 3],
-    [1, 4],
-    [2, 3],
-    [2, 4],
-  ])
-  json_inspect(coverage_eval("combinations", "[[1], 2]"), content=[])
+  assert_reference_query(
+    "combinations", "[[1,2],[3,4]]", "[[1, 3], [1, 4], [2, 3], [2, 4]]", 0,
+  )
+  assert_reference_query("combinations", "[[1], 2]", "[]", 5)
   json_inspect(coverage_eval("transpose", "[[1,2,3],[4,5]]"), content=[
     [[1, 4], [2, 5], [3]],
   ])
@@ -24,5 +21,5 @@ test "coverage: combinations and transpose" {
 
 ///|
 test "coverage: flatten() parses and runs" {
-  json_inspect(coverage_eval("flatten()", "[1, [2]]"), content=[[1, 2]])
+  assert_reference_query("flatten()", "[1, [2]]", "[]", 3)
 }

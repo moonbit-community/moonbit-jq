@@ -1,129 +1,75 @@
 ///|
 test "missing: limit(n; expr)" {
-  debug_inspect(
-    test_feature("limit(2; .[])", "[1,2,3,4,5]"),
-    content=(
-      #|"Number(1)\nNumber(2)"
-    ),
-  )
+  assert_reference_query("limit(2; .[])", "[1,2,3,4,5]", "[1, 2]", 0)
 }
 
 ///|
 // Temporarily disabled
 // test "missing: until(cond; update)" {
-//   inspect(test_feature("1 | until(. > 5; . + 1)", "null"), content="")
+//   assert_reference_query("1 | until(. > 5; . + 1)", "null", "[6]", 0)
 // }
 
 ///|
 // Temporarily disabled - causes infinite loop
 // test "missing: while(cond; update)" {
-//   inspect(test_feature("1 | while(. < 5; . + 1)", "null"), content="")
+//   assert_reference_query("1 | while(. < 5; . + 1)", "null", "[1, 2, 3, 4]", 0)
 // }
 
 ///|
 // Temporarily disabled
 // test "missing: recurse with condition" {
-//   inspect(test_feature("recurse(.+1; . < 5)", "1"), content="")
+//   assert_reference_query("recurse(.+1; . < 5)", "1", "[1, 2, 3, 4]", 0)
 // }
 
 ///|
 test "missing: walk function" {
-  debug_inspect(
-    test_feature(
-      "walk(if type == \"number\" then . * 2 else . end)", "{\"a\":1,\"b\":[2,3]}",
-    ),
-    content=(
-      #|"Object({ \"a\": Number(2), \"b\": Array([Number(4), Number(6)]) })"
-    ),
+  assert_reference_query(
+    "walk(if type == \"number\" then . * 2 else . end)", "{\"a\":1,\"b\":[2,3]}",
+    "[{\"a\": 2, \"b\": [4, 6]}]", 0,
   )
 }
 
 ///|
 test "missing: update operator |=" {
-  debug_inspect(
-    test_feature(".a |= . + 1", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(6) })"
-    ),
-  )
+  assert_reference_query(".a |= . + 1", "{\"a\":5}", "[{\"a\": 6}]", 0)
 }
 
 ///|
 test "missing: assignment operator =" {
-  debug_inspect(
-    test_feature(".a = 10", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(10) })"
-    ),
-  )
+  assert_reference_query(".a = 10", "{\"a\":5}", "[{\"a\": 10}]", 0)
 }
 
 ///|
 test "missing: alternative operator //" {
-  debug_inspect(
-    test_feature(".missing // \"default\"", "{}"),
-    content=(
-      #|"String(\"default\")"
-    ),
-  )
+  assert_reference_query(".missing // \"default\"", "{}", "[\"default\"]", 0)
 }
 
 ///|
 test "missing: += operator" {
-  debug_inspect(
-    test_feature(".a += 3", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(8) })"
-    ),
-  )
+  assert_reference_query(".a += 3", "{\"a\":5}", "[{\"a\": 8}]", 0)
 }
 
 ///|
 test "missing: -= operator" {
-  debug_inspect(
-    test_feature(".a -= 3", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(2) })"
-    ),
-  )
+  assert_reference_query(".a -= 3", "{\"a\":5}", "[{\"a\": 2}]", 0)
 }
 
 ///|
 test "missing: *= operator" {
-  debug_inspect(
-    test_feature(".a *= 3", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(15) })"
-    ),
-  )
+  assert_reference_query(".a *= 3", "{\"a\":5}", "[{\"a\": 15}]", 0)
 }
 
 ///|
 test "missing: /= operator" {
-  debug_inspect(
-    test_feature(".a /= 2", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(2.5) })"
-    ),
-  )
+  assert_reference_query(".a /= 2", "{\"a\":5}", "[{\"a\": 2.5}]", 0)
 }
 
 ///|
 test "missing: %= operator" {
-  debug_inspect(
-    test_feature(".a %= 2", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(1) })"
-    ),
-  )
+  assert_reference_query(".a %= 2", "{\"a\":5}", "[{\"a\": 1}]", 0)
 }
 
 ///|
 test "missing: //= operator" {
-  debug_inspect(
-    test_feature(".a //= 10", "{\"a\":5}"),
-    content=(
-      #|"Object({ \"a\": Number(5) })"
-    ),
-  )
+  assert_reference_query(".a //= 10", "{\"a\":5}", "[{\"a\": 5}]", 0)
 }

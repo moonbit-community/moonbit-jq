@@ -3,32 +3,23 @@
 
 ///|
 test "corner: deeply nested object modification" {
-  debug_inspect(
-    test_query(".a.b.c.d = 99", "{\"a\":{\"b\":{\"c\":{\"d\":1}}}}"),
-    content=(
-      #|"Object({ \"a\": Object({ \"b\": Object({ \"c\": Object({ \"d\": Number(99) }) }) }) })"
-    ),
+  assert_reference_query(
+    ".a.b.c.d = 99", "{\"a\":{\"b\":{\"c\":{\"d\":1}}}}", "[{\"a\": {\"b\": {\"c\": {\"d\": 99}}}}]",
+    0,
   )
 }
 
 ///|
 test "corner: creating nested structure" {
-  debug_inspect(
-    test_query(".a.b.c = 42", "{}"),
-    content=(
-      #|"Object({ \"a\": Object({ \"b\": Object({ \"c\": Number(42) }) }) })"
-    ),
+  assert_reference_query(
+    ".a.b.c = 42", "{}", "[{\"a\": {\"b\": {\"c\": 42}}}]", 0,
   )
 }
 
 ///|
 test "corner: array within object modification" {
-  debug_inspect(
-    test_query(
-      ".items[1].value = 99", "{\"items\":[{\"value\":1},{\"value\":2}]}",
-    ),
-    content=(
-      #|"Object({ \"items\": Array([Object({ \"value\": Number(1) }), Object({ \"value\": Number(99) })]) })"
-    ),
+  assert_reference_query(
+    ".items[1].value = 99", "{\"items\":[{\"value\":1},{\"value\":2}]}", "[{\"items\": [{\"value\": 1}, {\"value\": 99}]}]",
+    0,
   )
 }

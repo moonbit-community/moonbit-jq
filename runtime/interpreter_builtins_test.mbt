@@ -13,9 +13,9 @@ test "eval length on string" {
 
 ///|
 test "eval type" {
-  json_inspect(coverage_eval("type", "42"), content=["number"])
-  json_inspect(coverage_eval("type", "\"hello\""), content=["string"])
-  json_inspect(coverage_eval("type", "null"), content=["null"])
+  assert_reference_query("type", "42", "[\"number\"]", 0)
+  assert_reference_query("type", "\"hello\"", "[\"string\"]", 0)
+  assert_reference_query("type", "null", "[\"null\"]", 0)
 }
 
 ///|

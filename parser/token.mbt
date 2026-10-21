@@ -3,8 +3,12 @@
 pub(all) enum Token {
   // Literals
   TNumber(Double)
-  TString(String)
-  TStringInterpolation(Array[(String, String?)]) // parts with optional expressions
+  TStringStart
+  TStringText(String)
+  TStringEnd
+  TInterpolationStart
+  TInterpolationEnd
+  TField(String)
   TTrue
   TFalse
   TNull
@@ -52,7 +56,6 @@ pub(all) enum Token {
   // Keywords
   TAnd // and
   TOr // or
-  TNot // not
   TIf // if
   TThen // then
   TElse // else

@@ -1,20 +1,18 @@
 ///|
 test "coverage: iterator empty branch for .[]" {
-  json_inspect(coverage_eval(".[]", "1"), content=[])
+  assert_reference_query(".[]", "1", "[]", 5)
 }
 
 ///|
 test "coverage: object construction edge cases" {
-  json_inspect(coverage_eval("{(empty): 1, \"a\": 2}", "null"), content=[
-    { "a": 2 },
-  ])
+  assert_reference_query("{(empty): 1, \"a\": 2}", "null", "[]", 0)
   assert_coverage_eval_error("{(1): 2}", "null")
-  json_inspect(coverage_eval("{\"a\": empty}", "null"), content=[{ "a": null }])
-  json_inspect(coverage_eval("{a}", "1"), content=[{ "a": null }])
+  assert_reference_query("{\"a\": empty}", "null", "[]", 0)
+  assert_reference_query("{a}", "1", "[]", 5)
 }
 
 ///|
 test "coverage: object constructor shorthand {a}" {
-  json_inspect(coverage_eval("{a}", "{\"a\": 1}"), content=[{ "a": 1 }])
-  json_inspect(coverage_eval("{a}", "{\"b\": 2}"), content=[{ "a": null }])
+  assert_reference_query("{a}", "{\"a\": 1}", "[{\"a\": 1}]", 0)
+  assert_reference_query("{a}", "{\"b\": 2}", "[{\"a\": null}]", 0)
 }

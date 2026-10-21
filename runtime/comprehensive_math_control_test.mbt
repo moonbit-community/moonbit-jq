@@ -7,82 +7,42 @@
 
 ///|
 test "pow: power function" {
-  debug_inspect(
-    test_query("pow(2; 10)", "null"),
-    content=(
-      #|"Number(1024)"
-    ),
-  )
+  assert_reference_query("pow(2; 10)", "null", "[1024]", 0)
 }
 
 ///|
 test "log: natural logarithm" {
-  debug_inspect(
-    test_query("log", "2.718281828"),
-    content=(
-      #|"Number(0.9999999998311266)"
-    ),
-  )
+  assert_reference_query("log", "2.718281828", "[0.9999999998311266]", 0)
 }
 
 ///|
 test "exp: exponential" {
-  debug_inspect(
-    test_query("exp", "1"),
-    content=(
-      #|"Number(2.718281828459045)"
-    ),
-  )
+  assert_reference_query("exp", "1", "[2.718281828459045]", 0)
 }
 
 ///|
 test "sin: sine" {
-  debug_inspect(
-    test_query("sin", "0"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
+  assert_reference_query("sin", "0", "[0]", 0)
 }
 
 ///|
 test "cos: cosine" {
-  debug_inspect(
-    test_query("cos", "0"),
-    content=(
-      #|"Number(1)"
-    ),
-  )
+  assert_reference_query("cos", "0", "[1]", 0)
 }
 
 ///|
 test "sqrt: square root" {
-  debug_inspect(
-    test_query("sqrt", "16"),
-    content=(
-      #|"Number(4)"
-    ),
-  )
+  assert_reference_query("sqrt", "16", "[4]", 0)
 }
 
 ///|
 test "floor: floor function" {
-  debug_inspect(
-    test_query("floor", "3.7"),
-    content=(
-      #|"Number(3)"
-    ),
-  )
+  assert_reference_query("floor", "3.7", "[3]", 0)
 }
 
 ///|
 test "ceil: ceiling function" {
-  debug_inspect(
-    test_query("ceil", "3.2"),
-    content=(
-      #|"Number(4)"
-    ),
-  )
+  assert_reference_query("ceil", "3.2", "[4]", 0)
 }
 
 // ============================================================================
@@ -91,53 +51,30 @@ test "ceil: ceiling function" {
 
 ///|
 test "if-then-else: basic conditional" {
-  debug_inspect(
-    test_query("if . > 10 then \"big\" else \"small\" end", "15"),
-    content=(
-      #|"String(\"big\")"
-    ),
+  assert_reference_query(
+    "if . > 10 then \"big\" else \"small\" end", "15", "[\"big\"]", 0,
   )
 }
 
 ///|
 test "if-then-elif-else: multiple conditions" {
-  debug_inspect(
-    test_query(
-      "if . < 0 then \"negative\" elif . == 0 then \"zero\" else \"positive\" end",
-      "5",
-    ),
-    content=(
-      #|"ParseError: UnexpectedToken(\"TElif\", \"TElse\")"
-    ),
+  assert_reference_query(
+    "if . < 0 then \"negative\" elif . == 0 then \"zero\" else \"positive\" end",
+    "5", "[\"positive\"]", 0,
   )
 }
 
 ///|
 test "try-catch: error handling" {
-  debug_inspect(
-    test_query("try .x catch \"error\"", "{}"),
-    content=(
-      #|"Null"
-    ),
-  )
+  assert_reference_query("try .x catch \"error\"", "{}", "[null]", 0)
 }
 
 ///|
 test "alternative operator: fallback" {
-  debug_inspect(
-    test_query(".x // 42", "{\"y\":10}"),
-    content=(
-      #|"Number(42)"
-    ),
-  )
+  assert_reference_query(".x // 42", "{\"y\":10}", "[42]", 0)
 }
 
 ///|
 test "alternative operator: with value" {
-  debug_inspect(
-    test_query(".x // 42", "{\"x\":5}"),
-    content=(
-      #|"Number(5)"
-    ),
-  )
+  assert_reference_query(".x // 42", "{\"x\":5}", "[5]", 0)
 }

@@ -139,7 +139,7 @@ fn run_query(
   query : @moonjq.Query,
   input : String,
   logs : Bool,
-) -> Iter[Json] raise {
+) -> Iter[Result[Json, @moonjq.EvalError]] raise {
   if logs {
     query.eval_logs(input)
   } else {
@@ -166,11 +166,15 @@ fn render_result(
 
 ///|
 async fn write_results(
-  results : Iter[Json],
+  results : Iter[Result[Json, @moonjq.EvalError]],
   raw_output : Bool,
   compact_output : Bool,
 ) -> Unit {
-  for value in results {
+  for result in results {
+    let value = match result {
+      Ok(v) => v
+      Err(err) => raise err
+    }
     @stdio.stdout.write(render_result(value, raw_output, compact_output))
     @stdio.stdout.write("\n")
   }

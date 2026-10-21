@@ -1,43 +1,40 @@
 ///|
 test "coverage: while yields intermediate values" {
-  json_inspect(coverage_eval("while(. < 4; . + 1)", "1"), content=[1, 2, 3])
+  assert_reference_query("while(. < 4; . + 1)", "1", "[1, 2, 3]", 0)
 }
 
 ///|
 test "coverage: until terminates and returns final value" {
-  json_inspect(coverage_eval("until(. > 3; . + 1)", "1"), content=[4])
+  assert_reference_query("until(. > 3; . + 1)", "1", "[4]", 0)
 }
 
 ///|
 test "coverage: limit takes first N results" {
-  json_inspect(coverage_eval("limit(2; .[])", "[1, 2, 3]"), content=[1, 2])
+  assert_reference_query("limit(2; .[])", "[1, 2, 3]", "[1, 2]", 0)
 }
 
 ///|
 test "coverage: reduce aggregates with variable binding" {
-  json_inspect(coverage_eval("reduce .[] as $x (0; . + $x)", "[1, 2, 3]"), content=[
-    6,
-  ])
+  assert_reference_query("reduce .[] as $x (0; . + $x)", "[1, 2, 3]", "[6]", 0)
 }
 
 ///|
 test "coverage: foreach emits running accumulator" {
-  json_inspect(coverage_eval("foreach .[] as $x (0; . + $x)", "[1, 2, 3]"), content=[
-    1, 3, 6,
-  ])
+  assert_reference_query(
+    "foreach .[] as $x (0; . + $x)", "[1, 2, 3]", "[1, 3, 6]", 0,
+  )
 }
 
 ///|
 test "coverage: foreach supports extract expression" {
-  json_inspect(
-    coverage_eval("foreach .[] as $x (0; . + $x; . * 2)", "[1, 2, 3]"),
-    content=[2, 6, 12],
+  assert_reference_query(
+    "foreach .[] as $x (0; . + $x; . * 2)", "[1, 2, 3]", "[2, 6, 12]", 0,
   )
 }
 
 ///|
 test "coverage: scan emits non-overlapping matches" {
-  json_inspect(coverage_eval("scan(\"aa\")", "\"aaaaa\""), content=["aa", "aa"])
+  assert_reference_query("scan(\"aa\")", "\"aaaaa\"", "[\"aa\", \"aa\"]", 0)
 }
 
 ///|
@@ -51,7 +48,6 @@ test "coverage: recurse(f; cond) applies f transitively" {
   json_inspect(coverage_eval("recurse(.a; . != null)", input), content=[
     { "a": { "a": null } },
     { "a": null },
-    null,
   ])
 }
 

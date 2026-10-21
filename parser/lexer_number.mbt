@@ -15,12 +15,21 @@ fn Lexer::lex_number(self : Lexer) -> Unit raise LexError {
         self.advance()
         continue
       }
-      Some('.') if !has_dot && self.peek().map(is_digit).unwrap_or(false) => {
+      Some('.') if !has_dot => {
         self.advance()
         has_dot = true
         continue
       }
       _ => break
+    }
+  }
+  if self.current() == Some('e') || self.current() == Some('E') {
+    self.advance()
+    if self.current() == Some('+') || self.current() == Some('-') {
+      self.advance()
+    }
+    while self.current().map(is_digit).unwrap_or(false) {
+      self.advance()
     }
   }
   let text = self.input[start:self.pos].to_owned()

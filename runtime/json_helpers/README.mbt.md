@@ -4,7 +4,7 @@ Internal helper functions for the jq interpreter. This package provides utility 
 
 ## Overview
 
-This is an internal package used by the `ast` interpreter. It contains helper functions that are shared across multiple interpreter modules. While technically public, this package is considered internal and its API may change without notice.
+This is an internal package used by the `runtime` execution machine. It contains helper functions that are shared across multiple interpreter modules. While technically public, this package is considered internal and its API may change without notice.
 
 ## Public Functions
 

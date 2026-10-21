@@ -21,16 +21,14 @@ test "jq compat: @uri keeps unreserved characters" {
 
 ///|
 test "jq compat: @uri percent-encodes reserved punctuation" {
-  json_inspect(coverage_eval("@uri", "\"!\""), content=["%21"])
-  json_inspect(coverage_eval("@uri", "\"%\""), content=["%25"])
+  assert_reference_query("@uri", "\"!\"", "[\"%21\"]", 0)
+  assert_reference_query("@uri", "\"%\"", "[\"%25\"]", 0)
 }
 
 ///|
 test "jq compat: @uri percent-encodes utf8 bytes" {
-  json_inspect(coverage_eval("@uri", "\"中文\""), content=[
-    "%E4%B8%AD%E6%96%87",
-  ])
-  json_inspect(coverage_eval("@uri", "\"ÿ\""), content=["%C3%BF"])
+  assert_reference_query("@uri", "\"中文\"", "[\"%E4%B8%AD%E6%96%87\"]", 0)
+  assert_reference_query("@uri", "\"ÿ\"", "[\"%C3%BF\"]", 0)
 }
 
 ///|

@@ -3,6 +3,7 @@
 pub suberror LexError {
   UnexpectedChar(Int32, Char)
   UnterminatedString(Int32)
+  UnterminatedRegion(Int32, String)
   InvalidNumber(Int32, String)
   InvalidEscape(Int32, Char)
 } derive(Eq, Debug)

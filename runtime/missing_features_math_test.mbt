@@ -1,73 +1,28 @@
 ///|
 test "missing: pow function" {
-  debug_inspect(
-    test_feature("pow(2; 3)", "null"),
-    content=(
-      #|"Number(8)"
-    ),
-  )
+  assert_reference_query("pow(2; 3)", "null", "[8]", 0)
 }
 
 ///|
 test "missing: log function" {
-  debug_inspect(
-    test_feature("log", "10"),
-    content=(
-      #|"Number(2.302585092994046)"
-    ),
-  )
+  assert_reference_query("log", "10", "[2.302585092994046]", 0)
 }
 
 ///|
 test "missing: exp function" {
-  debug_inspect(
-    test_feature("exp", "1"),
-    content=(
-      #|"Number(2.718281828459045)"
-    ),
-  )
+  assert_reference_query("exp", "1", "[2.718281828459045]", 0)
 }
 
 ///|
 test "missing: sin, cos, tan" {
-  debug_inspect(
-    test_feature("sin", "0"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
-  debug_inspect(
-    test_feature("cos", "0"),
-    content=(
-      #|"Number(1)"
-    ),
-  )
-  debug_inspect(
-    test_feature("tan", "0"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
+  assert_reference_query("sin", "0", "[0]", 0)
+  assert_reference_query("cos", "0", "[1]", 0)
+  assert_reference_query("tan", "0", "[0]", 0)
 }
 
 ///|
 test "missing: asin, acos, atan" {
-  debug_inspect(
-    test_feature("asin", "0"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
-  debug_inspect(
-    test_feature("acos", "1"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
-  debug_inspect(
-    test_feature("atan", "0"),
-    content=(
-      #|"Number(0)"
-    ),
-  )
+  assert_reference_query("asin", "0", "[0]", 0)
+  assert_reference_query("acos", "1", "[0]", 0)
+  assert_reference_query("atan", "0", "[0]", 0)
 }

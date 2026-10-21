@@ -1,52 +1,27 @@
 ///|
 test "missing: user-defined functions" {
-  debug_inspect(
-    test_feature("def double: . * 2; double", "5"),
-    content=(
-      #|"Number(10)"
-    ),
-  )
+  assert_reference_query("def double: . * 2; double", "5", "[10]", 0)
 }
 
 ///|
 test "missing: user-defined functions with params" {
-  debug_inspect(
-    test_feature("def add(x): . + x; add(10)", "5"),
-    content=(
-      #|"ParseError: UnexpectedToken(\"TLParen\", \"end of query\")"
-    ),
-  )
+  assert_reference_query("def add(x): . + x; add(10)", "5", "[15]", 0)
 }
 
 ///|
 test "missing: recursive user-defined functions" {
-  debug_inspect(
-    test_feature(
-      "def factorial: if . <= 1 then 1 else . * ((. - 1) | factorial) end; factorial",
-      "5",
-    ),
-    content=(
-      #|"Number(120)"
-    ),
+  assert_reference_query(
+    "def factorial: if . <= 1 then 1 else . * ((. - 1) | factorial) end; factorial",
+    "5", "[120]", 0,
   )
 }
 
 ///|
 test "missing: comments in query" {
-  debug_inspect(
-    test_feature("# comment\n. + 1", "1"),
-    content=(
-      #|"Number(2)"
-    ),
-  )
+  assert_reference_query("# comment\n. + 1", "1", "[2]", 0)
 }
 
 ///|
 test "missing: multiline queries" {
-  debug_inspect(
-    test_feature(".\n+\n1", "1"),
-    content=(
-      #|"Number(2)"
-    ),
-  )
+  assert_reference_query(".\n+\n1", "1", "[2]", 0)
 }

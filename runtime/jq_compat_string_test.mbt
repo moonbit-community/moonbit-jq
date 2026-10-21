@@ -9,22 +9,18 @@ test "jq compat: split keeps empty segments" {
 
 ///|
 test "jq compat: ltrimstr removes prefix only" {
-  json_inspect(coverage_eval("ltrimstr(\"foo\")", "\"foobar\""), content=["bar"])
-  json_inspect(coverage_eval("ltrimstr(\"bar\")", "\"foobar\""), content=[
-    "foobar",
-  ])
+  assert_reference_query("ltrimstr(\"foo\")", "\"foobar\"", "[\"bar\"]", 0)
+  assert_reference_query("ltrimstr(\"bar\")", "\"foobar\"", "[\"foobar\"]", 0)
 }
 
 ///|
 test "jq compat: rtrimstr removes suffix only" {
-  json_inspect(coverage_eval("rtrimstr(\"bar\")", "\"foobar\""), content=["foo"])
-  json_inspect(coverage_eval("rtrimstr(\"baz\")", "\"foobar\""), content=[
-    "foobar",
-  ])
+  assert_reference_query("rtrimstr(\"bar\")", "\"foobar\"", "[\"foo\"]", 0)
+  assert_reference_query("rtrimstr(\"baz\")", "\"foobar\"", "[\"foobar\"]", 0)
 }
 
 ///|
 test "jq compat: ascii_upcase/downcase only affects ASCII" {
-  json_inspect(coverage_eval("ascii_downcase", "\"AbÇ\""), content=["abÇ"])
-  json_inspect(coverage_eval("ascii_upcase", "\"AbÇ\""), content=["ABÇ"])
+  assert_reference_query("ascii_downcase", "\"AbÇ\"", "[\"abÇ\"]", 0)
+  assert_reference_query("ascii_upcase", "\"AbÇ\"", "[\"ABÇ\"]", 0)
 }

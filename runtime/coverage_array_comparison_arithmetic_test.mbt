@@ -1,7 +1,7 @@
 ///|
 test "coverage: array comparisons exercise element and length ordering" {
-  json_inspect(coverage_eval("[1] < [1, 2]", "null"), content=[true])
-  json_inspect(coverage_eval("[1, 0] < [1, 2]", "null"), content=[true])
+  assert_reference_query("[1] < [1, 2]", "null", "[true]", 0)
+  assert_reference_query("[1, 0] < [1, 2]", "null", "[true]", 0)
 }
 
 ///|

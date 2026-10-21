@@ -4,12 +4,15 @@ priv struct Lexer {
   input : String
   mut pos : Int32
   tokens : Array[Token]
+  spans : Array[@ast.Span]
+  modes : Array[LexMode]
+  mut start : Int32
 }
 
 ///|
 /// Create a new lexer
 fn Lexer::new(input : String) -> Lexer {
-  { input, pos: 0, tokens: [], }
+  { input, pos: 0, tokens: [], spans: [], modes: [Code(TEof)], start: 0, }
 }
 
 ///|
@@ -46,6 +49,7 @@ fn Lexer::advance(self : Lexer) -> Unit {
 /// Add a token
 fn Lexer::add_token(self : Lexer, token : Token) -> Unit {
   self.tokens.push(token)
+  self.spans.push({ start: self.start, end: self.pos, })
 }
 
 ///|
@@ -74,4 +78,10 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
       }
     }
   }
+}
+
+///|
+priv enum LexMode {
+  Code(Token)
+  StringMode(Int32)
 }

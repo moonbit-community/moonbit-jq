@@ -1,6 +1,13 @@
 ///|
-fn collect(it : Iter[Json]) -> Array[Json] {
-  it.collect()
+fn collect(it : Iter[Result[Json, @moonjq.EvalError]]) -> Array[Json] raise {
+  let out = []
+  for event in it {
+    match event {
+      Ok(v) => out.push(v)
+      Err(e) => raise e
+    }
+  }
+  out
 }
 
 ///|

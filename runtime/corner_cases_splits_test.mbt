@@ -3,20 +3,14 @@
 
 ///|
 test "corner: splits with single delimiter" {
-  debug_inspect(
-    test_query("[splits(\",\")]", "\"a,b,c,d\""),
-    content=(
-      #|"Array([String(\"a\"), String(\"b\"), String(\"c\"), String(\"d\")])"
-    ),
+  assert_reference_query(
+    "[splits(\",\")]", "\"a,b,c,d\"", "[[\"a\", \"b\", \"c\", \"d\"]]", 0,
   )
 }
 
 ///|
 test "corner: splits with empty result" {
-  debug_inspect(
-    test_query("[splits(\",\")]", "\",,,\""),
-    content=(
-      #|"Array([String(\"\"), String(\"\"), String(\"\"), String(\"\")])"
-    ),
+  assert_reference_query(
+    "[splits(\",\")]", "\",,,\"", "[[\"\", \"\", \"\", \"\"]]", 0,
   )
 }

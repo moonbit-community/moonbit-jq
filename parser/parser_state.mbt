@@ -2,13 +2,14 @@
 /// Parser state
 priv struct Parser {
   tokens : Array[Token]
+  spans : Array[@ast.Span]
   mut pos : Int32
 }
 
 ///|
 /// Create a new parser from tokens
-fn Parser::new(tokens : Array[Token]) -> Parser {
-  { tokens, pos: 0, }
+fn Parser::new(tokens : Array[Token], spans~ : Array[@ast.Span] = []) -> Parser {
+  { tokens, spans, pos: 0, }
 }
 
 ///|
@@ -56,5 +57,22 @@ fn Parser::expect(self : Parser, expected : Token) -> Unit raise ParseError {
     Some(t) if t == expected => self.advance()
     Some(t) => raise UnexpectedToken(t.to_string(), expected.to_string())
     None => raise UnexpectedEnd(expected.to_string())
+  }
+}
+
+///|
+fn Parser::span(self : Parser, start : Int32) -> @ast.Span {
+  {
+    start: self.spans.get(start).map(s => s.start).unwrap_or(0),
+    end: self.spans.get((self.pos - 1).max(start)).map(s => s.end).unwrap_or(0),
+  }
+}
+
+///|
+fn Parser::located(self : Parser, start : Int32, expr : @ast.Expr) -> @ast.Expr {
+  let span = self.span(start)
+  match expr {
+    Located(s, _) if s == span => expr
+    _ => Located(span, expr)
   }
 }

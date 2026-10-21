@@ -3,11 +3,8 @@
 
 ///|
 test "corner: transpose matrix" {
-  debug_inspect(
-    test_query("transpose", "[[1,2,3],[4,5,6]]"),
-    content=(
-      #|"Array(\n  [\n    Array([Number(1), Number(4)]),\n    Array([Number(2), Number(5)]),\n    Array([Number(3), Number(6)]),\n  ],\n)"
-    ),
+  assert_reference_query(
+    "transpose", "[[1,2,3],[4,5,6]]", "[[[1, 4], [2, 5], [3, 6]]]", 0,
   )
 }
 
@@ -23,10 +20,5 @@ test "corner: transpose with uneven rows" {
 
 ///|
 test "corner: transpose empty matrix" {
-  debug_inspect(
-    test_query("transpose", "[]"),
-    content=(
-      #|"Array([])"
-    ),
-  )
+  assert_reference_query("transpose", "[]", "[[]]", 0)
 }

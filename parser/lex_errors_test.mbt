@@ -22,10 +22,10 @@ test "lex: error - invalid escape" {
 ///|
 test "lex: error - unexpected character" {
   try @parser.lex("@") catch {
-    UnexpectedChar(_, _) => fail("did not expect UnexpectedChar error")
-    _ => debug_inspect(false, content="false")
+    UnexpectedChar(_, _) => ()
+    _ => fail("a format prefix needs a name")
   } noraise {
-    _ => debug_inspect(false, content="false")
+    _ => fail("a format prefix needs a name")
   }
 }
 

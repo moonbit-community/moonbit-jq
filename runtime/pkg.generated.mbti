@@ -7,26 +7,36 @@ import {
 }
 
 // Values
-pub fn eval(@ast.Expr, Json) -> Iter[Json] raise
+pub fn compile(@ast.Expr) -> Plan raise CompileError
+
+pub fn eval(Plan, Json) -> Iter[Result[Json, EvalError]]
+
+pub fn eval_all(Plan, Json) -> Array[Json] raise EvalError
 
 // Errors
-pub(all) suberror InterpreterError {
-  TypeMismatch(String, String)
-  KeyNotFound(String)
-  IndexOutOfBounds(Int32)
-  InvalidOperation(String)
-  DivisionByZero
-  TypeError(String)
-  EvalError(String)
-} derive(Eq, @debug.Debug)
-pub fn InterpreterError::equal(Self, Self) -> Bool
-pub fn InterpreterError::not_equal(Self, Self) -> Bool
-pub fn InterpreterError::output(Self, &Logger) -> Unit
-pub fn InterpreterError::to_repr(Self) -> @debug.Repr
-pub fn InterpreterError::to_string(Self) -> String
-pub impl Show for InterpreterError
+pub(all) suberror CompileError {
+  CompileError(String, @ast.Span?)
+} derive(@debug.Debug)
+pub fn CompileError::output(Self, &Logger) -> Unit
+pub fn CompileError::to_repr(Self) -> @debug.Repr
+pub fn CompileError::to_string(Self) -> String
+pub impl Show for CompileError
+
+pub(all) suberror EvalError {
+  EvalError(Json, @ast.Span?)
+} derive(@debug.Debug)
+pub fn EvalError::output(Self, &Logger) -> Unit
+pub fn EvalError::span(Self) -> @ast.Span?
+pub fn EvalError::to_repr(Self) -> @debug.Repr
+pub fn EvalError::to_string(Self) -> String
+pub fn EvalError::value(Self) -> Json
+pub impl Show for EvalError
 
 // Types and methods
+pub struct Plan {
+  // private fields
+} derive(@debug.Debug)
+pub fn Plan::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

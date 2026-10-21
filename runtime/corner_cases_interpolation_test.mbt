@@ -3,42 +3,30 @@
 
 ///|
 test "corner: interpolation with null" {
-  debug_inspect(
-    test_query("\"Value: \\(.missing)\"", "{}"),
-    content=(
-      #|"String(\"Value: null\")"
-    ),
+  assert_reference_query(
+    "\"Value: \\(.missing)\"", "{}", "[\"Value: null\"]", 0,
   )
 }
 
 ///|
 test "corner: interpolation with nested object" {
-  debug_inspect(
-    test_query("\"User: \\(.user)\"", "{\"user\":{\"name\":\"Alice\"}}"),
-    content=(
-      #|"String(\"User: {\\\"name\\\":\\\"Alice\\\"}\")"
-    ),
+  assert_reference_query(
+    "\"User: \\(.user)\"", "{\"user\":{\"name\":\"Alice\"}}", "[\"User: {\\\"name\\\":\\\"Alice\\\"}\"]",
+    0,
   )
 }
 
 ///|
 test "corner: multiple adjacent interpolations" {
-  debug_inspect(
-    test_query(
-      "\"\\(.a)\\(.b)\\(.c)\"", "{\"a\":\"x\",\"b\":\"y\",\"c\":\"z\"}",
-    ),
-    content=(
-      #|"String(\"xyz\")"
-    ),
+  assert_reference_query(
+    "\"\\(.a)\\(.b)\\(.c)\"", "{\"a\":\"x\",\"b\":\"y\",\"c\":\"z\"}", "[\"xyz\"]",
+    0,
   )
 }
 
 ///|
 test "corner: interpolation with calculation" {
-  debug_inspect(
-    test_query("\"Sum: \\(.a + .b + .c)\"", "{\"a\":1,\"b\":2,\"c\":3}"),
-    content=(
-      #|"String(\"Sum: 6\")"
-    ),
+  assert_reference_query(
+    "\"Sum: \\(.a + .b + .c)\"", "{\"a\":1,\"b\":2,\"c\":3}", "[\"Sum: 6\"]", 0,
   )
 }

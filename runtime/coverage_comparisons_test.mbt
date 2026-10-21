@@ -1,7 +1,7 @@
 ///|
 test "coverage: null/bool comparisons" {
-  json_inspect(coverage_eval("null < null", "null"), content=[false])
-  json_inspect(coverage_eval("null < false", "null"), content=[true])
-  json_inspect(coverage_eval("false < true", "null"), content=[true])
-  json_inspect(coverage_eval("true > false", "null"), content=[true])
+  assert_reference_query("null < null", "null", "[false]", 0)
+  assert_reference_query("null < false", "null", "[true]", 0)
+  assert_reference_query("false < true", "null", "[true]", 0)
+  assert_reference_query("true > false", "null", "[true]", 0)
 }

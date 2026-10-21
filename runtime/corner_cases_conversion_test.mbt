@@ -3,40 +3,22 @@
 
 ///|
 test "corner: explode converts string to codepoints" {
-  debug_inspect(
-    test_query("explode", "\"Hello\""),
-    content=(
-      #|"Array([Number(72), Number(101), Number(108), Number(108), Number(111)])"
-    ),
+  assert_reference_query(
+    "explode", "\"Hello\"", "[[72, 101, 108, 108, 111]]", 0,
   )
 }
 
 ///|
 test "corner: implode converts codepoints to string" {
-  debug_inspect(
-    test_query("implode", "[72,101,108,108,111]"),
-    content=(
-      #|"String(\"Hello\")"
-    ),
-  )
+  assert_reference_query("implode", "[72,101,108,108,111]", "[\"Hello\"]", 0)
 }
 
 ///|
 test "corner: explode with unicode" {
-  debug_inspect(
-    test_query("explode", "\"世界\""),
-    content=(
-      #|"Array([Number(19990), Number(30028)])"
-    ),
-  )
+  assert_reference_query("explode", "\"世界\"", "[[19990, 30028]]", 0)
 }
 
 ///|
 test "corner: implode with unicode codepoints" {
-  debug_inspect(
-    test_query("implode", "[19990,30028]"),
-    content=(
-      #|"String(\"世界\")"
-    ),
-  )
+  assert_reference_query("implode", "[19990,30028]", "[\"世界\"]", 0)
 }

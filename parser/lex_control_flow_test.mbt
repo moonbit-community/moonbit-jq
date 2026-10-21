@@ -7,13 +7,11 @@ test "lex: if-then-else" {
     content=(
       #|[
       #|  TIf,
-      #|  TDot,
-      #|  TIdentifier("x"),
+      #|  TField("x"),
       #|  TGt,
       #|  TNumber(0),
       #|  TThen,
-      #|  TDot,
-      #|  TIdentifier("x"),
+      #|  TField("x"),
       #|  TElse,
       #|  TNumber(0),
       #|  TEnd,
@@ -29,7 +27,15 @@ test "lex: try-catch" {
   debug_inspect(
     tokens,
     content=(
-      #|[TTry, TDot, TIdentifier("foo"), TCatch, TString("error"), TEof]
+      #|[
+      #|  TTry,
+      #|  TField("foo"),
+      #|  TCatch,
+      #|  TStringStart,
+      #|  TStringText("error"),
+      #|  TStringEnd,
+      #|  TEof,
+      #|]
     ),
   )
 }

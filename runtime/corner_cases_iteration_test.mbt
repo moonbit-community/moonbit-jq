@@ -3,150 +3,77 @@
 
 ///|
 test "corner: range with single argument" {
-  debug_inspect(
-    test_query("[range(5)]", "null"),
-    content=(
-      #|"Array([Number(0), Number(1), Number(2), Number(3), Number(4)])"
-    ),
-  )
+  assert_reference_query("[range(5)]", "null", "[[0, 1, 2, 3, 4]]", 0)
 }
 
 ///|
 test "corner: range with start and end" {
-  debug_inspect(
-    test_query("[range(2;5)]", "null"),
-    content=(
-      #|"Array([Number(2), Number(3), Number(4)])"
-    ),
-  )
+  assert_reference_query("[range(2;5)]", "null", "[[2, 3, 4]]", 0)
 }
 
 ///|
 test "corner: range with step" {
-  debug_inspect(
-    test_query("[range(0;10;2)]", "null"),
-    content=(
-      #|"Array([Number(0), Number(2), Number(4), Number(6), Number(8)])"
-    ),
-  )
+  assert_reference_query("[range(0;10;2)]", "null", "[[0, 2, 4, 6, 8]]", 0)
 }
 
 ///|
 test "corner: range with negative step" {
-  debug_inspect(
-    test_query("[range(10;0;-2)]", "null"),
-    content=(
-      #|"Array([Number(10), Number(8), Number(6), Number(4), Number(2)])"
-    ),
-  )
+  assert_reference_query("[range(10;0;-2)]", "null", "[[10, 8, 6, 4, 2]]", 0)
 }
 
 ///|
 test "corner: range with zero count" {
-  debug_inspect(
-    test_query("[range(0)]", "null"),
-    content=(
-      #|"Array([])"
-    ),
-  )
+  assert_reference_query("[range(0)]", "null", "[[]]", 0)
 }
 
 ///|
 test "corner: first from multiple values" {
-  debug_inspect(
-    test_query("first(1,2,3,4,5)", "null"),
-    content=(
-      #|"Number(1)"
-    ),
-  )
+  assert_reference_query("first(1,2,3,4,5)", "null", "[1]", 0)
 }
 
 ///|
 test "corner: last from multiple values" {
-  debug_inspect(
-    test_query("last(1,2,3,4,5)", "null"),
-    content=(
-      #|"Number(5)"
-    ),
-  )
+  assert_reference_query("last(1,2,3,4,5)", "null", "[5]", 0)
 }
 
 ///|
 test "corner: first from array elements" {
-  debug_inspect(
-    test_query("first(.[])", "[10,20,30]"),
-    content=(
-      #|"Number(10)"
-    ),
-  )
+  assert_reference_query("first(.[])", "[10,20,30]", "[10]", 0)
 }
 
 ///|
 test "corner: last from array elements" {
-  debug_inspect(
-    test_query("last(.[])", "[10,20,30]"),
-    content=(
-      #|"Number(30)"
-    ),
-  )
+  assert_reference_query("last(.[])", "[10,20,30]", "[30]", 0)
 }
 
 ///|
 test "corner: first with empty" {
-  debug_inspect(
-    test_query("first(empty)", "null"),
-    content=(
-      #|""
-    ),
-  )
+  assert_reference_query("first(empty)", "null", "[]", 0)
 }
 
 ///|
 test "corner: repeat generates infinite stream (limited)" {
-  debug_inspect(
-    test_query("limit(3; repeat(\"x\"))", "null"),
-    content=(
-      #|"String(\"x\"), String(\"x\"), String(\"x\")"
-    ),
+  assert_reference_query(
+    "limit(3; repeat(\"x\"))", "null", "[\"x\", \"x\", \"x\"]", 0,
   )
 }
 
 ///|
 test "corner: repeat with expression" {
-  debug_inspect(
-    test_query("limit(4; . | repeat(. * 2))", "1"),
-    content=(
-      #|"Number(2), Number(2), Number(2), Number(2)"
-    ),
-  )
+  assert_reference_query("limit(4; . | repeat(. * 2))", "1", "[2, 2, 2, 2]", 0)
 }
 
 ///|
 test "corner: until increments until condition" {
-  debug_inspect(
-    test_query("until(. > 5; . + 1)", "1"),
-    content=(
-      #|"Number(6)"
-    ),
-  )
+  assert_reference_query("until(. > 5; . + 1)", "1", "[6]", 0)
 }
 
 ///|
 test "corner: until with already satisfied condition" {
-  debug_inspect(
-    test_query("until(. > 5; . + 1)", "10"),
-    content=(
-      #|"Number(10)"
-    ),
-  )
+  assert_reference_query("until(. > 5; . + 1)", "10", "[10]", 0)
 }
 
 ///|
 test "corner: until with decrement" {
-  debug_inspect(
-    test_query("until(. < 0; . - 1)", "5"),
-    content=(
-      #|"Number(-1)"
-    ),
-  )
+  assert_reference_query("until(. < 0; . - 1)", "5", "[-1]", 0)
 }

@@ -1,22 +1,31 @@
 ///|
 /// Parse postfix operators
-fn Parser::parse_postfix(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_postfix_inner(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
   let mut expr = self.parse_primary()
   while true {
     match self.current() {
       Some(TQuestion) => {
         self.advance()
-        expr = Optional(expr)
+        expr = self.located(start, Optional(expr))
         continue
       }
       Some(TLBracket) => {
         self.advance()
-        expr = self.parse_index_or_slice(expr)
+        expr = self.located(start, self.parse_index_or_slice(expr))
+        continue
+      }
+      Some(TField(name)) => {
+        self.advance()
+        expr = self.located(
+          start,
+          Pipe(expr, self.located(self.pos - 1, Key(name))),
+        )
         continue
       }
       Some(TDot) => {
         self.advance()
-        expr = self.parse_field_access(expr)
+        expr = self.located(start, self.parse_field_access(expr))
         continue
       }
       _ => break
@@ -31,54 +40,30 @@ fn Parser::parse_index_or_slice(
   self : Parser,
   base : @ast.Expr,
 ) -> @ast.Expr raise ParseError {
+  let start = self.pos - 1
   if self.consume(TRBracket) {
-    return Pipe(base, Index([]))
+    return Pipe(base, self.located(start, Index([])))
   }
-  if self.current() is Some(TString(key)) {
-    // .["key"]
-    self.advance()
-    self.expect(TRBracket)
-    return Pipe(base, Key(key))
-  }
-  let start_or_index = self.parse_slice_part()
+  let left = if self.check(TColon) { None } else { Some(self.parse_pipe()) }
   if self.consume(TColon) {
-    let end = self.parse_slice_part()
+    let right = if self.check(TRBracket) {
+      None
+    } else {
+      Some(self.parse_pipe())
+    }
     self.expect(TRBracket)
-    Pipe(base, Slice(start_or_index, end))
+    fn integer(expr : @ast.Expr?) -> Int32? raise ParseError {
+      match expr {
+        None => None
+        Some(Located(_, e)) => integer(Some(e))
+        Some(Literal(Number(n))) => Some(n.to_int())
+        _ => raise InvalidSyntax("Slice bounds must be integers")
+      }
+    }
+    Pipe(base, self.located(start, Slice(integer(left), integer(right))))
   } else {
-    let indices : Array[Int32] = []
-    guard start_or_index is Some(n) else {
-      raise InvalidSyntax("Expected index")
-    }
-    indices.push(n)
-    while self.consume(TComma) {
-      guard self.parse_slice_part() is Some(n2) else {
-        raise InvalidSyntax("Expected index after comma")
-      }
-      indices.push(n2)
-    }
     self.expect(TRBracket)
-    Pipe(base, Index(indices))
-  }
-}
-
-///|
-/// Parse optional integer for slice
-fn Parser::parse_slice_part(self : Parser) -> Int32? raise ParseError {
-  match self.current() {
-    Some(TNumber(n)) => {
-      self.advance()
-      Some(n.to_int())
-    }
-    Some(TMinus) => {
-      self.advance()
-      guard self.current() is Some(TNumber(n)) else {
-        raise InvalidSyntax("Expected number after minus")
-      }
-      self.advance()
-      Some(-n.to_int())
-    }
-    _ => None
+    Subscript(base, left.unwrap())
   }
 }
 
@@ -89,23 +74,17 @@ fn Parser::parse_field_access(
   base : @ast.Expr,
 ) -> @ast.Expr raise ParseError {
   match self.current() {
-    Some(TIdentifier(name)) => {
-      self.advance()
-      Pipe(base, Key(name))
-    }
-    Some(TString(name)) => {
-      // ."key"
-      self.advance()
-      Pipe(base, Key(name))
-    }
+    Some(TStringStart) => Pipe(base, Access(self.parse_string()))
     Some(TLBracket) => {
       self.advance()
       self.parse_index_or_slice(base)
     }
-    Some(TDot) => {
-      self.advance()
-      Recurse
-    }
-    _ => base
+    _ => raise InvalidSyntax("Expected field after dot")
   }
+}
+
+///|
+fn Parser::parse_postfix(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_postfix_inner())
 }

@@ -17,7 +17,7 @@ test "lex: field access" {
   debug_inspect(
     tokens,
     content=(
-      #|[TDot, TIdentifier("foo"), TEof]
+      #|[TField("foo"), TEof]
     ),
   )
 }
@@ -50,7 +50,15 @@ test "lex: numbers" {
   debug_inspect(
     tokens,
     content=(
-      #|[TNumber(123), TNumber(45.67), TNumber(-89), TNumber(-0.5), TEof]
+      #|[
+      #|  TNumber(123),
+      #|  TNumber(45.67),
+      #|  TMinus,
+      #|  TNumber(89),
+      #|  TMinus,
+      #|  TNumber(0.5),
+      #|  TEof,
+      #|]
     ),
   )
 }
@@ -61,7 +69,15 @@ test "lex: string literals" {
   debug_inspect(
     tokens,
     content=(
-      #|[TString("hello"), TString("world"), TEof]
+      #|[
+      #|  TStringStart,
+      #|  TStringText("hello"),
+      #|  TStringEnd,
+      #|  TStringStart,
+      #|  TStringText("world"),
+      #|  TStringEnd,
+      #|  TEof,
+      #|]
     ),
   )
 }
@@ -73,9 +89,15 @@ test "lex: string escapes" {
     tokens,
     content=(
       #|[
-      #|  TString("hello\nworld"),
-      #|  TString("tab\there"),
-      #|  TString("quote\"test"),
+      #|  TStringStart,
+      #|  TStringText("hello\nworld"),
+      #|  TStringEnd,
+      #|  TStringStart,
+      #|  TStringText("tab\there"),
+      #|  TStringEnd,
+      #|  TStringStart,
+      #|  TStringText("quote\"test"),
+      #|  TStringEnd,
       #|  TEof,
       #|]
     ),
@@ -94,7 +116,7 @@ test "lex: keywords" {
   debug_inspect(
     tokens,
     content=(
-      #|[TIf, TThen, TElse, TEnd, TAnd, TOr, TNot, TEof]
+      #|[TIf, TThen, TElse, TEnd, TAnd, TOr, TIdentifier("not"), TEof]
     ),
   )
 }

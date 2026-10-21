@@ -3,7 +3,7 @@
 fn test_query(query : String, input : String) -> String {
   let expr = @parser.parse(query) catch { e => return "ParseError: \{e}" }
   let json = @json.parse(input) catch { e => return "JsonParseError: \{e}" }
-  let results = @runtime.eval(expr, json) catch {
+  let results = @runtime.eval_all(@runtime.compile(expr), json).iter() catch {
     e => return "EvalError: \{e}"
   }
   let outputs : Array[String] = []

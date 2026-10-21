@@ -1,26 +1,28 @@
 ///|
 /// Parse logical or
-fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_or_inner(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
   let mut expr = self.parse_and()
   while self.consume(TOr) {
-    expr = Operation(expr, Or, self.parse_and())
+    expr = self.located(start, Operation(expr, Or, self.parse_and()))
   }
   expr
 }
 
 ///|
 /// Parse logical and
-fn Parser::parse_and(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_and_inner(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
   let mut expr = self.parse_comparison()
   while self.consume(TAnd) {
-    expr = Operation(expr, And, self.parse_comparison())
+    expr = self.located(start, Operation(expr, And, self.parse_comparison()))
   }
   expr
 }
 
 ///|
 /// Parse comparison operators
-fn Parser::parse_comparison(self : Parser) -> @ast.Expr raise ParseError {
+fn Parser::parse_comparison_inner(self : Parser) -> @ast.Expr raise ParseError {
   let expr = self.parse_additive()
   match self.current() {
     Some(TEq) => {
@@ -49,4 +51,22 @@ fn Parser::parse_comparison(self : Parser) -> @ast.Expr raise ParseError {
     }
     _ => expr
   }
+}
+
+///|
+fn Parser::parse_or(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_or_inner())
+}
+
+///|
+fn Parser::parse_and(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_and_inner())
+}
+
+///|
+fn Parser::parse_comparison(self : Parser) -> @ast.Expr raise ParseError {
+  let start = self.pos
+  self.located(start, self.parse_comparison_inner())
 }

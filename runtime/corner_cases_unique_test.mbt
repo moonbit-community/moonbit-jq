@@ -3,32 +3,18 @@
 
 ///|
 test "corner: unique_by with single attribute" {
-  debug_inspect(
-    test_query(
-      "unique_by(.a)", "[{\"a\":1,\"b\":2},{\"a\":1,\"b\":3},{\"a\":2,\"b\":1}]",
-    ),
-    content=(
-      #|"Array(\n  [\n    Object({ \"a\": Number(1), \"b\": Number(2) }),\n    Object({ \"a\": Number(2), \"b\": Number(1) }),\n  ],\n)"
-    ),
+  assert_reference_query(
+    "unique_by(.a)", "[{\"a\":1,\"b\":2},{\"a\":1,\"b\":3},{\"a\":2,\"b\":1}]", "[[{\"a\": 1, \"b\": 2}, {\"a\": 2, \"b\": 1}]]",
+    0,
   )
 }
 
 ///|
 test "corner: unique_by with empty array" {
-  debug_inspect(
-    test_query("unique_by(.x)", "[]"),
-    content=(
-      #|"Array([])"
-    ),
-  )
+  assert_reference_query("unique_by(.x)", "[]", "[[]]", 0)
 }
 
 ///|
 test "corner: unique with duplicates" {
-  debug_inspect(
-    test_query("unique", "[1,2,1,3,2,4]"),
-    content=(
-      #|"Array([Number(1), Number(2), Number(3), Number(4)])"
-    ),
-  )
+  assert_reference_query("unique", "[1,2,1,3,2,4]", "[[1, 2, 3, 4]]", 0)
 }
