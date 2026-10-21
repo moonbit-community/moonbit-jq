@@ -16,7 +16,7 @@ fn eval_compound_assign(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let update = Operation(Identity, op, Variable(compound_rhs_var))
+  let update : Expr = Operation(Identity, op, Variable(compound_rhs_var))
   let results : Array[Json] = []
   for value in eval_with_env(value_expr, input, env).collect() {
     let rhs_env = env.set(compound_rhs_var, value)
@@ -36,7 +36,7 @@ fn eval_alt_assign(
   input : Json,
   env : Env,
 ) -> Iter[Json] raise InterpreterError {
-  let update = Alternative(Identity, Variable(compound_rhs_var))
+  let update : Expr = Alternative(Identity, Variable(compound_rhs_var))
   let results : Array[Json] = []
   for value in eval_with_env(value_expr, input, env).collect() {
     let rhs_env = env.set(compound_rhs_var, value)

@@ -1,7 +1,7 @@
 ///|
 fn eval_expr(expr : @ast.Expr, input : String) -> Array[Json] raise {
   let json_input = @json.parse(input)
-  @ast.eval(expr, json_input).collect()
+  @runtime.eval(expr, json_input).collect()
 }
 
 ///|

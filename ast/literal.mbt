@@ -20,16 +20,6 @@ pub extend Literal with ToJson::{to_json}
 pub extend Literal with @debug.Debug::{to_repr}
 
 ///|
-fn Literal::to_runtime_json(self : Literal) -> Json {
-  match self {
-    Null => null
-    Bool(b) => Json::boolean(b)
-    Number(n) => Json::number(n)
-    String(s) => Json::string(s)
-  }
-}
-
-///|
 pub impl Show for Literal with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }

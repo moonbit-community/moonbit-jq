@@ -1,13 +1,3 @@
 import {
-  "moonbit-community/moonjq/ast/internal/helpers" @ast_internal,
-  "moonbitlang/core/cmp",
-  "moonbitlang/core/encoding/utf8" @encoding/utf8,
-  "moonbitlang/core/json",
-  "moonbitlang/core/math",
-  "moonbitlang/core/string",
   "moonbitlang/core/debug",
 }
-
-import {
-  "moonbit-community/moonjq/parser",
-} for "test"
