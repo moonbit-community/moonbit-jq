@@ -12,7 +12,7 @@ pub fn eval(Expr, Json) -> Iter[Json] raise
 pub(all) suberror InterpreterError {
   TypeMismatch(String, String)
   KeyNotFound(String)
-  IndexOutOfBounds(Int)
+  IndexOutOfBounds(Int32)
   InvalidOperation(String)
   DivisionByZero
   TypeError(String)
@@ -55,8 +55,8 @@ pub(all) enum Expr {
   Pipe(Expr, Expr)
   Comma(Expr, Expr)
   Key(String)
-  Index(Array[Int])
-  Slice(Int?, Int?)
+  Index(Array[Int32])
+  Slice(Int32?, Int32?)
   Optional(Expr)
   ArrayConstruct(Expr?)
   ObjectConstruct(Array[(Expr, Expr?)])
@@ -72,7 +72,7 @@ pub(all) enum Expr {
   Sort
   SortBy(Expr)
   Reverse
-  Flatten(Int?)
+  Flatten(Int32?)
   Unique
   UniqueBy(Expr)
   GroupBy(Expr)
@@ -100,7 +100,7 @@ pub(all) enum Expr {
   FromEntries
   WithEntries(Expr)
   MapValues(Expr)
-  Range(Int)
+  Range(Int32)
   RangeFromTo(Expr, Expr)
   RangeWithStep(Expr, Expr, Expr)
   First
@@ -145,7 +145,7 @@ pub(all) enum Expr {
   Implode
   ToJsonString
   FromJsonString
-  Nth(Int)
+  Nth(Int32)
   RIndex(Expr)
   Paths
   PathsWithFilter(Expr)
@@ -153,7 +153,7 @@ pub(all) enum Expr {
   GetPath(Expr)
   SetPath(Expr, Expr)
   DelPaths(Expr)
-  Limit(Int, Expr)
+  Limit(Int32, Expr)
   Until(Expr, Expr)
   While(Expr, Expr)
   Pow(Expr)
