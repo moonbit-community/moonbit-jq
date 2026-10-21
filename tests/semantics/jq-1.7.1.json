@@ -1,0 +1,2801 @@
+{
+  "reference": "jq-1.7.1",
+  "sha256": "5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5",
+  "cases": [
+    {
+      "query": ".true",
+      "input": {
+        "true": 7,
+        "a": {
+          "true": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.true",
+      "input": {
+        "true": 7,
+        "a": {
+          "true": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"true\"",
+      "input": {
+        "true": 7,
+        "a": {
+          "true": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{true: 1}",
+      "input": {
+        "true": 7,
+        "a": {
+          "true": 8
+        }
+      },
+      "outputs": [
+        {
+          "true": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".false",
+      "input": {
+        "false": 7,
+        "a": {
+          "false": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.false",
+      "input": {
+        "false": 7,
+        "a": {
+          "false": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"false\"",
+      "input": {
+        "false": 7,
+        "a": {
+          "false": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{false: 1}",
+      "input": {
+        "false": 7,
+        "a": {
+          "false": 8
+        }
+      },
+      "outputs": [
+        {
+          "false": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".null",
+      "input": {
+        "null": 7,
+        "a": {
+          "null": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.null",
+      "input": {
+        "null": 7,
+        "a": {
+          "null": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"null\"",
+      "input": {
+        "null": 7,
+        "a": {
+          "null": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{null: 1}",
+      "input": {
+        "null": 7,
+        "a": {
+          "null": 8
+        }
+      },
+      "outputs": [
+        {
+          "null": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".and",
+      "input": {
+        "and": 7,
+        "a": {
+          "and": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.and",
+      "input": {
+        "and": 7,
+        "a": {
+          "and": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"and\"",
+      "input": {
+        "and": 7,
+        "a": {
+          "and": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{and: 1}",
+      "input": {
+        "and": 7,
+        "a": {
+          "and": 8
+        }
+      },
+      "outputs": [
+        {
+          "and": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".or",
+      "input": {
+        "or": 7,
+        "a": {
+          "or": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.or",
+      "input": {
+        "or": 7,
+        "a": {
+          "or": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"or\"",
+      "input": {
+        "or": 7,
+        "a": {
+          "or": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{or: 1}",
+      "input": {
+        "or": 7,
+        "a": {
+          "or": 8
+        }
+      },
+      "outputs": [
+        {
+          "or": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".not",
+      "input": {
+        "not": 7,
+        "a": {
+          "not": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.not",
+      "input": {
+        "not": 7,
+        "a": {
+          "not": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"not\"",
+      "input": {
+        "not": 7,
+        "a": {
+          "not": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{not: 1}",
+      "input": {
+        "not": 7,
+        "a": {
+          "not": 8
+        }
+      },
+      "outputs": [
+        {
+          "not": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".if",
+      "input": {
+        "if": 7,
+        "a": {
+          "if": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.if",
+      "input": {
+        "if": 7,
+        "a": {
+          "if": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"if\"",
+      "input": {
+        "if": 7,
+        "a": {
+          "if": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{if: 1}",
+      "input": {
+        "if": 7,
+        "a": {
+          "if": 8
+        }
+      },
+      "outputs": [
+        {
+          "if": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".then",
+      "input": {
+        "then": 7,
+        "a": {
+          "then": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.then",
+      "input": {
+        "then": 7,
+        "a": {
+          "then": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"then\"",
+      "input": {
+        "then": 7,
+        "a": {
+          "then": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{then: 1}",
+      "input": {
+        "then": 7,
+        "a": {
+          "then": 8
+        }
+      },
+      "outputs": [
+        {
+          "then": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".else",
+      "input": {
+        "else": 7,
+        "a": {
+          "else": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.else",
+      "input": {
+        "else": 7,
+        "a": {
+          "else": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"else\"",
+      "input": {
+        "else": 7,
+        "a": {
+          "else": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{else: 1}",
+      "input": {
+        "else": 7,
+        "a": {
+          "else": 8
+        }
+      },
+      "outputs": [
+        {
+          "else": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".elif",
+      "input": {
+        "elif": 7,
+        "a": {
+          "elif": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.elif",
+      "input": {
+        "elif": 7,
+        "a": {
+          "elif": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"elif\"",
+      "input": {
+        "elif": 7,
+        "a": {
+          "elif": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{elif: 1}",
+      "input": {
+        "elif": 7,
+        "a": {
+          "elif": 8
+        }
+      },
+      "outputs": [
+        {
+          "elif": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".end",
+      "input": {
+        "end": 7,
+        "a": {
+          "end": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.end",
+      "input": {
+        "end": 7,
+        "a": {
+          "end": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"end\"",
+      "input": {
+        "end": 7,
+        "a": {
+          "end": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{end: 1}",
+      "input": {
+        "end": 7,
+        "a": {
+          "end": 8
+        }
+      },
+      "outputs": [
+        {
+          "end": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".as",
+      "input": {
+        "as": 7,
+        "a": {
+          "as": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.as",
+      "input": {
+        "as": 7,
+        "a": {
+          "as": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"as\"",
+      "input": {
+        "as": 7,
+        "a": {
+          "as": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{as: 1}",
+      "input": {
+        "as": 7,
+        "a": {
+          "as": 8
+        }
+      },
+      "outputs": [
+        {
+          "as": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".reduce",
+      "input": {
+        "reduce": 7,
+        "a": {
+          "reduce": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.reduce",
+      "input": {
+        "reduce": 7,
+        "a": {
+          "reduce": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"reduce\"",
+      "input": {
+        "reduce": 7,
+        "a": {
+          "reduce": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{reduce: 1}",
+      "input": {
+        "reduce": 7,
+        "a": {
+          "reduce": 8
+        }
+      },
+      "outputs": [
+        {
+          "reduce": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".foreach",
+      "input": {
+        "foreach": 7,
+        "a": {
+          "foreach": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.foreach",
+      "input": {
+        "foreach": 7,
+        "a": {
+          "foreach": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"foreach\"",
+      "input": {
+        "foreach": 7,
+        "a": {
+          "foreach": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{foreach: 1}",
+      "input": {
+        "foreach": 7,
+        "a": {
+          "foreach": 8
+        }
+      },
+      "outputs": [
+        {
+          "foreach": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".try",
+      "input": {
+        "try": 7,
+        "a": {
+          "try": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.try",
+      "input": {
+        "try": 7,
+        "a": {
+          "try": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"try\"",
+      "input": {
+        "try": 7,
+        "a": {
+          "try": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{try: 1}",
+      "input": {
+        "try": 7,
+        "a": {
+          "try": 8
+        }
+      },
+      "outputs": [
+        {
+          "try": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".catch",
+      "input": {
+        "catch": 7,
+        "a": {
+          "catch": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.catch",
+      "input": {
+        "catch": 7,
+        "a": {
+          "catch": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"catch\"",
+      "input": {
+        "catch": 7,
+        "a": {
+          "catch": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{catch: 1}",
+      "input": {
+        "catch": 7,
+        "a": {
+          "catch": 8
+        }
+      },
+      "outputs": [
+        {
+          "catch": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".def",
+      "input": {
+        "def": 7,
+        "a": {
+          "def": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.def",
+      "input": {
+        "def": 7,
+        "a": {
+          "def": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"def\"",
+      "input": {
+        "def": 7,
+        "a": {
+          "def": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{def: 1}",
+      "input": {
+        "def": 7,
+        "a": {
+          "def": 8
+        }
+      },
+      "outputs": [
+        {
+          "def": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".label",
+      "input": {
+        "label": 7,
+        "a": {
+          "label": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.label",
+      "input": {
+        "label": 7,
+        "a": {
+          "label": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"label\"",
+      "input": {
+        "label": 7,
+        "a": {
+          "label": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{label: 1}",
+      "input": {
+        "label": 7,
+        "a": {
+          "label": 8
+        }
+      },
+      "outputs": [
+        {
+          "label": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".break",
+      "input": {
+        "break": 7,
+        "a": {
+          "break": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.break",
+      "input": {
+        "break": 7,
+        "a": {
+          "break": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"break\"",
+      "input": {
+        "break": 7,
+        "a": {
+          "break": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{break: 1}",
+      "input": {
+        "break": 7,
+        "a": {
+          "break": 8
+        }
+      },
+      "outputs": [
+        {
+          "break": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".import",
+      "input": {
+        "import": 7,
+        "a": {
+          "import": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.import",
+      "input": {
+        "import": 7,
+        "a": {
+          "import": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"import\"",
+      "input": {
+        "import": 7,
+        "a": {
+          "import": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{import: 1}",
+      "input": {
+        "import": 7,
+        "a": {
+          "import": 8
+        }
+      },
+      "outputs": [
+        {
+          "import": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".include",
+      "input": {
+        "include": 7,
+        "a": {
+          "include": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.include",
+      "input": {
+        "include": 7,
+        "a": {
+          "include": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"include\"",
+      "input": {
+        "include": 7,
+        "a": {
+          "include": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{include: 1}",
+      "input": {
+        "include": 7,
+        "a": {
+          "include": 8
+        }
+      },
+      "outputs": [
+        {
+          "include": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".module",
+      "input": {
+        "module": 7,
+        "a": {
+          "module": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".a.module",
+      "input": {
+        "module": 7,
+        "a": {
+          "module": 8
+        }
+      },
+      "outputs": [
+        8
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ".\"module\"",
+      "input": {
+        "module": 7,
+        "a": {
+          "module": 8
+        }
+      },
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": "{module: 1}",
+      "input": {
+        "module": 7,
+        "a": {
+          "module": 8
+        }
+      },
+      "outputs": [
+        {
+          "module": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "field"
+    },
+    {
+      "query": ". 1",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": ".a.",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected end of file, expecting FORMAT or QQSTRING_START or '[' (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": ".a.)",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting FORMAT or QQSTRING_START or '[' (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(. 1)\"",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(.a.)\"",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected QQSTRING_INTERP_END, expecting FORMAT or QQSTRING_START or '[' (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": ".",
+      "input": null,
+      "outputs": [
+        null
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "1.",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(empty)\"",
+      "input": null,
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\((1,2))\"",
+      "input": null,
+      "outputs": [
+        "1",
+        "2"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"a\\((1,2))b\\((3,4))\"",
+      "input": null,
+      "outputs": [
+        "a1b3",
+        "a2b3",
+        "a1b4",
+        "a2b4"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(\"\\((1,2))\")\"",
+      "input": null,
+      "outputs": [
+        "1",
+        "2"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(1 # ) ignored\n)\"",
+      "input": null,
+      "outputs": [
+        "1"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"😀\\(. 1)\"",
+      "input": null,
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?)",
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(\"(\")\"",
+      "input": null,
+      "outputs": [
+        "("
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(\"\\\"\")\"",
+      "input": null,
+      "outputs": [
+        "\""
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\(null)\"",
+      "input": null,
+      "outputs": [
+        "null"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\([1,2])\"",
+      "input": null,
+      "outputs": [
+        "[1,2]"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "\"\\({a:1})\"",
+      "input": null,
+      "outputs": [
+        "{\"a\":1}"
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "frontend"
+    },
+    {
+      "query": "limit(3; repeat(.))",
+      "input": null,
+      "outputs": [
+        null,
+        null,
+        null
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "limit(1; (1, ({} + 1)))",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "1, ({} + 1), 2",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): object ({}) and number (1) cannot be added",
+      "tag": "stream"
+    },
+    {
+      "query": "(1, ({}+1), 2)?",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "try (1, error({a:1}), 2) catch .",
+      "input": null,
+      "outputs": [
+        1,
+        {
+          "a": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "(try 1) | error(\"downstream\")",
+      "input": null,
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): downstream",
+      "tag": "stream"
+    },
+    {
+      "query": "false and error(\"unreachable\")",
+      "input": null,
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "true or error(\"unreachable\")",
+      "input": null,
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "(1,2)+(10,20)",
+      "input": null,
+      "outputs": [
+        11,
+        12,
+        21,
+        22
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "{a:(1,2),b:(3,4)}",
+      "input": null,
+      "outputs": [
+        {
+          "a": 1,
+          "b": 3
+        },
+        {
+          "a": 1,
+          "b": 4
+        },
+        {
+          "a": 2,
+          "b": 3
+        },
+        {
+          "a": 2,
+          "b": 4
+        }
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "[empty]",
+      "input": null,
+      "outputs": [
+        []
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "null",
+      "input": null,
+      "outputs": [
+        null
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "empty",
+      "input": null,
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "first(1,error(\"stop\"))",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "last(empty)",
+      "input": null,
+      "outputs": [
+        null
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "reduce (1,2) as $x (0; .+$x, .+10)",
+      "input": null,
+      "outputs": [
+        20
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "foreach (1,2) as $x (0; .+$x, .+10)",
+      "input": null,
+      "outputs": [
+        1,
+        10,
+        12,
+        20
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "def twice(f): f,f; twice(.+1)",
+      "input": null,
+      "outputs": [
+        1,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "def apply(f): 10|f; apply(.+1)",
+      "input": null,
+      "outputs": [
+        11
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "def f($x): $x,$x; f((1,2))",
+      "input": null,
+      "outputs": [
+        1,
+        1,
+        2,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "1 as $x | def f: $x; 2 as $x | f",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "def f: 1; def g: f; def f: 2; g",
+      "input": null,
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "range(0;3)",
+      "input": null,
+      "outputs": [
+        0,
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "reduce range(0;3) as $x (0; .+$x)",
+      "input": null,
+      "outputs": [
+        3
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "limit(3; recurse(.+1))",
+      "input": null,
+      "outputs": [
+        null,
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "path(first(.[],error(\"stop\")))",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [
+        [
+          0
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "path((.[],error(\"stop\"))?)",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": ".[] |= (.+1,error(\"stop\"))",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [
+        [
+          2,
+          3
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": ".[0] |= empty",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [
+        [
+          2
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "path(null // .a)",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): Cannot index array with string \"a\"",
+      "tag": "stream"
+    },
+    {
+      "query": "path(null | (.a | empty))",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): Invalid path expression near attempt to access element \"a\" of null",
+      "tag": "stream"
+    },
+    {
+      "query": "path(last(.[]))",
+      "input": [
+        1,
+        2
+      ],
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): Invalid path expression with result 2",
+      "tag": "stream"
+    },
+    {
+      "query": "[1,2] | map(.,.+10)",
+      "input": null,
+      "outputs": [
+        [
+          1,
+          11,
+          2,
+          12
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "[1,2] | map_values(empty)",
+      "input": null,
+      "outputs": [
+        []
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "[1,2,3]| any(.[]; .>1)",
+      "input": null,
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "[1,2,3]| all(.[]; .>0)",
+      "input": null,
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null,
+      "tag": "stream"
+    },
+    {
+      "query": "limit(0; error(\"unused\"))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(-1; (1,2,3))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        2,
+        3
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit((0,1,2); repeat(.))",
+      "input": 3,
+      "tag": "extended",
+      "outputs": [
+        3,
+        3,
+        3
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(3; repeat(empty,1))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        1,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "first(error({code:7}),1)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1) (not a string): {\"code\":7}"
+    },
+    {
+      "query": "[first(empty)]",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        []
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "(try (1,error(\"inside\")) catch 2) | (., error(\"outside\"))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): outside"
+    },
+    {
+      "query": "try ((1,2) | (.,error(\"inside\"))) catch {caught:.}",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        {
+          "caught": "inside"
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[false, true] | .[] and (empty,true)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        false,
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "(false,true) or (false,true)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        false,
+        true,
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def unused(f): 1; unused(error(\"unused\"))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(x): x,x; 3 | f(.+1)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        4,
+        4
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f($x;$y): [$x,$y]; f((1,2); (3,4))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(a): a|a; 2|f(.+1)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        4
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f: 1; def f(x): x; f, f(2)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "10 as $x | def f: $x; 20 as $x | f",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        10
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "1 as $x | (def f: $x; f), (2 as $x | $x)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f: $x; 10 as $x | f",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: $x is not defined"
+    },
+    {
+      "query": "def f(x): $x; f(1)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: $x is not defined"
+    },
+    {
+      "query": "def f: 1; f(2)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: f/1 is not defined"
+    },
+    {
+      "query": ".a[.b]",
+      "input": {
+        "a": {
+          "x": 1
+        },
+        "b": "x"
+      },
+      "tag": "extended",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path(.a[.b])",
+      "input": {
+        "a": {
+          "x": 1
+        },
+        "b": "x"
+      },
+      "tag": "extended",
+      "outputs": [
+        [
+          "a",
+          "x"
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a[.b] |= .+1",
+      "input": {
+        "a": {
+          "x": 1
+        },
+        "b": "x"
+      },
+      "tag": "extended",
+      "outputs": [
+        {
+          "a": {
+            "x": 2
+          },
+          "b": "x"
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "({a:[1,2]},{a:[3,4]}).a[(0,1)]",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1,
+        3,
+        2,
+        4
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[path(.a | select((true,false,true)))]",
+      "input": {
+        "a": 1
+      },
+      "tag": "extended",
+      "outputs": [
+        [
+          [
+            "a"
+          ],
+          [
+            "a"
+          ]
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path(null // .a)",
+      "input": {},
+      "tag": "extended",
+      "outputs": [
+        [
+          "a"
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path((null|.a)?)",
+      "input": {},
+      "tag": "extended",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path(try (.[],error(\"x\")) catch .a)",
+      "input": [
+        1,
+        2
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): Invalid path expression near attempt to access element \"a\" of \"x\""
+    },
+    {
+      "query": "path((.a as $x | .b))",
+      "input": {
+        "a": 1,
+        "b": 2
+      },
+      "tag": "extended",
+      "outputs": [
+        [
+          "b"
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "(.a,.b) = (1,2)",
+      "input": {
+        "a": 0,
+        "b": 0
+      },
+      "tag": "extended",
+      "outputs": [
+        {
+          "a": 1,
+          "b": 1
+        },
+        {
+          "a": 2,
+          "b": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".[] += (1,2)",
+      "input": [
+        1,
+        2
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".[] |= (empty, .+1, error(\"unused\"))",
+      "input": [
+        1,
+        2
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          2,
+          3
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "reduce (1,2) as $x (0; if $x==1 then empty else .+10 end)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        10
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "foreach (1,2) as $x (0; if $x==1 then empty else .+10 end)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        10
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "foreach (1,2) as $x (0; .+$x; empty)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(2; foreach range(0;100) as $x (0; .+$x))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        0,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "first(foreach (1,error(\"unused\")) as $x (0; .+$x))",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "reduce (1,2) as $x ((0,10); .+$x)",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        3,
+        13
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "recurse(.+1; .<3)",
+      "input": 3,
+      "tag": "extended",
+      "outputs": [
+        3
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "recurse(.+1; .<3)",
+      "input": 0,
+      "tag": "extended",
+      "outputs": [
+        0,
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(4; recurse(.[]?))",
+      "input": {
+        "a": [
+          1,
+          2
+        ]
+      },
+      "tag": "extended",
+      "outputs": [
+        {
+          "a": [
+            1,
+            2
+          ]
+        },
+        [
+          1,
+          2
+        ],
+        1,
+        2
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[paths(ascii_downcase == \"x\")]",
+      "input": {
+        "k": "X"
+      },
+      "tag": "extended",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): explode input must be a string"
+    },
+    {
+      "query": "first(combinations)",
+      "input": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          1,
+          3
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "combinations",
+      "input": [],
+      "tag": "extended",
+      "outputs": [
+        []
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "walk(empty)",
+      "input": {
+        "a": [
+          1,
+          2
+        ]
+      },
+      "tag": "extended",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"😀\"|.[0:1]",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        "😀"
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path(.[1:3])",
+      "input": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          {
+            "start": 1,
+            "end": 3
+          }
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".[1:3] |= reverse",
+      "input": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          1,
+          3,
+          2,
+          4
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".[1:3] = [8]",
+      "input": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          1,
+          8,
+          4
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".[1:3] |= empty",
+      "input": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "tag": "extended",
+      "outputs": [
+        [
+          1,
+          4
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\((empty,1))\\((2,3))\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        "12",
+        "13"
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\((\"😀\",[1,2],{end:true}))\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        "😀",
+        "[1,2]",
+        "{\"end\":true}"
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\((\"\\((1,2))\", \"x\"))\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        "1",
+        "2",
+        "x"
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\(1 # a quote \" and ) are comments\n + 2)\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [
+        "3"
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\(1 2)\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected LITERAL (Unix shell quoting issues?)"
+    },
+    {
+      "query": ".and.line",
+      "input": {
+        "and": {
+          "line": 7
+        }
+      },
+      "tag": "extended",
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ". and .line",
+      "input": {
+        "line": 0
+      },
+      "tag": "extended",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "split((\",\",\";\"))",
+      "input": "a,b;c",
+      "tag": "extended",
+      "outputs": [
+        [
+          "a",
+          "b;c"
+        ],
+        [
+          "a,b",
+          "c"
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "has((\"a\",\"b\"))",
+      "input": {
+        "a": 1
+      },
+      "tag": "extended",
+      "outputs": [
+        true,
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "range(.a; .b; .c)",
+      "input": {
+        "a": 1,
+        "b": 5,
+        "c": 2
+      },
+      "tag": "extended",
+      "outputs": [
+        1,
+        3
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "\"\\(error({reason:\"bad\"}))\"",
+      "input": null,
+      "tag": "extended",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1) (not a string): {\"reason\":\"bad\"}"
+    },
+    {
+      "query": "@",
+      "input": null,
+      "tag": "binding",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Unix shell quoting issues?)"
+    },
+    {
+      "query": "$",
+      "input": null,
+      "tag": "binding",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected end of file, expecting '$' (Unix shell quoting issues?)"
+    },
+    {
+      "query": "$1",
+      "input": null,
+      "tag": "binding",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: syntax error, unexpected LITERAL, expecting '$' (Unix shell quoting issues?)"
+    },
+    {
+      "query": "def not: 7; not",
+      "input": null,
+      "tag": "binding",
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "not(1)",
+      "input": null,
+      "tag": "binding",
+      "outputs": [],
+      "status": 3,
+      "error_prefix": "jq: error: not/1 is not defined"
+    }
+  ]
+}
