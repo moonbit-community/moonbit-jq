@@ -121,6 +121,15 @@ fn Plan::start(
       self.call_args(function, args, 0, input, env, callee, tracking)
     }
     Builtin(name, args) => self.builtin(name, args, input, env, tracking, span)
+    ValueBuiltin(name, bindings) => {
+      let args = bindings.map(id => {
+        match env.values.get(id) {
+          Some(Bound(json)) => json
+          _ => raise EvalError(Json::string("Unbound builtin argument"), span)
+        }
+      })
+      self.value_builtin(name, args, input, tracking, span)
+    }
     Reduce(gen, binding, init, update, extract) =>
       values(init).flat_map(initial => {
         self.reduce_stream(

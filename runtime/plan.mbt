@@ -34,6 +34,7 @@ priv enum Code {
   Call(Int32, Array[Int32])
   Filter(Int32)
   Builtin(String, Array[Int32])
+  ValueBuiltin(String, Array[Int32])
   Reduce(Int32, Int32, Int32, Int32, Int32?)
   Update(Int32, Int32, UpdateMode)
 } derive(Debug)

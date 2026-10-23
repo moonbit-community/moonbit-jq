@@ -99,6 +99,26 @@ fn Compiler::compound_update(
 }
 
 ///|
+fn Compiler::value_builtin(
+  self : Compiler,
+  name : String,
+  args : Array[Int32],
+  order : ArgumentOrder,
+  span : @ast.Span?,
+) -> Int32 {
+  let bindings = args.map(_ => self.fresh())
+  let mut body = self.node(ValueBuiltin(name, bindings), span)
+  for offset in 0..<args.length() {
+    let i = match order {
+      LeftToRight => args.length() - offset - 1
+      RightToLeft => offset
+    }
+    body = self.node(Bind(args[i], bindings[i], body), span)
+  }
+  body
+}
+
+///|
 fn Compiler::expr(
   self : Compiler,
   expr : @ast.Expr,
@@ -208,7 +228,10 @@ fn Compiler::expr(
         }
         if expr is Some(e) {
           let value = child(e)
-          let text = self.node(Builtin("tostring", []), self.nodes[value].span)
+          let text = self.node(
+            ValueBuiltin("tostring", []),
+            self.nodes[value].span,
+          )
           let converted = self.node(Pipe(value, text), self.nodes[value].span)
           result = self.node(Binary(result, Add, converted), span)
         }
@@ -223,13 +246,18 @@ fn Compiler::expr(
       if names.functions.get(name + "/" + arity.to_string()) is Some((id, _)) {
         Call(id, args.map(child))
       } else {
-        guard builtin_spec(name, arity) is Some(_) else {
+        guard builtin_spec(name, arity) is Some(spec) else {
           raise CompileError(
             "Undefined function: " + name + "/" + arity.to_string(),
             span,
           )
         }
-        Builtin(name, args.map(child))
+        match (spec.mode, spec.consumption) {
+          (Values(order), EachResult | FirstResult) =>
+            return self.value_builtin(name, args.map(child), order, span)
+          (Filters | Mixed, _) => Builtin(name, args.map(child))
+          _ => raise CompileError("Missing value consumer for " + name, span)
+        }
       }
     }
     Format(name) => Builtin("@" + name, [])

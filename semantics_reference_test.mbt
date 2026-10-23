@@ -1461,3 +1461,96 @@ test "reference jq 1.7.1 247: containment kinds" {
 test "reference jq 1.7.1 248: containment kinds" {
   reference_case("contains([0])", "[false, true, null]", "[false]", 0)
 }
+
+///|
+test "reference jq 1.7.1 249: range evaluation order" {
+  reference_case(
+    "[range((0,1);(2,3))]", "null", "[[0, 1, 0, 1, 2, 1, 1, 2]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 250: range evaluation order" {
+  reference_case(
+    "[range((0,1);(3,4);(1,2))]", "null", "[[0, 1, 2, 0, 2, 0, 1, 2, 3, 0, 2, 1, 2, 1, 1, 2, 3, 1, 3]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 251: range evaluation order" {
+  reference_case("range(1/0;empty)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 252: range evaluation order" {
+  reference_case("range(empty;1/0)", "null", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 253: range evaluation order" {
+  reference_case("range(1/0;empty;1)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 254: range evaluation order" {
+  reference_case("range(0;1/0;empty)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 255: range evaluation order" {
+  reference_case("range(empty;1/0;1)", "null", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 256: range evaluation order" {
+  reference_case("range(0;empty;1/0)", "null", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 257: range evaluation order" {
+  reference_case("range((0,error(\"start\"));2)", "null", "[0, 1]", 5)
+}
+
+///|
+test "reference jq 1.7.1 258: range evaluation order" {
+  reference_case("range(0;(2,error(\"end\")))", "null", "[0, 1]", 5)
+}
+
+///|
+test "reference jq 1.7.1 259: range evaluation order" {
+  reference_case("range(0;3;(1,error(\"step\")))", "null", "[0, 1, 2]", 5)
+}
+
+///|
+test "reference jq 1.7.1 260: range evaluation order" {
+  reference_case("range((0,error(\"start\"));empty)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 261: range evaluation order" {
+  reference_case("first(range((0,error(\"unused\"));3))", "null", "[0]", 0)
+}
+
+///|
+test "reference jq 1.7.1 262: range evaluation order" {
+  reference_case("limit(2;range(0;1000000000))", "null", "[0, 1]", 0)
+}
+
+///|
+test "reference jq 1.7.1 263: range evaluation order" {
+  reference_case(
+    "[range((4,3);(0,1);(-1,-2))]", "null", "[[4, 3, 2, 1, 4, 2, 4, 3, 2, 4, 2, 3, 2, 1, 3, 1, 3, 2, 3]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 264: range evaluation order" {
+  reference_case("setpath((error(\"left\"),[]);empty)", "null", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 265: range evaluation order" {
+  reference_case("pow(1/0;empty)", "null", "[]", 0)
+}
