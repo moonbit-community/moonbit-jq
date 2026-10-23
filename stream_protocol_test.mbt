@@ -89,3 +89,76 @@ test "stream: interpolation equals ordinary conversion and concatenation" {
     }
   }
 }
+
+///|
+fn assert_next_json(
+  stream : Iter[Result[Json, @moonjq.EvalError]],
+  expected : Json,
+) -> Unit raise {
+  match stream.next() {
+    Some(Ok(json)) => assert_eq(json, expected)
+    Some(Err(err)) => raise err
+    None => fail("expected another output")
+  }
+}
+
+///|
+test "stream: lowered arguments and assignments own their bindings" {
+  let query = @moonjq.parse("def f($x): .a //= $x; f(range(.k;.k+2))")
+  let input : Json = { "k": 1 }
+  let a = query.eval(input)
+  let b = query.eval({ "a": false, "k": 10 })
+  assert_next_json(a, { "k": 1, "a": 1 })
+  assert_next_json(b, { "a": 10, "k": 10 })
+  assert_next_json(b, { "a": 11, "k": 10 })
+  assert_next_json(a, { "k": 1, "a": 2 })
+  assert_true(a.next() is None)
+  assert_true(b.next() is None)
+  assert_eq(query.eval_all(input), [{ "k": 1, "a": 1 }, { "k": 1, "a": 2 }])
+  assert_eq(input, { "k": 1 })
+}
+
+///|
+test "stream: slice reconstruction leaves other branches and evaluations intact" {
+  let query = @moonjq.parse(
+    "def f($x): .a[0:0] = [$x]; f(range(.k;.k+2)) | .a[0:2][1] |= empty",
+  )
+  let input : Json = { "a": [9], "k": 1 }
+  let a = query.eval(input)
+  let b = query.eval({ "a": [8], "k": 10 })
+  assert_next_json(a, { "a": [1], "k": 1 })
+  assert_next_json(b, { "a": [10], "k": 10 })
+  assert_next_json(a, { "a": [2], "k": 1 })
+  assert_next_json(b, { "a": [11], "k": 10 })
+  assert_true(a.next() is None)
+  assert_true(b.next() is None)
+  assert_eq(query.eval_all(input), [{ "a": [1], "k": 1 }, { "a": [2], "k": 1 }])
+  assert_eq(input, { "a": [9], "k": 1 })
+}
+
+///|
+test "stream: lowered rhs preserves output, terminal errors and UTF-16 spans" {
+  let prefix = "\"😀\" as $prefix | .a //= (1, "
+  let call = "error({bad:true})"
+  let query = @moonjq.parse(prefix + call + ",2)")
+  let stream = query.eval({})
+  assert_next_json(stream, { "a": 1 })
+  guard stream.next() is Some(Err(err)) else { fail("expected rhs error") }
+  assert_eq(err.value(), { "bad": true })
+  guard err.span() is Some(span) else { fail("expected source position") }
+  assert_eq(span.start, prefix.length())
+  assert_eq(span.end, prefix.length() + call.length())
+  assert_true(stream.next() is None)
+  assert_true(stream.next() is None)
+  assert_next_json(query.eval({}), { "a": 1 })
+}
+
+///|
+test "stream: lowered parameters and ranges remain lazy" {
+  let unused = @moonjq.parse("def f(g): def g: 42; g; f(repeat(empty))")
+  assert_eq(unused.eval_all(null), [Json::number(42)])
+  let first = @moonjq.parse("first(def f($x): $x; f((1,repeat(empty))))")
+  assert_eq(first.eval_all(null), [Json::number(1)])
+  let range = @moonjq.parse("limit(2; range(0;1000000000))")
+  assert_eq(range.eval_all(null), [Json::number(0), Json::number(1)])
+}

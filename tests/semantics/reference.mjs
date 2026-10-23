@@ -173,6 +173,70 @@ function* generatedCases() {
       yield [`(${atom}) | tostring`, source];
     }
   }
+  // Keep each family finite while crossing the revised compilation and path
+  // rules with empty/error streams, multiple results, and early consumers.
+  const rhs = ['empty', '(1,2)', '(.k // 3)', '(1,error("rhs"))'];
+  for (const source of [{}, { a: null, b: false, k: 4 }, { a: 1, b: 2, k: 5 }]) {
+    for (const path of ['.a', '(.a,.b)', '(.a,.a)']) {
+      for (const expression of rhs) {
+        for (const operator of ['//=', '+=', '|=']) {
+          const update = `${path} ${operator} (${expression})`;
+          yield [update, source];
+          yield [`first(${update})`, source];
+        }
+      }
+    }
+  }
+  const bounds = ['empty', '(0,1)', '(2,3)', 'error("bound")'];
+  for (const start of bounds) {
+    for (const end of bounds) {
+      for (const step of ['1', '(1,2)', 'empty', 'error("step")']) {
+        yield [`range(${start};${end};${step})`, null];
+      }
+      yield [`range(${start};${end})`, null];
+    }
+  }
+  for (const argument of ['.', '(.+1)', '(1,2)', 'empty', '(1,error("arg"))']) {
+    for (const body of [
+      '[$x,x]', '10 | x', 'def x: 42; [$x,x]',
+      'def saved: x; def x: 42; [$x,saved,x]',
+    ]) {
+      yield [`def f($x): ${body}; 1 | f(${argument})`, null];
+    }
+    yield [`def f(x): def x: 42; x; f(${argument})`, null];
+    yield [`def f($x;$y): [$x,$y,x,y]; f(${argument};(3,4))`, 1];
+  }
+  const trees = [null, false, true, 1, 'abc', [null, 1], [false, true],
+    [{ a: null }, { a: 2 }], { a: null }, { a: [1, { b: 'abc' }] }];
+  for (const container of trees) {
+    for (const item of trees) {
+      yield [`contains(${JSON.stringify(item)})`, container];
+      yield [`inside(${JSON.stringify(container)})`, item];
+    }
+  }
+  const fields = { a: { x: 1, y: null }, k: 'x', keys: ['x', 'y'] };
+  for (const key of ['.k', '.keys[]', 'empty', '(.k,error("key"))']) {
+    const access = `.a."\\(${key})"`;
+    yield [access, fields];
+    yield [`path(${access})`, fields];
+    for (const expression of ['empty', '(8,9)', '(.k // 3)']) {
+      yield [`${access} //= ${expression}`, fields];
+      yield [`${access} = ${expression}`, fields];
+    }
+  }
+  const paths = ['.[0:3]', '.[1:4][0]', '.[0:3][-1]',
+    '.[1:4][]', '.[0:3][1:2][]', '.[0:3][0:1]'];
+  for (const source of [null, [], [0, 1, 2, 3, 4]]) {
+    for (const path of paths) {
+      for (const expression of ['[8,9]', '1', 'empty']) {
+        yield [`${path} = ${expression}`, source];
+      }
+      yield [`${path} |= empty`, source];
+      for (const other of paths) {
+        yield [`(${path},${other}) |= empty`, source];
+      }
+    }
+  }
 }
 
 // JSON objects compare without regard to key order; numeric -0 equals 0.
