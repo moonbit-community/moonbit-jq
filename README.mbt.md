@@ -236,10 +236,6 @@ moonbit-jq/
 ├── ast/                   # AST + streaming evaluator + integration tests
 ├── cmd/jq/                # bobzhang/jq native + Wasm executable module
 ├── cmd/jqlog/             # bobzhang/jqlog native executable module
-├── cmd/<tool>/            # bobzhang/<tool> coreutils-style commands (wc, head,
-│                          # tail, nl, uniq, cut, paste, comm, join, tr, sort,
-│                          # base64, xxd, printf, true, false, cat, sleep), each a
-│                          # standalone moonx module
 ├── parser/                # Parser (includes lexer)
 ├── tests/cram/            # Moon Cram CLI tests
 ```
