@@ -78,6 +78,27 @@ fn Compiler::scope(
 }
 
 ///|
+fn Compiler::compound_update(
+  self : Compiler,
+  path : Int32,
+  rhs : Int32,
+  op : @ast.BinaryOp?,
+  span : @ast.Span?,
+) -> Code {
+  let binding = self.fresh()
+  let current = self.node(Identity, span)
+  let saved = self.node(Variable(binding), span)
+  let body = self.node(
+    match op {
+      Some(op) => Binary(current, op, saved)
+      None => Alternative(current, saved)
+    },
+    span,
+  )
+  Bind(rhs, binding, self.node(Update(path, body, Modify), span))
+}
+
+///|
 fn Compiler::expr(
   self : Compiler,
   expr : @ast.Expr,
@@ -164,17 +185,18 @@ fn Compiler::expr(
     }
     Update(path, value) => Update(child(path), child(value), Modify)
     Assign(path, value) => Update(child(path), child(value), Assign)
-    AddAssign(path, value) => Update(child(path), child(value), Compound(Add))
+    AddAssign(path, value) =>
+      self.compound_update(child(path), child(value), Some(Add), span)
     SubAssign(path, value) =>
-      Update(child(path), child(value), Compound(Subtract))
+      self.compound_update(child(path), child(value), Some(Subtract), span)
     MulAssign(path, value) =>
-      Update(child(path), child(value), Compound(Multiply))
+      self.compound_update(child(path), child(value), Some(Multiply), span)
     DivAssign(path, value) =>
-      Update(child(path), child(value), Compound(Divide))
+      self.compound_update(child(path), child(value), Some(Divide), span)
     ModAssign(path, value) =>
-      Update(child(path), child(value), Compound(Modulo))
+      self.compound_update(child(path), child(value), Some(Modulo), span)
     AltAssign(path, value) =>
-      Update(child(path), child(value), AlternativeAssign)
+      self.compound_update(child(path), child(value), None, span)
     StringInterpolation(parts) => {
       let mut result = self.node(Constant(Json::string("")), span)
       for (text, expr) in parts {

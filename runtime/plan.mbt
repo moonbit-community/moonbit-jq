@@ -42,8 +42,6 @@ priv enum Code {
 priv enum UpdateMode {
   Assign
   Modify
-  Compound(@ast.BinaryOp)
-  AlternativeAssign
 } derive(Debug)
 
 ///|
