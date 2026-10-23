@@ -28,12 +28,22 @@ moon fmt
 ```
 
 The deterministic generator uses seed 1701 and retains the previous Python
-generator's 272 cases. It uses bounded syntax depth, finite leaves, and explicit
-limits. It compares output counts, order, and termination status;
+generator's 272 cases. Another 738 cases cross assignment lowering, value/filter
+parameters and lexical shadowing, range argument order, nested containment,
+interpolated fields, and slice writes/deletions. All 1,010 generated cases use
+bounded syntax depth, finite leaves, and explicit limits. They compare output
+counts, order, and termination status;
 the fixed cases also require diagnostics on CLI errors. Interpolation/conversion
 pairs are checked against jq, alongside a library equivalence property. Regex
 algorithms, modules, and historical pure-operation extensions are outside this
 acceptance set.
+
+The fixed regressions include right-hand errors after successful outputs,
+truthy and multi-path `//=`, distinct boolean kinds, original-input interpolation,
+function definition captures, null slice creation, and overlapping slice paths
+passed through both updates and `delpaths`. Library stream tests additionally
+check early termination, repeated and interleaved evaluations, input immutability,
+and UTF-16 locations after lowering.
 
 The CLI checks verify that both commands retain preceding output (including its
 newline), report errors, and skip malformed log lines:
