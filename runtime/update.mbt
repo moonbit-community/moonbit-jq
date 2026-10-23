@@ -12,37 +12,22 @@ fn Plan::update(
     self.machine(path, { json: input.json, path: Some([]), }, env, true)
   }
   match mode {
-    Modify => self.modify(paths(), body, input.json, env, None, span)
-    AlternativeAssign =>
-      self.modify(paths(), body, input.json, env, Some((None, input)), span)
-    Assign | Compound(_) =>
+    Modify => self.modify(paths(), body, input.json, env, span)
+    Assign =>
       self
       .machine(body, input, env, false)
       .flat_map(rhs => {
-        match mode {
-          Compound(op) =>
-            self.modify(
-              paths(),
-              body,
-              input.json,
-              env,
-              Some((Some(op), rhs)),
-              span,
-            )
-          _ => {
-            let updated = Ref(input.json)
-            paths()
-            .map(v => {
-              let p = path_result(v, span)
-              guard p.json is Array(segments) else { return v }
-              updated.val = set_at_path(updated.val, segments, rhs.json) catch {
-                err => raise primitive_error(err, span)
-              }
-              v
-            })
-            .collect(_ => Machine::one(value(updated.val)))
+        let updated = Ref(input.json)
+        paths()
+        .map(v => {
+          let p = path_result(v, span)
+          guard p.json is Array(segments) else { return v }
+          updated.val = set_at_path(updated.val, segments, rhs.json) catch {
+            err => raise primitive_error(err, span)
           }
-        }
+          v
+        })
+        .collect(_ => Machine::one(value(updated.val)))
       })
   }
 }
@@ -54,7 +39,6 @@ fn Plan::modify(
   body : Int32,
   original : Json,
   env : Env,
-  operation : (@ast.BinaryOp?, Value)?,
   span : @ast.Span?,
 ) -> Machine {
   let updated = Ref(original)
@@ -64,21 +48,7 @@ fn Plan::modify(
     let p = path_result(entry, span)
     guard p.json is Array(segments) else { return Machine::empty() }
     let current = get_at_path(updated.val, segments).unwrap_or(null)
-    let changes = match operation {
-      None => self.machine(body, value(current), env, false).take(1)
-      Some((Some(op), rhs)) => {
-        let next = eval_binary_op(op, current, rhs.json) catch {
-          err => raise primitive_error(err, span)
-        }
-        Machine::one(value(next))
-      }
-      Some((None, input)) =>
-        if @ast_internal.is_truthy(current) {
-          Machine::one(value(current))
-        } else {
-          self.machine(body, input, env, false).take(1)
-        }
-    }
+    let changes = self.machine(body, value(current), env, false).take(1)
     changes.collect(vs => {
       match vs.get(0) {
         Some(v) =>

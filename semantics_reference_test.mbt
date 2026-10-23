@@ -1221,3 +1221,110 @@ test "reference jq 1.7.1 206: binding" {
 test "reference jq 1.7.1 207: binding" {
   reference_case("not(1)", "null", "[]", 3)
 }
+
+///|
+test "reference jq 1.7.1 208: alternative assignment" {
+  reference_case(".a //= (1,2)", "{}", "[{\"a\": 1}, {\"a\": 2}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 209: alternative assignment" {
+  reference_case(".a //= empty", "{}", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 210: alternative assignment" {
+  reference_case(".a //= (1,error(\"rhs\"),2)", "{}", "[{\"a\": 1}]", 5)
+}
+
+///|
+test "reference jq 1.7.1 211: alternative assignment" {
+  reference_case(
+    "(.a,.b) //= (1,2)", "{}", "[{\"a\": 1, \"b\": 1}, {\"a\": 2, \"b\": 2}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 212: alternative assignment" {
+  reference_case(".a //= (.k // 7)", "{}", "[{\"a\": 7}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 213: alternative assignment" {
+  reference_case("first(.a //= (1,error(\"unused\")))", "{}", "[{\"a\": 1}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 214: alternative assignment" {
+  reference_case(
+    "limit(2; .a //= (1,2,error(\"unused\")))", "{}", "[{\"a\": 1}, {\"a\": 2}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 215: alternative assignment" {
+  reference_case(
+    ".a //= (false,null,0)", "{}", "[{\"a\": false}, {\"a\": null}, {\"a\": 0}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 216: alternative assignment" {
+  reference_case(".a += (1,2)", "{}", "[{\"a\": 1}, {\"a\": 2}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 217: alternative assignment" {
+  reference_case("(.a,.a) //= (1,2)", "{}", "[{\"a\": 1}, {\"a\": 2}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 218: alternative assignment" {
+  reference_case(
+    ".a //= (1,2)", "{\"a\": 1, \"b\": false, \"k\": 4}", "[{\"a\": 1, \"b\": false, \"k\": 4}, {\"a\": 1, \"b\": false, \"k\": 4}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 219: alternative assignment" {
+  reference_case(".a //= empty", "{\"a\": 1, \"b\": false, \"k\": 4}", "[]", 0)
+}
+
+///|
+test "reference jq 1.7.1 220: alternative assignment" {
+  reference_case(".a //= (1/0)", "{\"a\": 1, \"b\": false, \"k\": 4}", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 221: alternative assignment" {
+  reference_case(
+    ".a //= (2,error(\"rhs\"))", "{\"a\": 1, \"b\": false, \"k\": 4}", "[{\"a\": 1, \"b\": false, \"k\": 4}]",
+    5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 222: alternative assignment" {
+  reference_case(
+    "(.a,.b) //= (.k,.k+1)", "{\"a\": 1, \"b\": false, \"k\": 4}", "[{\"a\": 1, \"b\": 4, \"k\": 4}, {\"a\": 1, \"b\": 5, \"k\": 4}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 223: alternative assignment" {
+  reference_case(
+    "(.a,.b) += (.k,.k+1)", "{\"a\": 1, \"b\": false, \"k\": 4}", "[]", 5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 224: alternative assignment" {
+  reference_case(
+    ".a //= (.a+2)", "{\"a\": 1, \"b\": false, \"k\": 4}", "[{\"a\": 1, \"b\": false, \"k\": 4}]",
+    0,
+  )
+}

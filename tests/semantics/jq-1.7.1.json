@@ -2796,6 +2796,263 @@
       "outputs": [],
       "status": 3,
       "error_prefix": "jq: error: not/1 is not defined"
+    },
+    {
+      "query": ".a //= (1,2)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= empty",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= (1,error(\"rhs\"),2)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        }
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): rhs"
+    },
+    {
+      "query": "(.a,.b) //= (1,2)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1,
+          "b": 1
+        },
+        {
+          "a": 2,
+          "b": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= (.k // 7)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 7
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "first(.a //= (1,error(\"unused\")))",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(2; .a //= (1,2,error(\"unused\")))",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= (false,null,0)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": false
+        },
+        {
+          "a": null
+        },
+        {
+          "a": 0
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a += (1,2)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "(.a,.a) //= (1,2)",
+      "input": {},
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= (1,2)",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1,
+          "b": false,
+          "k": 4
+        },
+        {
+          "a": 1,
+          "b": false,
+          "k": 4
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= empty",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a //= (1/0)",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): number (1) and number (0) cannot be divided because the divisor is zero"
+    },
+    {
+      "query": ".a //= (2,error(\"rhs\"))",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1,
+          "b": false,
+          "k": 4
+        }
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): rhs"
+    },
+    {
+      "query": "(.a,.b) //= (.k,.k+1)",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1,
+          "b": 4,
+          "k": 4
+        },
+        {
+          "a": 1,
+          "b": 5,
+          "k": 4
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "(.a,.b) += (.k,.k+1)",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): boolean (false) and number (4) cannot be added"
+    },
+    {
+      "query": ".a //= (.a+2)",
+      "input": {
+        "a": 1,
+        "b": false,
+        "k": 4
+      },
+      "tag": "alternative assignment",
+      "outputs": [
+        {
+          "a": 1,
+          "b": false,
+          "k": 4
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
     }
   ]
 }

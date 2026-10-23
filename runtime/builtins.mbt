@@ -66,7 +66,7 @@ fn Plan::builtin(
     }
     ("map_values", [body]) => {
       let paths = each({ json: input.json, path: Some([]), }, true, span)
-      self.modify(paths, body, input.json, env, None, span)
+      self.modify(paths, body, input.json, env, span)
     }
     ("sort_by" | "group_by" | "unique_by" | "min_by" | "max_by", [key]) if spec
       is Some({ consumption: CollectAll, .. }) =>
