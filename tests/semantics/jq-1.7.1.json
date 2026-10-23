@@ -3342,6 +3342,212 @@
       ],
       "status": 0,
       "error_prefix": null
+    },
+    {
+      "query": "[range((0,1);(2,3))]",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        [
+          0,
+          1,
+          0,
+          1,
+          2,
+          1,
+          1,
+          2
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[range((0,1);(3,4);(1,2))]",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        [
+          0,
+          1,
+          2,
+          0,
+          2,
+          0,
+          1,
+          2,
+          3,
+          0,
+          2,
+          1,
+          2,
+          1,
+          1,
+          2,
+          3,
+          1,
+          3
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "range(1/0;empty)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): number (1) and number (0) cannot be divided because the divisor is zero"
+    },
+    {
+      "query": "range(empty;1/0)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "range(1/0;empty;1)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): number (1) and number (0) cannot be divided because the divisor is zero"
+    },
+    {
+      "query": "range(0;1/0;empty)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): number (1) and number (0) cannot be divided because the divisor is zero"
+    },
+    {
+      "query": "range(empty;1/0;1)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "range(0;empty;1/0)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "range((0,error(\"start\"));2)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        0,
+        1
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): start"
+    },
+    {
+      "query": "range(0;(2,error(\"end\")))",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        0,
+        1
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): end"
+    },
+    {
+      "query": "range(0;3;(1,error(\"step\")))",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        0,
+        1,
+        2
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): step"
+    },
+    {
+      "query": "range((0,error(\"start\"));empty)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): start"
+    },
+    {
+      "query": "first(range((0,error(\"unused\"));3))",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        0
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "limit(2;range(0;1000000000))",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        0,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[range((4,3);(0,1);(-1,-2))]",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [
+        [
+          4,
+          3,
+          2,
+          1,
+          4,
+          2,
+          4,
+          3,
+          2,
+          4,
+          2,
+          3,
+          2,
+          1,
+          3,
+          1,
+          3,
+          2,
+          3
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "setpath((error(\"left\"),[]);empty)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "pow(1/0;empty)",
+      "input": null,
+      "tag": "range evaluation order",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
     }
   ]
 }

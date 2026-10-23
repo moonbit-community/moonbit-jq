@@ -1,26 +1,4 @@
 ///|
-fn Plan::arguments(
-  self : Plan,
-  args : Array[Int32],
-  index : Int32,
-  input : Value,
-  env : Env,
-  out : Array[Json],
-  apply : (Array[Json]) -> Machine raise EvalError,
-) -> Machine {
-  if index < 0 {
-    return Machine::new(Defer(() => apply(out)))
-  }
-  self
-  .machine(args[index], input, env, false)
-  .flat_map(v => {
-    let next = out.copy()
-    next[index] = v.json
-    self.arguments(args, index - 1, input, env, next, apply)
-  })
-}
-
-///|
 fn Plan::builtin(
   self : Plan,
   name : String,
@@ -107,7 +85,6 @@ fn Plan::builtin(
           }
         })
       })
-    ("combinations", []) => combinations(input.json, span)
     ("repeat", [body]) => Machine::new(Repeat(fn() { run(body) }))
     ("path", [body]) =>
       self
@@ -186,57 +163,51 @@ fn Plan::builtin(
         }
         return Machine::new(Values(results.map(value)))
       }
-      let spec = spec.unwrap()
-      match (spec.mode, spec.consumption) {
-        (Values, EachResult) | (Mixed, FirstResult) =>
-          self.arguments(
-            args,
-            args.length() - 1,
-            input,
-            env,
-            Array::make(args.length(), null),
-            params => {
-              if name == "getpath" {
-                guard params[0] is Array(path) else {
-                  raise EvalError(
-                    Json::string("Path must be specified as an array"),
-                    span,
-                  )
-                }
-                let mut result = input
-                for key in path {
-                  result = access(result, key, tracking, span)
-                }
-                return Machine::one(result)
-              }
-              if name == "nth" {
-                return Machine::one(access(input, params[0], tracking, span))
-              }
-              if name == "error" {
-                let error = if params.is_empty() {
-                  input.json
-                } else {
-                  params[0]
-                }
-                return if error is Null {
-                  Machine::empty()
-                } else {
-                  Machine::fail(EvalError(error, span))
-                }
-              }
-              if name == "range" {
-                return range_values(params, span)
-              }
-              let results = pure_builtin(name, input.json, params) catch {
-                err => raise primitive_error(err, span)
-              }
-              Machine::new(Values(results.map(value)))
-            },
-          )
-        _ => raise EvalError(Json::string("Missing consumer for " + name), span)
-      }
+      raise EvalError(Json::string("Missing consumer for " + name), span)
     }
   }
+}
+
+///|
+fn Plan::value_builtin(
+  _self : Plan,
+  name : String,
+  params : Array[Json],
+  input : Value,
+  tracking : Bool,
+  span : @ast.Span?,
+) -> Machine raise EvalError {
+  if name == "combinations" {
+    return combinations(input.json, span)
+  }
+  if name == "getpath" {
+    guard params[0] is Array(path) else {
+      raise EvalError(Json::string("Path must be specified as an array"), span)
+    }
+    let mut result = input
+    for key in path {
+      result = access(result, key, tracking, span)
+    }
+    return Machine::one(result)
+  }
+  if name == "nth" {
+    return Machine::one(access(input, params[0], tracking, span))
+  }
+  if name == "error" {
+    let error = if params.is_empty() { input.json } else { params[0] }
+    return if error is Null {
+      Machine::empty()
+    } else {
+      Machine::fail(EvalError(error, span))
+    }
+  }
+  if name == "range" {
+    return range_values(params, span)
+  }
+  let results = pure_builtin(name, input.json, params) catch {
+    err => raise primitive_error(err, span)
+  }
+  Machine::new(Values(results.map(value)))
 }
 
 ///|
