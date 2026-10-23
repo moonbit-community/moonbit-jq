@@ -1727,3 +1727,94 @@ test "reference jq 1.7.1 288: lexical callables" {
 test "reference jq 1.7.1 289: lexical callables" {
   reference_case("def f(g): def h(g): g; h(8),g; f(1)", "null", "[8, 1]", 0)
 }
+
+///|
+test "reference jq 1.7.1 290: value filter parameters" {
+  reference_case("def f($x): x; f(1)", "null", "[1]", 0)
+}
+
+///|
+test "reference jq 1.7.1 291: value filter parameters" {
+  reference_case(
+    "def f($x): [$x,x]; f((1,2))", "null", "[[1, 1, 2], [2, 1, 2]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 292: value filter parameters" {
+  reference_case("def f($x): 10 | x; 1 | f(.+1)", "null", "[11]", 0)
+}
+
+///|
+test "reference jq 1.7.1 293: value filter parameters" {
+  reference_case(
+    "def f($x): [$x,(10|x),$x]; 1 | f(.+1)", "null", "[[2, 11, 2]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 294: value filter parameters" {
+  reference_case(
+    "def f($x;$y): [$x,$y,x,y]; f((1,2);(3,4))", "null", "[[1, 3, 1, 2, 3, 4], [1, 4, 1, 2, 3, 4], [2, 3, 1, 2, 3, 4], [2, 4, 1, 2, 3, 4]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 295: value filter parameters" {
+  reference_case(
+    "def f($x;$y): [$x,$y]; f(error(\"first\");empty)", "null", "[]", 5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 296: value filter parameters" {
+  reference_case(
+    "def f($x;$y): [$x,$y]; f(empty;error(\"second\"))", "null", "[]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 297: value filter parameters" {
+  reference_case(
+    "def f($x;$y): [$x,$y]; f((1,error(\"first\"));(2,error(\"second\")))", "null",
+    "[[1, 2]]", 5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 298: value filter parameters" {
+  reference_case("def f($x): def x: 42; [$x,x]; f(1)", "null", "[[1, 42]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 299: value filter parameters" {
+  reference_case("def x: 9; def f($x): [$x,x]; f(1)", "null", "[[1, 1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 300: value filter parameters" {
+  reference_case("def f($x): def h: x; 10 | h; 1|f(.+1)", "null", "[11]", 0)
+}
+
+///|
+test "reference jq 1.7.1 301: value filter parameters" {
+  reference_case("def f($x): 2 as $x | [$x,x]; f(1)", "null", "[[2, 1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 302: value filter parameters" {
+  reference_case("def f($x): x,x; f((1,error(\"rerun\")))", "null", "[1]", 5)
+}
+
+///|
+test "reference jq 1.7.1 303: value filter parameters" {
+  reference_case(
+    "first(def f($x): [$x,x]; f((1,error(\"unused\"))))", "null", "[]", 5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 304: value filter parameters" {
+  reference_case("def f($x): 42; f(empty)", "null", "[]", 0)
+}

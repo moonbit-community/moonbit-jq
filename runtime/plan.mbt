@@ -46,14 +46,8 @@ priv enum UpdateMode {
 } derive(Debug)
 
 ///|
-priv struct Param {
-  id : Int32
-  by_value : Bool
-} derive(Debug)
-
-///|
 priv struct Function {
-  params : Array[Param]
+  params : Array[Int32]
   body : Int32
 } derive(Debug)
 

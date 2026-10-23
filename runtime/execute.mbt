@@ -117,8 +117,11 @@ fn Plan::start(
       let captured = env.functions.get(function).unwrap_or(env)
       let functions = captured.functions.copy()
       functions[function] = captured
-      let callee : Env = { values: captured.values, functions, }
-      self.call_args(function, args, 0, input, env, callee, tracking)
+      let mut callee : Env = { values: captured.values, functions, }
+      for i, binding in self.functions[function].params {
+        callee = callee.bind(binding, Closure(args[i], env))
+      }
+      self.machine(self.functions[function].body, input, callee, tracking)
     }
     Builtin(name, args) => self.builtin(name, args, input, env, tracking, span)
     ValueBuiltin(name, bindings) => {
@@ -143,54 +146,6 @@ fn Plan::start(
         )
       })
     Update(path, body, mode) => self.update(path, body, mode, input, env, span)
-  }
-}
-
-///|
-fn Plan::call_args(
-  self : Plan,
-  function : Int32,
-  args : Array[Int32],
-  index : Int32,
-  input : Value,
-  caller : Env,
-  callee : Env,
-  tracking : Bool,
-) -> Machine {
-  let f = self.functions[function]
-  if index == args.length() {
-    return self.machine(f.body, input, callee, tracking)
-  }
-  let param = f.params[index]
-  if param.by_value {
-    self
-    .machine(args[index], input, caller, false)
-    .flat_map(v => {
-      self.call_args(
-        function,
-        args,
-        index + 1,
-        input,
-        caller,
-        callee.bind(param.id, Bound(v.json)),
-        tracking,
-      )
-    })
-  } else {
-    // Binding closures is pure. Their bodies run only when the parameter is called.
-    Machine::new(
-      Defer(() => {
-        self.call_args(
-          function,
-          args,
-          index + 1,
-          input,
-          caller,
-          callee.bind(param.id, Closure(args[index], caller)),
-          tracking,
-        )
-      }),
-    )
   }
 }
 
