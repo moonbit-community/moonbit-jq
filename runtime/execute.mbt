@@ -20,29 +20,22 @@ fn Plan::start(
     Pipe(left, right) =>
       run(left).flat_map(v => self.machine(right, v, env, tracking))
     Comma(left, right) => run(left).concat(run(right))
-    Access(key) => values(key).map(k => access(input, k.json, tracking, span))
-    Subscript(base, key) =>
+    Navigate(base, Lookup(key)) =>
       values(key).flat_map(k => {
         run(base).map(v => access(v, k.json, tracking, span))
       })
-    Each => each(input, tracking, span)
-    Slice(a, b) => {
-      check_access(input, tracking, span)
-      if !(input.json is (Array(_) | String(_) | Null)) {
-        raise EvalError(
-          Json::string(
-            "Cannot slice " + @ast_internal.json_type_name(input.json),
-          ),
-          span,
-        )
-      }
-      let result = slice_value(input.json, a, b)
-      let segment : Json = {
-        "start": a.map(n => Json::number(n.to_double())).unwrap_or(null),
-        "end": b.map(n => Json::number(n.to_double())).unwrap_or(null),
-      }
-      Machine::one({ json: result, path: input.path.map(p => p + [segment]), })
-    }
+    Navigate(base, Each) => run(base).flat_map(v => each(v, tracking, span))
+    Navigate(base, Slice(a, b)) =>
+      run(base).map(v => {
+        check_access(v, tracking, span)
+        if !(v.json is (Array(_) | String(_) | Null)) {
+          raise EvalError(
+            Json::string("Cannot slice " + @ast_internal.json_type_name(v.json)),
+            span,
+          )
+        }
+        access(v, slice_key(a, b), tracking, span)
+      })
     Collect(None) => Machine::one(value(Json::array([])))
     Collect(Some(body)) =>
       values(body).collect(vs => {

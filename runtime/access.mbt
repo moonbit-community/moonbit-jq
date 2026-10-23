@@ -17,17 +17,13 @@ fn access(
   span : @ast.Span?,
 ) -> Value raise EvalError {
   check_access(input, tracking, span)
-  let json = match (input.json, key) {
-    (Object(obj), String(k)) => obj.get(k).unwrap_or(null)
-    (Array(arr), Number(n, ..)) =>
-      arr.get(normalize_index(n.to_int(), arr.length())).unwrap_or(null)
-    (Null, String(_) | Number(_, ..)) => null
-    (Array(_) | String(_) | Null, Object(bounds)) if bounds.contains("start") &&
-      bounds.contains("end") => {
-      let (start, end) = slice_segment(bounds)
-      slice_value(input.json, start, end)
-    }
-    _ =>
+  let found = match path_segment(key) {
+    Some(segment) => segment.read(input.json)
+    None => None
+  }
+  let json = match found {
+    Some(json) => json
+    None =>
       raise EvalError(
         Json::string(
           "Cannot index " +
