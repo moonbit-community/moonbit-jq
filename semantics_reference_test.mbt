@@ -1913,3 +1913,144 @@ test "reference jq 1.7.1 321: slice writes" {
     ".[1:4] = ([],[8,9])", "[0, 1, 2, 3, 4]", "[[0, 4], [0, 8, 9, 4]]", 0,
   )
 }
+
+///|
+test "reference jq 1.7.1 322: slice deletes" {
+  reference_case(".[1:3][0] |= empty", "[1, 2, 3, 4]", "[[1, 3, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 323: slice deletes" {
+  reference_case(".[1:3][] |= empty", "[1, 2, 3, 4]", "[[1, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 324: slice deletes" {
+  reference_case(".[1:3][-1] |= empty", "[1, 2, 3, 4]", "[[1, 2, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 325: slice deletes" {
+  reference_case(".[1:4][1:2][] |= empty", "[1, 2, 3, 4]", "[[1, 2, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 326: slice deletes" {
+  reference_case(".[1:3][0:1] |= empty", "[1, 2, 3, 4]", "[[1, 3, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 327: slice deletes" {
+  reference_case(
+    "(.[1:3][0],.[1:3][0]) |= empty", "[1, 2, 3, 4]", "[[1, 3, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 328: slice deletes" {
+  reference_case("(.[1:3][0],.[2]) |= empty", "[1, 2, 3, 4]", "[[1, 3]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 329: slice deletes" {
+  reference_case("(.[1:3],.[1:3][0]) |= empty", "[1, 2, 3, 4]", "[[1, 4]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 330: slice deletes" {
+  reference_case(
+    "(.[0:3][1],.[1:4][0]) |= empty", "[1, 2, 3, 4]", "[[1, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 331: slice deletes" {
+  reference_case(
+    "delpaths([[{start:1,end:3},0]])", "[1, 2, 3, 4]", "[[1, 3, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 332: slice deletes" {
+  reference_case(
+    "delpaths([[{start:1,end:3},0],[{start:1,end:3},1]])", "[1, 2, 3, 4]", "[[1, 4]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 333: slice deletes" {
+  reference_case(
+    "delpaths([[{start:1,end:4},{start:1,end:2},0]])", "[1, 2, 3, 4]", "[[1, 2, 4]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 334: slice deletes" {
+  reference_case(
+    "delpaths([[{start:1,end:3},0],[2]])", "[1, 2, 3, 4]", "[[1, 3]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 335: slice deletes" {
+  reference_case(
+    "delpaths([[{start:1,end:3}],[{start:1,end:3},0]])", "[1, 2, 3, 4]", "[[1, 4]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 336: slice deletes" {
+  reference_case(
+    "delpaths([[{start:0,end:3},1],[{start:1,end:4},0]])", "[1, 2, 3, 4]", "[[1, 4]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 337: slice deletes" {
+  reference_case(
+    "delpaths([[-1],[3],[{start:1,end:3},0]])", "[1, 2, 3, 4]", "[[1, 3]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 338: slice deletes" {
+  reference_case(
+    ".[0:2][].x |= empty", "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}, {\"x\": 5}]",
+    "[[{\"y\": 2}, {\"y\": 4}, {\"x\": 5}]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 339: slice deletes" {
+  reference_case(
+    ".[0:2][0].x |= empty", "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}, {\"x\": 5}]",
+    "[[{\"y\": 2}, {\"x\": 3, \"y\": 4}, {\"x\": 5}]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 340: slice deletes" {
+  reference_case(
+    "(.[0:2][0].x,.[1:3][0].y) |= empty", "[{\"x\": 1, \"y\": 2}, {\"x\": 3, \"y\": 4}, {\"x\": 5}]",
+    "[[{\"y\": 2}, {\"x\": 3}, {\"x\": 5}]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 341: slice deletes" {
+  reference_case(
+    ".[0:2][0][0:1][] |= empty", "[[1, 2], [3, 4], [5, 6]]", "[[[2], [3, 4], [5, 6]]]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 342: slice deletes" {
+  reference_case(
+    ".[0:2][][0] |= empty", "[[1, 2], [3, 4], [5, 6]]", "[[[2], [4], [5, 6]]]", 0,
+  )
+}

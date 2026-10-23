@@ -61,6 +61,9 @@ fn Plan::modify(
     })
   })
   .collect(_ => {
-    Machine::one(value(delete_paths(updated.val, deleted.map(p => p))))
+    let result = delete_paths(updated.val, deleted.map(p => p)) catch {
+      err => raise primitive_error(err, span)
+    }
+    Machine::one(value(result))
   })
 }
