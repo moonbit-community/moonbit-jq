@@ -1660,3 +1660,70 @@ test "reference jq 1.7.1 278: interpolated subscript" {
     "[{\"a\": {\"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]", 0,
   )
 }
+
+///|
+test "reference jq 1.7.1 279: lexical callables" {
+  reference_case("def f(g): def g: 42; g; f(1)", "null", "[42]", 0)
+}
+
+///|
+test "reference jq 1.7.1 280: lexical callables" {
+  reference_case("def g: 9; def f(g): g; f(1)", "null", "[1]", 0)
+}
+
+///|
+test "reference jq 1.7.1 281: lexical callables" {
+  reference_case(
+    "def g(x): x+10; def f(g): g, g(2); f(1)", "null", "[1, 12]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 282: lexical callables" {
+  reference_case("def f(g): def g(x): x+10; g,g(2); f(1)", "null", "[1, 12]", 0)
+}
+
+///|
+test "reference jq 1.7.1 283: lexical callables" {
+  reference_case(
+    "def f(g): def saved: g; def g: 42; saved,g; f(1)", "null", "[1, 42]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 284: lexical callables" {
+  reference_case(
+    "def g: 10; def saved: g; def g: 20; saved,g", "null", "[10, 20]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 285: lexical callables" {
+  reference_case(
+    "def f(g): def g: if .>0 then .-1|g else 42 end; 2|g; f(1)", "null", "[42]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 286: lexical callables" {
+  reference_case(
+    "def f(g): def g(x): if x>0 then g(x-1) else g end; g(2); f(7)", "null", "[7]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 287: lexical callables" {
+  reference_case("def f(g): (def g: 42; g),g; f(1)", "null", "[42, 1]", 0)
+}
+
+///|
+test "reference jq 1.7.1 288: lexical callables" {
+  reference_case("def f(g): def h: g; def g: 42; h; f(1)", "null", "[1]", 0)
+}
+
+///|
+test "reference jq 1.7.1 289: lexical callables" {
+  reference_case("def f(g): def h(g): g; h(8),g; f(1)", "null", "[8, 1]", 0)
+}

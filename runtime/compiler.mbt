@@ -8,17 +8,18 @@ priv struct Compiler {
 ///|
 priv struct Names {
   variables : Map[String, Int32]
-  functions : Map[String, (Int32, Int32)]
-  filters : Map[String, Int32]
+  callables : Map[(String, Int32), Callable]
+}
+
+///|
+priv enum Callable {
+  UserFunction(Int32)
+  FilterParameter(Int32)
 }
 
 ///|
 fn Names::copy(self : Names) -> Names {
-  {
-    variables: self.variables.copy(),
-    functions: self.functions.copy(),
-    filters: self.filters.copy(),
-  }
+  { variables: self.variables.copy(), callables: self.callables.copy(), }
 }
 
 ///|
@@ -39,7 +40,7 @@ fn Compiler::node(self : Compiler, code : Code, span : @ast.Span?) -> Int32 {
 /// Resolve names and expand syntax into a reusable execution plan.
 pub fn compile(expr : @ast.Expr) -> Plan raise CompileError {
   let compiler : Compiler = { nodes: [], functions: [], binding: 0, }
-  let names : Names = { variables: {}, functions: {}, filters: {}, }
+  let names : Names = { variables: {}, callables: {}, }
   let entry = compiler.expr(expr, names, None)
   { entry, nodes: compiler.nodes, functions: compiler.functions, }
 }
@@ -56,10 +57,7 @@ fn Compiler::scope(
 ) -> Int32 raise CompileError {
   let id = self.functions.length()
   let outer = names.copy()
-  outer.functions[name + "/" + params.length().to_string()] = (
-    id,
-    params.length(),
-  )
+  outer.callables[(name, params.length())] = UserFunction(id)
   let inner = outer.copy()
   let parameters = params.map(p => {
     let id = self.fresh()
@@ -67,7 +65,7 @@ fn Compiler::scope(
     if by_value {
       inner.variables[p[1:].to_owned()] = id
     } else {
-      inner.filters[p] = id
+      inner.callables[(p, 0)] = FilterParameter(id)
     }
     { id, by_value, }
   })
@@ -240,23 +238,22 @@ fn Compiler::expr(
     }
     FunctionCall(name, args) => {
       let arity = args.length()
-      if arity == 0 && names.filters.get(name) is Some(id) {
-        return self.node(Filter(id), span)
-      }
-      if names.functions.get(name + "/" + arity.to_string()) is Some((id, _)) {
-        Call(id, args.map(child))
-      } else {
-        guard builtin_spec(name, arity) is Some(spec) else {
-          raise CompileError(
-            "Undefined function: " + name + "/" + arity.to_string(),
-            span,
-          )
-        }
-        match (spec.mode, spec.consumption) {
-          (Values(order), EachResult | FirstResult) =>
-            return self.value_builtin(name, args.map(child), order, span)
-          (Filters | Mixed, _) => Builtin(name, args.map(child))
-          _ => raise CompileError("Missing value consumer for " + name, span)
+      match names.callables.get((name, arity)) {
+        Some(FilterParameter(id)) => Filter(id)
+        Some(UserFunction(id)) => Call(id, args.map(child))
+        None => {
+          guard builtin_spec(name, arity) is Some(spec) else {
+            raise CompileError(
+              "Undefined function: " + name + "/" + arity.to_string(),
+              span,
+            )
+          }
+          match (spec.mode, spec.consumption) {
+            (Values(order), EachResult | FirstResult) =>
+              return self.value_builtin(name, args.map(child), order, span)
+            (Filters | Mixed, _) => Builtin(name, args.map(child))
+            _ => raise CompileError("Missing value consumer for " + name, span)
+          }
         }
       }
     }
