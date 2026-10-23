@@ -2054,3 +2054,52 @@ test "reference jq 1.7.1 342: slice deletes" {
     ".[0:2][][0] |= empty", "[[1, 2], [3, 4], [5, 6]]", "[[[2], [4], [5, 6]]]", 0,
   )
 }
+
+///|
+test "reference jq 1.7.1 343: combined regressions" {
+  reference_case(
+    "def f($x): .a.\"\\(.k)\" //= ($x,x); f((1,2))", "{\"a\": {}, \"k\": \"x\"}",
+    "[{\"a\": {\"x\": 1}, \"k\": \"x\"}, {\"a\": {\"x\": 1}, \"k\": \"x\"}, {\"a\": {\"x\": 2}, \"k\": \"x\"}, {\"a\": {\"x\": 2}, \"k\": \"x\"}, {\"a\": {\"x\": 1}, \"k\": \"x\"}, {\"a\": {\"x\": 2}, \"k\": \"x\"}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 344: combined regressions" {
+  reference_case(
+    "def f($x): .a.\"\\(.k)\" = [$x,(10|x)]; f(1)", "{\"a\": {}, \"k\": \"x\"}",
+    "[{\"a\": {\"x\": [1, 1]}, \"k\": \"x\"}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 345: combined regressions" {
+  reference_case(
+    "(.a.\"\\(.k)\",.a.y) //= range(1;3)", "{\"a\": {}, \"k\": \"x\"}", "[{\"a\": {\"x\": 1, \"y\": 1}, \"k\": \"x\"}, {\"a\": {\"x\": 2, \"y\": 2}, \"k\": \"x\"}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 346: combined regressions" {
+  reference_case(
+    "first(.a.\"\\(.k)\" //= (range(1;3),error(\"unused\")))", "{\"a\": {}, \"k\": \"x\"}",
+    "[{\"a\": {\"x\": 1}, \"k\": \"x\"}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 347: combined regressions" {
+  reference_case(
+    ".a[0:0] = [range((0,1);(2,3))]", "{\"a\": null}", "[{\"a\": [0, 1, 0, 1, 2, 1, 1, 2]}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 348: combined regressions" {
+  reference_case(
+    ".a[0:0] //= ([null,1],[2]) | .a | contains([1])", "{\"a\": null}", "[true, false]",
+    0,
+  )
+}
