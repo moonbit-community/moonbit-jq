@@ -30,7 +30,7 @@ fn Parser::parse_primary_inner(self : Parser) -> @ast.Expr raise ParseError {
     Some(TDot) => {
       self.advance()
       match self.current() {
-        Some(TStringStart) => Access(self.parse_string())
+        Some(TStringStart) => Subscript(Identity, self.parse_string())
         Some(TLBracket) => {
           self.advance()
           self.parse_index_or_slice(Identity)

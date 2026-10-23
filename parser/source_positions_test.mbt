@@ -51,3 +51,19 @@ test "frontend: implicit navigation nodes retain source regions" {
   assert_eq(each.start, 2)
   assert_eq(each.end, 4)
 }
+
+///|
+test "frontend: quoted postfix fields are located subscripts" {
+  let source = ".a.\"😀\\(.k)\""
+  let expr = @parser.parse(source)
+  guard expr
+    is Located(whole, Subscript(Located(base, Key("a")), Located(key, _))) else {
+    fail("expected a subscript with a separately located key")
+  }
+  assert_eq(whole.start, 0)
+  assert_eq(whole.end, source.length())
+  assert_eq(base.start, 0)
+  assert_eq(base.end, 2)
+  assert_eq(key.start, 3)
+  assert_eq(key.end, source.length())
+}
