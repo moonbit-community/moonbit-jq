@@ -59,18 +59,31 @@ fn Compiler::scope(
   let outer = names.copy()
   outer.callables[(name, params.length())] = UserFunction(id)
   let inner = outer.copy()
+  let values : Array[(Int32, Int32)] = []
   let parameters = params.map(p => {
     let id = self.fresh()
-    let by_value = p.has_prefix("$")
-    if by_value {
-      inner.variables[p[1:].to_owned()] = id
+    let name = if p.has_prefix("$") {
+      let name = p[1:].to_owned()
+      let variable = self.fresh()
+      inner.variables[name] = variable
+      values.push((id, variable))
+      name
     } else {
-      inner.callables[(p, 0)] = FilterParameter(id)
+      p
     }
-    { id, by_value, }
+    inner.callables[(name, 0)] = FilterParameter(id)
+    id
   })
   self.functions.push({ params: parameters, body: 0, })
-  let body = self.expr(body, inner, span)
+  let mut body = self.expr(body, inner, span)
+  // `$x` is syntax for a filter argument followed by `x as $x` at entry.
+  for offset in 0..<values.length() {
+    let (filter, variable) = values[values.length() - offset - 1]
+    body = self.node(
+      Bind(self.node(Filter(filter), span), variable, body),
+      span,
+    )
+  }
   self.functions[id] = { params: parameters, body, }
   self.node(Scope(id, self.expr(rest, outer, span)), span)
 }
