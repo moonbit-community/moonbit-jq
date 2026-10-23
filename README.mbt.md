@@ -306,17 +306,10 @@ moon check --target all
 - **Error handling**: Leverages MoonBit's checked error system with `raise`
 - **Testing**: 415+ tests using MoonBit's snapshot testing (`inspect`)
 
-## Limitations & Roadmap
+## Feature Status & Compatibility
 
-See [FEATURES.md](FEATURES.md) for detailed feature status.
-
-**Not yet implemented**:
-- Variable binding with `as` patterns
-- `reduce` expressions
-- `sort_by`, `group_by`
-- Assignment operators (`|=`, `=`)
-- String interpolation (`\(expr)`)
-- Many string/array utility functions
+See [FEATURES.md](FEATURES.md) for supported syntax and built-in functions,
+partial implementations, compatibility extensions, and remaining gaps.
 
 Contributions welcome!
 
