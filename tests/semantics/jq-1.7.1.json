@@ -3053,6 +3053,295 @@
       ],
       "status": 0,
       "error_prefix": null
+    },
+    {
+      "query": "contains({a:2})",
+      "input": {
+        "a": null
+      },
+      "tag": "containment",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "inside({a:2})",
+      "input": {
+        "a": null
+      },
+      "tag": "containment",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "inside([null,1])",
+      "input": [
+        1
+      ],
+      "tag": "containment",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([null,1])",
+      "input": [
+        1
+      ],
+      "tag": "containment",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([{a:2}])",
+      "input": [
+        {
+          "a": null
+        },
+        {
+          "a": 2
+        },
+        "x",
+        null
+      ],
+      "tag": "containment",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([{a:3}])",
+      "input": [
+        {
+          "a": null
+        },
+        {
+          "a": 2
+        },
+        "x",
+        null
+      ],
+      "tag": "containment",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([\"x\",null,{a:2}])",
+      "input": [
+        {
+          "a": null
+        },
+        {
+          "a": 2
+        },
+        "x",
+        null
+      ],
+      "tag": "containment",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains({a:[{b:\"a\"},true]})",
+      "input": {
+        "a": [
+          null,
+          {
+            "b": "abc"
+          },
+          false,
+          true
+        ]
+      },
+      "tag": "containment",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains({a:[{b:1}]})",
+      "input": {
+        "a": [
+          null,
+          {
+            "b": "abc"
+          },
+          false,
+          true
+        ]
+      },
+      "tag": "containment",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains(false)",
+      "input": true,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): boolean (true) and boolean (false) cannot have their containment checked"
+    },
+    {
+      "query": "inside(false)",
+      "input": true,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): boolean (false) and boolean (true) cannot have their containment checked"
+    },
+    {
+      "query": "contains(true)",
+      "input": false,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): boolean (false) and boolean (true) cannot have their containment checked"
+    },
+    {
+      "query": "inside(true)",
+      "input": false,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): boolean (true) and boolean (false) cannot have their containment checked"
+    },
+    {
+      "query": "contains(true)",
+      "input": true,
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "inside(true)",
+      "input": true,
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains(false)",
+      "input": false,
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "inside(false)",
+      "input": false,
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains(0)",
+      "input": null,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): null (null) and number (0) cannot have their containment checked"
+    },
+    {
+      "query": "inside(0)",
+      "input": null,
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): number (0) and null (null) cannot have their containment checked"
+    },
+    {
+      "query": "contains({})",
+      "input": [],
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): array ([]) and object ({}) cannot have their containment checked"
+    },
+    {
+      "query": "inside({})",
+      "input": [],
+      "tag": "containment kinds",
+      "outputs": [],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): object ({}) and array ([]) cannot have their containment checked"
+    },
+    {
+      "query": "contains([true])",
+      "input": [
+        false,
+        true,
+        null
+      ],
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([false])",
+      "input": [
+        false,
+        true,
+        null
+      ],
+      "tag": "containment kinds",
+      "outputs": [
+        true
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "contains([0])",
+      "input": [
+        false,
+        true,
+        null
+      ],
+      "tag": "containment kinds",
+      "outputs": [
+        false
+      ],
+      "status": 0,
+      "error_prefix": null
     }
   ]
 }
