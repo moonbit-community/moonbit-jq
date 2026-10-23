@@ -1328,3 +1328,136 @@ test "reference jq 1.7.1 224: alternative assignment" {
     0,
   )
 }
+
+///|
+test "reference jq 1.7.1 225: containment" {
+  reference_case("contains({a:2})", "{\"a\": null}", "[false]", 0)
+}
+
+///|
+test "reference jq 1.7.1 226: containment" {
+  reference_case("inside({a:2})", "{\"a\": null}", "[false]", 0)
+}
+
+///|
+test "reference jq 1.7.1 227: containment" {
+  reference_case("inside([null,1])", "[1]", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 228: containment" {
+  reference_case("contains([null,1])", "[1]", "[false]", 0)
+}
+
+///|
+test "reference jq 1.7.1 229: containment" {
+  reference_case(
+    "contains([{a:2}])", "[{\"a\": null}, {\"a\": 2}, \"x\", null]", "[true]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 230: containment" {
+  reference_case(
+    "contains([{a:3}])", "[{\"a\": null}, {\"a\": 2}, \"x\", null]", "[false]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 231: containment" {
+  reference_case(
+    "contains([\"x\",null,{a:2}])", "[{\"a\": null}, {\"a\": 2}, \"x\", null]", "[true]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 232: containment" {
+  reference_case(
+    "contains({a:[{b:\"a\"},true]})", "{\"a\": [null, {\"b\": \"abc\"}, false, true]}",
+    "[true]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 233: containment" {
+  reference_case(
+    "contains({a:[{b:1}]})", "{\"a\": [null, {\"b\": \"abc\"}, false, true]}", "[false]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 234: containment kinds" {
+  reference_case("contains(false)", "true", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 235: containment kinds" {
+  reference_case("inside(false)", "true", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 236: containment kinds" {
+  reference_case("contains(true)", "false", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 237: containment kinds" {
+  reference_case("inside(true)", "false", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 238: containment kinds" {
+  reference_case("contains(true)", "true", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 239: containment kinds" {
+  reference_case("inside(true)", "true", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 240: containment kinds" {
+  reference_case("contains(false)", "false", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 241: containment kinds" {
+  reference_case("inside(false)", "false", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 242: containment kinds" {
+  reference_case("contains(0)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 243: containment kinds" {
+  reference_case("inside(0)", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 244: containment kinds" {
+  reference_case("contains({})", "[]", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 245: containment kinds" {
+  reference_case("inside({})", "[]", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 246: containment kinds" {
+  reference_case("contains([true])", "[false, true, null]", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 247: containment kinds" {
+  reference_case("contains([false])", "[false, true, null]", "[true]", 0)
+}
+
+///|
+test "reference jq 1.7.1 248: containment kinds" {
+  reference_case("contains([0])", "[false, true, null]", "[false]", 0)
+}

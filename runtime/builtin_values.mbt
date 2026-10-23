@@ -199,22 +199,25 @@ fn has_value(input : Json, key : Json) -> Bool raise PrimitiveError {
 
 ///|
 fn contains_value(container : Json, item : Json) -> Bool raise PrimitiveError {
+  if json_type_rank(container) != json_type_rank(item) {
+    raise InvalidOperation("Cannot check containment of different types")
+  }
+  contains_nested(container, item)
+}
+
+///|
+/// Nested type mismatches are non-matches, so array searches can continue.
+fn contains_nested(container : Json, item : Json) -> Bool {
   match (container, item) {
     (String(a), String(b)) => a.contains(b)
     (Array(a), Array(b)) =>
-      b.iter().all(v => a.iter().any(x => contains_value(x, v)))
+      b.iter().all(v => a.iter().any(x => contains_nested(x, v)))
     (Object(a), Object(b)) =>
       b
       .iter()
       .all(pair => {
-        a.get(pair.0).map(v => contains_value(v, pair.1)).unwrap_or(false)
+        a.get(pair.0).map(v => contains_nested(v, pair.1)).unwrap_or(false)
       })
-    _ => {
-      if @ast_internal.json_type_name(container) !=
-        @ast_internal.json_type_name(item) {
-        raise InvalidOperation("Cannot check containment of different types")
-      }
-      container == item
-    }
+    _ => container == item
   }
 }
