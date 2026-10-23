@@ -3548,6 +3548,360 @@
       "outputs": [],
       "status": 0,
       "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.k)\"",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "path(.a.\"\\(.k)\")",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        [
+          "a",
+          "x"
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.k)\" = (8,9)",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "x": 8,
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        },
+        {
+          "a": {
+            "x": 9,
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.k)\" |= .+1",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "x": 2,
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.k)\" //= (8,9)",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "x": 1,
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        },
+        {
+          "a": {
+            "x": 1,
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[.a.\"\\(.keys[])\" ]",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        [
+          1,
+          2
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "[path(.a.\"\\(.keys[])\")]",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        [
+          [
+            "a",
+            "x"
+          ],
+          [
+            "a",
+            "y"
+          ]
+        ]
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.keys[])\" = 8",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "x": 8,
+            "y": 8
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.keys[])\" |= .+1",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "x": 2,
+            "y": 3
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\((.k,error(\"key\")))\"",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        1
+      ],
+      "status": 5,
+      "error_prefix": "jq: error (at <stdin>:1): key"
+    },
+    {
+      "query": "first(.a.\"\\((.k,error(\"unused\")))\")",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(empty)\"",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": ".a.\"\\(.k)\" |= empty",
+      "input": {
+        "a": {
+          "x": 1,
+          "y": 2
+        },
+        "k": "x",
+        "keys": [
+          "x",
+          "y"
+        ]
+      },
+      "tag": "interpolated subscript",
+      "outputs": [
+        {
+          "a": {
+            "y": 2
+          },
+          "k": "x",
+          "keys": [
+            "x",
+            "y"
+          ]
+        }
+      ],
+      "status": 0,
+      "error_prefix": null
     }
   ]
 }

@@ -74,7 +74,7 @@ fn Parser::parse_field_access(
   base : @ast.Expr,
 ) -> @ast.Expr raise ParseError {
   match self.current() {
-    Some(TStringStart) => Pipe(base, Access(self.parse_string()))
+    Some(TStringStart) => Subscript(base, self.parse_string())
     Some(TLBracket) => {
       self.advance()
       self.parse_index_or_slice(base)

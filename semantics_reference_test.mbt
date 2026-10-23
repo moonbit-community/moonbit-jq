@@ -1554,3 +1554,109 @@ test "reference jq 1.7.1 264: range evaluation order" {
 test "reference jq 1.7.1 265: range evaluation order" {
   reference_case("pow(1/0;empty)", "null", "[]", 0)
 }
+
+///|
+test "reference jq 1.7.1 266: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.k)\"", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[1]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 267: interpolated subscript" {
+  reference_case(
+    "path(.a.\"\\(.k)\")", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[[\"a\", \"x\"]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 268: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.k)\" = (8,9)", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"x\": 8, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}, {\"a\": {\"x\": 9, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 269: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.k)\" |= .+1", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"x\": 2, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 270: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.k)\" //= (8,9)", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}, {\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]",
+    0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 271: interpolated subscript" {
+  reference_case(
+    "[.a.\"\\(.keys[])\" ]", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[[1, 2]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 272: interpolated subscript" {
+  reference_case(
+    "[path(.a.\"\\(.keys[])\")]", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[[[\"a\", \"x\"], [\"a\", \"y\"]]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 273: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.keys[])\" = 8", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"x\": 8, \"y\": 8}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 274: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.keys[])\" |= .+1", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"x\": 2, \"y\": 3}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 275: interpolated subscript" {
+  reference_case(
+    ".a.\"\\((.k,error(\"key\")))\"", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[1]", 5,
+  )
+}
+
+///|
+test "reference jq 1.7.1 276: interpolated subscript" {
+  reference_case(
+    "first(.a.\"\\((.k,error(\"unused\")))\")", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[1]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 277: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(empty)\"", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 278: interpolated subscript" {
+  reference_case(
+    ".a.\"\\(.k)\" |= empty", "{\"a\": {\"x\": 1, \"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}",
+    "[{\"a\": {\"y\": 2}, \"k\": \"x\", \"keys\": [\"x\", \"y\"]}]", 0,
+  )
+}
