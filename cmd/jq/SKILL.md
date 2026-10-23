@@ -1,6 +1,6 @@
 ---
 name: jq
-description: Query, filter, transform, aggregate, and reshape JSON with the portable bobzhang/jq WebAssembly CLI. Use when Codex needs jq-compatible field extraction, array filtering or mapping, object construction, raw or compact output, JSONL/NDJSON processing, or JSON transformations from stdin or files without relying on a native jq installation.
+description: Query, filter, transform, aggregate, and reshape JSON with the portable moonbit-community/jq WebAssembly CLI. Use when Codex needs jq-compatible field extraction, array filtering or mapping, object construction, raw or compact output, JSONL/NDJSON processing, or JSON transformations from stdin or files without relying on a native jq installation.
 ---
 
 # jq
@@ -8,7 +8,7 @@ description: Query, filter, transform, aggregate, and reshape JSON with the port
 Run the jq-compatible command directly from Mooncakes:
 
 ```sh
-moonx bobzhang/jq [OPTIONS] '<filter>' [FILE...]
+moonx moonbit-community/jq [OPTIONS] '<filter>' [FILE...]
 ```
 
 Put options before the filter. Pass the filter as one single-quoted shell
@@ -34,45 +34,45 @@ Extract a field from standard input as raw text:
 
 ```sh
 printf '%s' '{"user":{"name":"Moon"}}' \
-  | moonx bobzhang/jq -r '.user.name // "unknown"'
+  | moonx moonbit-community/jq -r '.user.name // "unknown"'
 ```
 
 Filter an array and construct smaller objects from a file:
 
 ```sh
-moonx bobzhang/jq -c \
+moonx moonbit-community/jq -c \
   '.items[] | select(.active) | {id: .id, name: .name}' data.json
 ```
 
 Collect streaming results into one array:
 
 ```sh
-moonx bobzhang/jq -c '[.items[] | .id]' data.json
+moonx moonbit-community/jq -c '[.items[] | .id]' data.json
 ```
 
 Transform and aggregate values:
 
 ```sh
-moonx bobzhang/jq -c '.values | map(. * 2) | add' data.json
+moonx moonbit-community/jq -c '.values | map(. * 2) | add' data.json
 ```
 
 Construct JSON without reading input:
 
 ```sh
-moonx bobzhang/jq -n -c '{ok: true, values: [1, 2]}'
+moonx moonbit-community/jq -n -c '{ok: true, values: [1, 2]}'
 ```
 
 Process newline-delimited JSON logs and skip invalid lines:
 
 ```sh
-moonx bobzhang/jq -l -r \
+moonx moonbit-community/jq -l -r \
   'select(.level == "error") | .message' events.ndjson
 ```
 
 Read a longer filter from a file:
 
 ```sh
-moonx bobzhang/jq -f transform.jq data.json
+moonx moonbit-community/jq -f transform.jq data.json
 ```
 
 ## Options
@@ -82,8 +82,8 @@ moonx bobzhang/jq -f transform.jq data.json
 - Use `-n` or `--null-input` to evaluate once with `null` input.
 - Use `-l` or `--logs` for JSONL/NDJSON and to skip non-JSON lines.
 - Use `-f FILE` or `--from-file FILE` to load the filter from a file.
-- Run `moonx bobzhang/jq --help` to inspect the current command synopsis.
+- Run `moonx moonbit-community/jq --help` to inspect the current command synopsis.
 
-Prefer an explicit version such as `bobzhang/jq@0.1.1` in reproducible scripts.
-Use the unversioned `bobzhang/jq` coordinate when automatically following the
+Prefer an explicit version such as `moonbit-community/jq@0.2.0` in reproducible scripts.
+Use the unversioned `moonbit-community/jq` coordinate when automatically following the
 latest published version is desirable.

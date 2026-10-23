@@ -29,7 +29,7 @@ priv enum CliParseResult {
 ///|
 fn jq_command() -> @argparse.Command {
   Command(
-    "moonjq",
+    "jq",
     about="Run jq filters over JSON input.",
     flags=[
       FlagArg(

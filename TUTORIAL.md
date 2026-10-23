@@ -37,9 +37,9 @@ $ moonx cli/cat@0.2.1 commits.json
 
 The `.` filter returns its input unchanged:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '.' commits.json
+$ moonx moonbit-community/jq -c '.' commits.json
 [{"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]},{"sha":"b2","commit":{"message":"Add cram coverage","author":{"name":"Grace Hopper"}},"author":{"login":"grace"},"parents":[{"html_url":"https://example.com/commit/a1"},{"html_url":"https://example.com/commit/root"}]}]
 ```
 
@@ -47,9 +47,9 @@ $ moonx bobzhang/jq -c '.' commits.json
 
 Use `.[0]` to select the first item:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '.[0]' commits.json
+$ moonx moonbit-community/jq -c '.[0]' commits.json
 {"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]}
 ```
 
@@ -57,9 +57,9 @@ $ moonx bobzhang/jq -c '.[0]' commits.json
 
 Build a new object by naming the output fields and assigning filters to them:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '.[0] | {message: .commit.message, name: .commit.author.name}' commits.json
+$ moonx moonbit-community/jq -c '.[0] | {message: .commit.message, name: .commit.author.name}' commits.json
 {"message":"Fix parser precedence","name":"Ada Lovelace"}
 ```
 
@@ -67,9 +67,9 @@ $ moonx bobzhang/jq -c '.[0] | {message: .commit.message, name: .commit.author.n
 
 The `.[]` filter emits each array element as a separate result:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '.[] | {message: .commit.message, name: .commit.author.name}' commits.json
+$ moonx moonbit-community/jq -c '.[] | {message: .commit.message, name: .commit.author.name}' commits.json
 {"message":"Fix parser precedence","name":"Ada Lovelace"}
 {"message":"Add cram coverage","name":"Grace Hopper"}
 ```
@@ -78,9 +78,9 @@ $ moonx bobzhang/jq -c '.[] | {message: .commit.message, name: .commit.author.na
 
 Wrap a stream in `[...]` to collect all emitted values into one array:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '[.[] | {message: .commit.message, name: .commit.author.name}]' commits.json
+$ moonx moonbit-community/jq -c '[.[] | {message: .commit.message, name: .commit.author.name}]' commits.json
 [{"message":"Fix parser precedence","name":"Ada Lovelace"},{"message":"Add cram coverage","name":"Grace Hopper"}]
 ```
 
@@ -88,9 +88,9 @@ $ moonx bobzhang/jq -c '[.[] | {message: .commit.message, name: .commit.author.n
 
 Use the same iteration and collection pattern inside object fields:
 
-```mooncram bobzhang/jq
+```mooncram moonbit-community/jq
 #cwd(tests/cram/fixtures)
-$ moonx bobzhang/jq -c '[.[] | {message: .commit.message, name: .commit.author.name, parents: [.parents[].html_url]}]' commits.json
+$ moonx moonbit-community/jq -c '[.[] | {message: .commit.message, name: .commit.author.name, parents: [.parents[].html_url]}]' commits.json
 [{"message":"Fix parser precedence","name":"Ada Lovelace","parents":["https://example.com/commit/root"]},{"message":"Add cram coverage","name":"Grace Hopper","parents":["https://example.com/commit/a1","https://example.com/commit/root"]}]
 ```
 
