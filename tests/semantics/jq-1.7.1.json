@@ -3902,6 +3902,122 @@
       ],
       "status": 0,
       "error_prefix": null
+    },
+    {
+      "query": "def f(g): def g: 42; g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        42
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def g: 9; def f(g): g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def g(x): x+10; def f(g): g, g(2); f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        1,
+        12
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def g(x): x+10; g,g(2); f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        1,
+        12
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def saved: g; def g: 42; saved,g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        1,
+        42
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def g: 10; def saved: g; def g: 20; saved,g",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        10,
+        20
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def g: if .>0 then .-1|g else 42 end; 2|g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        42
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def g(x): if x>0 then g(x-1) else g end; g(2); f(7)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        7
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): (def g: 42; g),g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        42,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def h: g; def g: 42; h; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
+    },
+    {
+      "query": "def f(g): def h(g): g; h(8),g; f(1)",
+      "input": null,
+      "tag": "lexical callables",
+      "outputs": [
+        8,
+        1
+      ],
+      "status": 0,
+      "error_prefix": null
     }
   ]
 }
