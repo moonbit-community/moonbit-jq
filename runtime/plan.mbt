@@ -18,10 +18,7 @@ priv enum Code {
   Constant(Json)
   Pipe(Int32, Int32)
   Comma(Int32, Int32)
-  Access(Int32)
-  Subscript(Int32, Int32)
-  Each
-  Slice(Int32?, Int32?)
+  Navigate(Int32, Navigation)
   Collect(Int32?)
   Object(Array[(Int32, Int32?)])
   Binary(Int32, @ast.BinaryOp, Int32)
@@ -37,6 +34,13 @@ priv enum Code {
   ValueBuiltin(String, Array[Int32])
   Reduce(Int32, Int32, Int32, Int32, Int32?)
   Update(Int32, Int32, UpdateMode)
+} derive(Debug)
+
+///|
+priv enum Navigation {
+  Lookup(Int32)
+  Each
+  Slice(Int32?, Int32?)
 } derive(Debug)
 
 ///|

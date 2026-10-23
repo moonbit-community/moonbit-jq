@@ -1818,3 +1818,98 @@ test "reference jq 1.7.1 303: value filter parameters" {
 test "reference jq 1.7.1 304: value filter parameters" {
   reference_case("def f($x): 42; f(empty)", "null", "[]", 0)
 }
+
+///|
+test "reference jq 1.7.1 305: slice writes" {
+  reference_case(".[0:0] = [1]", "null", "[[1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 306: slice writes" {
+  reference_case(".[1:3] = [1,2]", "null", "[[1, 2]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 307: slice writes" {
+  reference_case(".[0:0][0] = 1", "null", "[[1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 308: slice writes" {
+  reference_case(".[0:0][0:0] = [1]", "null", "[[1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 309: slice writes" {
+  reference_case(".[0:0] |= .+[1]", "null", "[[1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 310: slice writes" {
+  reference_case(".[0:0] = 1", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 311: slice writes" {
+  reference_case(".[0:0] = null", "null", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 312: slice writes" {
+  reference_case(".[0:0][0] |= .+1", "null", "[[1]]", 0)
+}
+
+///|
+test "reference jq 1.7.1 313: slice writes" {
+  reference_case(".a[0:0] = [1]", "{}", "[{\"a\": [1]}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 314: slice writes" {
+  reference_case(".a[0:0][0:0] = [1]", "{}", "[{\"a\": [1]}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 315: slice writes" {
+  reference_case(".a[0:0][0].b = 1", "{}", "[{\"a\": [{\"b\": 1}]}]", 0)
+}
+
+///|
+test "reference jq 1.7.1 316: slice writes" {
+  reference_case(
+    ".a[0:0] //= ([1],[2])", "{}", "[{\"a\": [1]}, {\"a\": [2]}]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 317: slice writes" {
+  reference_case(".a[0:0] = {}", "{}", "[]", 5)
+}
+
+///|
+test "reference jq 1.7.1 318: slice writes" {
+  reference_case(
+    ".[1:4][1:2] = [8,9]", "[0, 1, 2, 3, 4]", "[[0, 1, 8, 9, 3, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 319: slice writes" {
+  reference_case(
+    ".[1:4][0] |= .+10", "[0, 1, 2, 3, 4]", "[[0, 11, 2, 3, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 320: slice writes" {
+  reference_case(
+    ".[1:4][0:1][0] = 8", "[0, 1, 2, 3, 4]", "[[0, 8, 2, 3, 4]]", 0,
+  )
+}
+
+///|
+test "reference jq 1.7.1 321: slice writes" {
+  reference_case(
+    ".[1:4] = ([],[8,9])", "[0, 1, 2, 3, 4]", "[[0, 4], [0, 8, 9, 4]]", 0,
+  )
+}

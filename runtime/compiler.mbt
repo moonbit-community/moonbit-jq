@@ -151,10 +151,14 @@ fn Compiler::expr(
       return self.scope(name, params, body, Identity, names, span)
     Pipe(a, b) => Pipe(child(a), child(b))
     Comma(a, b) => Comma(child(a), child(b))
-    Key(key) => Access(self.node(Constant(Json::string(key)), span))
-    Access(key) => Access(child(key))
-    Subscript(base, key) => Subscript(child(base), child(key))
-    Index([]) => Each
+    Key(key) =>
+      Navigate(
+        self.node(Identity, span),
+        Lookup(self.node(Constant(Json::string(key)), span)),
+      )
+    Access(key) => Navigate(self.node(Identity, span), Lookup(child(key)))
+    Subscript(base, key) => Navigate(child(base), Lookup(child(key)))
+    Index([]) => Navigate(self.node(Identity, span), Each)
     Index(indices) => {
       let keys = indices.map(i => {
         self.node(Constant(Json::number(i.to_double())), span)
@@ -163,9 +167,9 @@ fn Compiler::expr(
       for i in 1..<keys.length() {
         key = self.node(Comma(key, keys[i]), span)
       }
-      Access(key)
+      Navigate(self.node(Identity, span), Lookup(key))
     }
-    Slice(a, b) => Slice(a, b)
+    Slice(a, b) => Navigate(self.node(Identity, span), Slice(a, b))
     Optional(body) => Catch(child(body), None)
     ArrayConstruct(body) => Collect(body.map(child))
     ObjectConstruct(fields) =>
