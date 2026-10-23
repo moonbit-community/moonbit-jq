@@ -1,46 +1,54 @@
 # MoonJQ CLI
 
-These tests exercise the native `moonjq` command-line surface. `moon cram`
-builds the workspace first and puts the built CLI binaries in `PATH`, so the
-tests call `jq.exe` directly.
+These tests exercise the local `bobzhang/jq` command-line surface. Run them
+from its module directory so mooncram builds the checked-out implementation:
+
+```sh
+cd cmd/jq
+moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md
+```
+
+The default backend is Wasm; add `--target native` to test the native backend.
+Input files live in `fixtures/`, relative to this document. Pipeline helpers
+use pinned tools from the Mooncakes `cli` account.
 
 ## File Input
 
-```mooncram
-$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && jq.exe -c '.items[]' data.json
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -c '.items[]' fixtures/data.json
 1
 2
 3
 ```
 
-```mooncram
-$ printf '%s' '{"name":"Moon","items":[1,2,3],"nested":{"ok":true}}' > data.json && jq.exe -r '.name' data.json
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -r '.name' fixtures/data.json
 Moon
 ```
 
 ## Stdin And Null Input
 
-```mooncram
-$ printf '{"nested":{"ok":true}}' | jq.exe '.nested'
+```mooncram bobzhang/jq
+$ moonx cli/printf@0.2.1 '{"nested":{"ok":true}}' | moonx bobzhang/jq '.nested'
 {
   "ok": true
 }
 ```
 
-```mooncram
-$ printf '{"nested":{"ok":true}}' | jq.exe -c '.nested'
+```mooncram bobzhang/jq
+$ moonx cli/printf@0.2.1 '{"nested":{"ok":true}}' | moonx bobzhang/jq -c '.nested'
 {"ok":true}
 ```
 
-```mooncram
-$ jq.exe -n -c '{ok: true, values: [1, 2]}'
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c '{ok: true, values: [1, 2]}'
 {"ok":true,"values":[1,2]}
 ```
 
 ## Multiple Inputs
 
-```mooncram
-$ printf '%s' '{"name":"Ada"}' > a.json && printf '%s' '{"name":"Grace"}' > b.json && printf '%s' '{"name":"Lin"}' | jq.exe -r '.name' a.json - b.json
+```mooncram bobzhang/jq
+$ moonx cli/printf@0.2.1 '%s' '{"name":"Lin"}' | moonx bobzhang/jq -r '.name' fixtures/a.json - fixtures/b.json
 Ada
 Lin
 Grace
@@ -48,89 +56,71 @@ Grace
 
 ## Filter Files
 
-```mooncram
-$ printf '%s' '{"users":[{"name":"Ada","active":true},{"name":"Grace","active":false}]}' > data.json && printf '%s\n' '.users[] | select(.active) | .name' > filter.jq && jq.exe -r -f filter.jq data.json
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -r -f fixtures/filter.jq fixtures/users.json
 Ada
 ```
 
 ## Logs
 
-```mooncram
-$ printf '%s\n' '{"level":"info","message":"started"}' 'not json' '{"level":"error","message":"failed"}' > logs.ndjson && jq.exe --logs -r 'select(.level == "error") | .message' logs.ndjson
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq --logs -r 'select(.level == "error") | .message' fixtures/logs.ndjson
 failed
 ```
 
 ## Errors
 
-```mooncram
-$ jq.exe --missing >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq --missing
 [2]
 ```
 
-```mooncram
-$ jq.exe --logs -n '.' >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq --logs -n '.'
 [2]
 ```
 
-```mooncram
-$ jq.exe -f missing.jq >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -f fixtures/missing.jq
 [2]
 ```
 
-```mooncram
-$ printf '{"x":1}' | jq.exe '[' >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq '[' fixtures/data.json
 [3]
 ```
 
-```mooncram
-$ printf 'not json' | jq.exe '.' >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx cli/printf@0.2.1 'not json' | moonx bobzhang/jq '.'
 [5]
 ```
 
 ## Suspended Evaluation And Terminal Errors
 
-```mooncram
-$ jq.exe -n -c 'limit(3; repeat(.))'
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c 'limit(3; repeat(.))'
 null
 null
 null
 ```
 
-```mooncram
-$ jq.exe -n -c 'limit(1; (1, ({} + 1)))'
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c 'limit(1; (1, ({} + 1)))'
 1
 ```
 
-```mooncram
-$ jq.exe -n -c '1, error("failed"), 2' 2>/dev/null
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c '1, error("failed"), 2'
 1
 [5]
 ```
 
-```mooncram
-$ jq.exe -n -c '"\(. 1)"' >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c '"\(. 1)"'
 [3]
 ```
 
-```mooncram
-$ jq.exe -n -c 'missing_function' >/dev/null 2>&1
-[3]
-```
-
-```mooncram
-$ printf '%s\n' 'not json' '{"end":1}' '{"end":2}' | jqlog.exe '.end'
-1
-2
-```
-
-```mooncram
-$ printf '%s\n' 'not json' '1' '2' '3' | jqlog.exe '., if . == 2 then error("failed") else empty end' 2>/dev/null
-1
-2
-[5]
-```
-
-```mooncram
-$ jqlog.exe '.a.' 'null' >/dev/null 2>&1
+```mooncram bobzhang/jq
+$ moonx bobzhang/jq -n -c 'missing_function'
 [3]
 ```
