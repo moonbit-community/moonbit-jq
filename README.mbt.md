@@ -75,19 +75,19 @@ fn jq(query : String, input : String) -> String raise {
 
 ### Command Line
 
-The `bobzhang/jq` workspace module publishes a portable WebAssembly command that
-can be run directly from Mooncakes:
+The `moonbit-community/jq` workspace module publishes a portable WebAssembly
+command that can be run directly from Mooncakes:
 
 ```bash
-printf '%s' '{"name":"Moon"}' | moonx bobzhang/jq -r '.name'
-moonx bobzhang/jq -n -c '{ok: true, values: [1, 2]}'
-moonx bobzhang/jq -c '.items[]' data.json
+printf '%s' '{"name":"Moon"}' | moonx moonbit-community/jq -r '.name'
+moonx moonbit-community/jq -n -c '{ok: true, values: [1, 2]}'
+moonx moonbit-community/jq -c '.items[]' data.json
 ```
 
 `moonx` uses linear-memory WebAssembly by default and forwards every argument
-after `bobzhang/jq` to the command. The command follows jq's argument order: the
-filter comes first, followed by zero or more input files. When no file is
-provided, input is read from stdin.
+after `moonbit-community/jq` to the command. The command follows jq's argument
+order: the filter comes first, followed by zero or more input files. When no
+file is provided, input is read from stdin.
 
 ```bash
 moon run cmd/jq --target native -- -c '.foo' data.json
@@ -100,7 +100,7 @@ Build the release binary when you want to run it directly:
 
 ```bash
 moon build --target native --release cmd/jq
-_build/native/release/build/cmd/jq/jq.exe -c '.items[]' data.json
+_build/native/release/build/moonbit-community/jq/jq.exe -c '.items[]' data.json
 ```
 
 Supported CLI options:
@@ -234,8 +234,8 @@ moonbit-jq/
 ├── README.mbt.md          # This file (executable documentation)
 ├── TUTORIAL.md            # CLI tutorial
 ├── ast/                   # AST + streaming evaluator + integration tests
-├── cmd/jq/                # bobzhang/jq native + Wasm executable module
-├── cmd/jqlog/             # bobzhang/jqlog native + Wasm executable module
+├── cmd/jq/                # moonbit-community/jq native + Wasm executable module
+├── cmd/jqlog/             # moonbit-community/jqlog native + Wasm executable module
 ├── parser/                # Parser (includes lexer)
 ├── tests/cram/            # mooncram CLI tests and input fixtures
 ```

@@ -13,84 +13,49 @@ priv struct CliOptions {
 
 ///|
 priv enum CliParseResult {
-  Help
   Error(String)
   Run(CliOptions)
 }
 
 ///|
-fn help_message() -> String {
-  let message =
-    #|Usage: moon run cmd/jqlog -- [options] <query> [input]
-    #|
-    #|Options:
-    #|  -f, --file <path>   Read input text from a file.
-    #|  -h, --help          Show this help message.
-    #|
-    #|Notes:
-    #|  - Input is treated as JSONL/NDJSON with possible non-JSON lines.
-    #|  - Non-JSON lines are skipped.
-    #|  - If [input] is omitted, stdin is used.
-    #|  - If [input] is provided without --file, it is treated as raw text.
-    #|
-    #|Examples:
-    #|  cat logs.ndjson | moon run cmd/jqlog -- '.message'
-    #|  moon run cmd/jqlog -- -f output.txt '.a'
-  message
+fn jqlog_command() -> @argparse.Command {
+  Command(
+    "jqlog",
+    about="Run jq filters over JSON Lines input, skipping non-JSON lines.",
+    options=[
+      OptionArg("file", short='f', about="Read input text from a file.", conflicts_with=[
+        "input",
+      ]),
+    ],
+    positionals=[
+      PositionArg(
+        "query",
+        about="The jq filter to evaluate.",
+        num_args=@argparse.ValueRange::single(),
+      ),
+      PositionArg(
+        "input",
+        about="Input text; omit or use - to read stdin.",
+        num_args=ValueRange(lower=0, upper=1),
+        allow_hyphen_values=true,
+        conflicts_with=["file"],
+      ),
+    ],
+    disable_help_subcommand=true,
+  )
 }
 
 ///|
 fn parse_cli(args : ArrayView[String]) -> CliParseResult {
-  let mut input_opt : InputSource? = None
-  let mut index = 0
-  while index < args.length() {
-    let arg = args[index]
-    if arg == "-h" || arg == "--help" {
-      return Help
-    }
-    if arg == "-f" || arg == "--file" {
-      if index + 1 >= args.length() {
-        return Error("Missing path after --file")
-      }
-      if input_opt is Some(_) {
-        return Error("Multiple inputs provided")
-      }
-      input_opt = Some(File(args[index + 1]))
-      index = index + 2
-      continue
-    }
-    if arg == "--" {
-      index = index + 1
-      break
-    }
-    if arg.has_prefix("-") {
-      return Error("Unknown option: \"" + arg + "\"")
-    }
-    break
+  let matches = jqlog_command().parse(argv=args, env=Map([])) catch {
+    err => return Error(err.to_string())
   }
-  if index >= args.length() {
-    return Error("Missing query")
-  }
-  let query = args[index]
-  index = index + 1
-  if index < args.length() {
-    if input_opt is Some(_) {
-      return Error("Multiple inputs provided")
-    }
-    let inline = args[index]
-    if inline == "-" {
-      input_opt = Some(Stdin)
-    } else {
-      input_opt = Some(Inline(inline))
-    }
-    index = index + 1
-  }
-  if index < args.length() {
-    return Error("Too many arguments")
-  }
-  let input = match input_opt {
-    Some(source) => source
-    None => Stdin
+  let query = matches.values.get("query").unwrap()[0]
+  let input = match matches.values {
+    { "file": [path], .. } => File(path)
+    { "input": ["-"], .. } => Stdin
+    { "input": [text], .. } => Inline(text)
+    _ => Stdin
   }
   Run({ query, input, })
 }
@@ -120,13 +85,11 @@ async fn write_results(results : Iter[Result[Json, @moonjq.EvalError]]) -> Unit 
 async fn main {
   let args = @env.args()[1:]
   match parse_cli(args) {
-    Help => {
-      @stdio.stdout.write(help_message())
-      return
-    }
     Error(msg) => {
-      @stdio.stderr.write("Error: " + msg + "\n")
-      @stdio.stderr.write(help_message())
+      @stdio.stderr.write(msg)
+      if !msg.has_suffix("\n") {
+        @stdio.stderr.write("\n")
+      }
       @sys.exit(2)
       return
     }

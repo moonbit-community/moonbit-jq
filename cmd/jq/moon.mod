@@ -1,4 +1,4 @@
-name = "bobzhang/jq"
+name = "moonbit-community/jq"
 
 version = "0.2.0"
 

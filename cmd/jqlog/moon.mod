@@ -1,4 +1,4 @@
-name = "bobzhang/jqlog"
+name = "moonbit-community/jqlog"
 
 version = "0.2.0"
 
