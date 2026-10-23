@@ -4,35 +4,42 @@ This is a MoonJQ version of the jq tutorial. It uses a small local fixture with
 the same shape as the GitHub commits API so the examples are stable and do not
 depend on network access.
 
-The examples are executable documentation. `moon cram` builds the workspace
-first and puts the built CLI binaries in `PATH`, so the examples call `jq.exe`
-directly:
+The examples are executable documentation. Run mooncram from the local jq
+module so it builds the checked-out implementation. The `cli/cat` tool comes
+from Mooncakes at a fixed version:
 
 ```bash
-moon cram test TUTORIAL.md
+cd cmd/jq
+moonx moonbit-community/mooncram@0.1.0 test ../../TUTORIAL.md
 ```
 
-For manual runs outside `moon cram`, build the CLI and call the release binary:
+The default backend is Wasm; add `--target native` to test the native backend.
+Each block uses `#cwd` to read the checked-in fixture directory.
+
+For manual runs from the repository root:
 
 ```bash
-moon build --target native --release cmd/jq
-_build/native/release/build/cmd/jq/jq.exe -c '.[0]' commits.json
+moon run cmd/jq --target native -- -c '.[0]' tests/cram/fixtures/commits.json
 ```
 
 ## Sample Data
 
-Create `commits.json`:
+The fixture `tests/cram/fixtures/commits.json` contains two commits:
 
 ```mooncram
-$ printf '%s\n' '[{"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]},' '{"sha":"b2","commit":{"message":"Add cram coverage","author":{"name":"Grace Hopper"}},"author":{"login":"grace"},"parents":[{"html_url":"https://example.com/commit/a1"},{"html_url":"https://example.com/commit/root"}]}]' > commits.json
+#cwd(tests/cram/fixtures)
+$ moonx cli/cat@0.2.1 commits.json
+[{"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]},
+{"sha":"b2","commit":{"message":"Add cram coverage","author":{"name":"Grace Hopper"}},"author":{"login":"grace"},"parents":[{"html_url":"https://example.com/commit/a1"},{"html_url":"https://example.com/commit/root"}]}]
 ```
 
 ## Identity
 
 The `.` filter returns its input unchanged:
 
-```mooncram
-$ jq.exe -c '.' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '.' commits.json
 [{"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]},{"sha":"b2","commit":{"message":"Add cram coverage","author":{"name":"Grace Hopper"}},"author":{"login":"grace"},"parents":[{"html_url":"https://example.com/commit/a1"},{"html_url":"https://example.com/commit/root"}]}]
 ```
 
@@ -40,8 +47,9 @@ $ jq.exe -c '.' commits.json
 
 Use `.[0]` to select the first item:
 
-```mooncram
-$ jq.exe -c '.[0]' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '.[0]' commits.json
 {"sha":"a1","commit":{"message":"Fix parser precedence","author":{"name":"Ada Lovelace"}},"author":{"login":"ada"},"parents":[{"html_url":"https://example.com/commit/root"}]}
 ```
 
@@ -49,8 +57,9 @@ $ jq.exe -c '.[0]' commits.json
 
 Build a new object by naming the output fields and assigning filters to them:
 
-```mooncram
-$ jq.exe -c '.[0] | {message: .commit.message, name: .commit.author.name}' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '.[0] | {message: .commit.message, name: .commit.author.name}' commits.json
 {"message":"Fix parser precedence","name":"Ada Lovelace"}
 ```
 
@@ -58,8 +67,9 @@ $ jq.exe -c '.[0] | {message: .commit.message, name: .commit.author.name}' commi
 
 The `.[]` filter emits each array element as a separate result:
 
-```mooncram
-$ jq.exe -c '.[] | {message: .commit.message, name: .commit.author.name}' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '.[] | {message: .commit.message, name: .commit.author.name}' commits.json
 {"message":"Fix parser precedence","name":"Ada Lovelace"}
 {"message":"Add cram coverage","name":"Grace Hopper"}
 ```
@@ -68,8 +78,9 @@ $ jq.exe -c '.[] | {message: .commit.message, name: .commit.author.name}' commit
 
 Wrap a stream in `[...]` to collect all emitted values into one array:
 
-```mooncram
-$ jq.exe -c '[.[] | {message: .commit.message, name: .commit.author.name}]' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '[.[] | {message: .commit.message, name: .commit.author.name}]' commits.json
 [{"message":"Fix parser precedence","name":"Ada Lovelace"},{"message":"Add cram coverage","name":"Grace Hopper"}]
 ```
 
@@ -77,8 +88,9 @@ $ jq.exe -c '[.[] | {message: .commit.message, name: .commit.author.name}]' comm
 
 Use the same iteration and collection pattern inside object fields:
 
-```mooncram
-$ jq.exe -c '[.[] | {message: .commit.message, name: .commit.author.name, parents: [.parents[].html_url]}]' commits.json
+```mooncram bobzhang/jq
+#cwd(tests/cram/fixtures)
+$ moonx bobzhang/jq -c '[.[] | {message: .commit.message, name: .commit.author.name, parents: [.parents[].html_url]}]' commits.json
 [{"message":"Fix parser precedence","name":"Ada Lovelace","parents":["https://example.com/commit/root"]},{"message":"Add cram coverage","name":"Grace Hopper","parents":["https://example.com/commit/a1","https://example.com/commit/root"]}]
 ```
 

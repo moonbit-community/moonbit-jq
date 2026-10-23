@@ -46,6 +46,14 @@ jobs:
         run: |
           moon test --target all
 
-      - name: moon cram cli
+      - name: mooncram jq
+        working-directory: cmd/jq
         run: |
-          moon cram test tests/cram TUTORIAL.md
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md ../../TUTORIAL.md --target wasm
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md ../../TUTORIAL.md --target native
+
+      - name: mooncram jqlog
+        working-directory: cmd/jqlog
+        run: |
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/jqlog.md --target wasm
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/jqlog.md --target native

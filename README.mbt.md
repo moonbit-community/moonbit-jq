@@ -235,9 +235,9 @@ moonbit-jq/
 ├── TUTORIAL.md            # CLI tutorial
 ├── ast/                   # AST + streaming evaluator + integration tests
 ├── cmd/jq/                # bobzhang/jq native + Wasm executable module
-├── cmd/jqlog/             # bobzhang/jqlog native executable module
+├── cmd/jqlog/             # bobzhang/jqlog native + Wasm executable module
 ├── parser/                # Parser (includes lexer)
-├── tests/cram/            # Moon Cram CLI tests
+├── tests/cram/            # mooncram CLI tests and input fixtures
 ```
 
 ## Development
@@ -264,13 +264,27 @@ moon test --update
 
 ### CLI Cram Tests
 
-The CLI tests use the `moon cram` command. `moon cram` builds the workspace
-first and puts the built CLI binaries in `PATH`, so the cram examples call
-`jq.exe` directly.
+The CLI tests use `moonx moonbit-community/mooncram@0.1.0`. Local commands
+declare their module in each `mooncram` fence and are built from the checkout.
+Run each suite from the corresponding module directory; mooncram resolves
+local modules from its startup directory. Auxiliary tools use pinned
+`cli/*@0.2.1` packages from Mooncakes. Input files are checked in under
+`tests/cram/fixtures/`.
 
 ```bash
-moon cram test tests/cram TUTORIAL.md
+# From the repository root
+(cd cmd/jq && moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md ../../TUTORIAL.md)
+(cd cmd/jqlog && moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/jqlog.md)
 ```
+
+The default backend is Wasm. Add `--target native` to the jq and jqlog test
+commands to test their native builds; CI runs both backends. Remote tools
+always run as Wasm. Use `check` instead of `test` to validate documents without
+executing commands, or `update --dry-run` to preview expectation changes.
+Mooncram parses commands directly: use `moonx` for every pipeline segment,
+`(no-eol)` for output without a newline, and `[N]` for a nonzero exit status.
+Unmarked cases assert stdout and the exit status; stderr can be checked with
+paired `@STDOUT` and `@STDERR` sections.
 
 ### Code Quality
 
