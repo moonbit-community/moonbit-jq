@@ -1,0 +1,50 @@
+name: Publish jq command modules
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-command-modules
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install audited toolchain channel
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- nightly
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Validate release
+        run: |
+          moon version --all
+          moon update
+          moon check --target all --deny-warn
+          moon test --target all --release -j 2
+          moon -C cmd/jq package --list
+          moon -C cmd/jqlog package --list
+      - name: Validate command behavior
+        run: |
+          cd cmd/jq
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md ../../TUTORIAL.md --target wasm
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/cli.md ../../TUTORIAL.md --target native
+          cd ../jqlog
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/jqlog.md --target wasm
+          moonx moonbit-community/mooncram@0.1.0 test ../../tests/cram/jqlog.md --target native
+      - name: Publish
+        env:
+          MOONCAKES_TOKEN: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
+        shell: bash
+        run: |
+          test -n "$MOONCAKES_TOKEN"
+          umask 077
+          trap 'rm -f "$HOME/.moon/credentials.json"' EXIT
+          printf '%s' "$MOONCAKES_TOKEN" > "$HOME/.moon/credentials.json"
+          moon -C cmd/jq publish
+          moon -C cmd/jqlog publish
