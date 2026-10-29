@@ -1,28 +1,40 @@
-name: publish-package
-run-name: publish to mooncakes
-on: workflow_dispatch
+name: Publish module
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-module
+  cancel-in-progress: false
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: install
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install audited toolchain channel
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> $GITHUB_PATH
-      - name: moon version
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- nightly
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Validate release
         run: |
           moon version --all
-      - name: moon update
-        run: |
           moon update
-      - name: moon check
-        run: |
-          moon check --target all
-      - name: publish
-        run: |
-          echo $SECRET > ~/.moon/credentials.json
-          moon publish
-          rm ~/.moon/credentials.json
+          moon check --target all --deny-warn
+          moon test --target all --release -j 2
+          moon package --list
+      - name: Publish
         env:
-          SECRET: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
+          MOONCAKES_TOKEN: ${{ secrets.MOONCAKES_MOONBIT_COMMUNITY_TOKEN }}
+        shell: bash
+        run: |
+          test -n "$MOONCAKES_TOKEN"
+          umask 077
+          trap 'rm -f "$HOME/.moon/credentials.json"' EXIT
+          printf '%s' "$MOONCAKES_TOKEN" > "$HOME/.moon/credentials.json"
+          moon publish
